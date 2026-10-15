@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>6. 1. 2. 영양소를 흡수하는 소화계 🍙</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts: 주아체 (Title), 고운돋움 (Body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+    <!-- FontAwesome (SVG/JS 버전) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <!-- Tone.js for Audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- three.js (3D 분자 모형) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- MathJax (화학식은 \mathrm 로마체) -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+            svg: { fontCache: 'global' },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'select', 'option'] }
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+
+    <style>
+
+        :root {
+            --bg-pastel-apricot: #fff4ec;   /* 파스텔 살구 */
+            --bg-peach: #ffe6d5;
+            --panel-bg: rgba(255, 255, 255, 0.86);
+            --text-main: #7a2e12;           /* 짙은 살구 갈색 */
+            --accent-apricot: #f6894a;      /* 살구 주황 */
+            --accent-deep: #c2410c;
+            --accent-yellow: #f59e0b;
+        }
+
+        body {
+            font-family: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-pastel-apricot);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(246, 137, 74, 0.08), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(244, 114, 182, 0.06), transparent 40%);
+            background-attachment: fixed;
+            margin: 0; overflow-x: hidden; touch-action: manipulation;
+            color: var(--text-main); line-height: 1.7;
+        }
+
+        .font-cute { font-family: 'Jua', 'Gowun Dodum', sans-serif; letter-spacing: 0.5px; }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px; border: 2px solid rgba(246, 137, 74, 0.22);
+            box-shadow: 0 10px 30px -10px rgba(194, 65, 12, 0.18);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+
+        .concept-blank {
+            display: inline-block; background: rgba(246, 137, 74, 0.12);
+            color: transparent; border-bottom: 3px dashed var(--accent-apricot);
+            padding: 0 12px; margin: 0 4px; border-radius: 8px;
+            cursor: pointer; transition: all 0.3s; position: relative; font-weight: 700;
+        }
+        .concept-blank::after {
+            content: '클릭!'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            color: var(--accent-apricot); font-size: 0.85rem; font-family: 'Jua';
+            opacity: 0.8; animation: pulse-glow 1.5s infinite alternate; white-space: nowrap;
+        }
+        @keyframes pulse-glow { 0% { opacity: 0.5; } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } }
+
+        .concept-blank.revealed {
+            background: rgba(246, 137, 74, 0.22); color: var(--accent-deep);
+            border-bottom: 3px solid var(--accent-apricot); transform: scale(1.05);
+        }
+        .concept-blank.revealed::after { display: none; }
+
+        /* Navigation Buttons */
+        .nav-btn { position: relative; overflow: hidden; transition: all 0.3s; border: 2px solid transparent; }
+        .nav-btn.active {
+            background: linear-gradient(135deg, #fb9a5b, #f2703a);
+            border-color: rgba(255,255,255,0.5); box-shadow: 0 5px 15px rgba(246, 137, 74, 0.4);
+            color: white; transform: translateY(-2px);
+        }
+
+        /* Quiz Box */
+        .quiz-option { transition: all 0.2s; border: 2px solid #e2e8f0; }
+        .quiz-option:hover { border-color: #f6894a; background-color: #fff3ea; }
+        .quiz-option.correct { border-color: #3b82f6; background-color: #dbeafe; color: #1e3a8a; }
+        .quiz-option.wrong { border-color: #ef4444; background-color: #fee2e2; color: #991b1b; }
+
+        /* Select (선택지) */
+        .nut-select {
+            appearance: none; -webkit-appearance: none; background-color: rgba(246, 137, 74, 0.12);
+            border: 2px dashed var(--accent-apricot); color: var(--text-main);
+            padding: 2px 26px 2px 10px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; font-family: 'Gowun Dodum', sans-serif;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23f6894a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right 8px top 50%; background-size: 10px auto;
+        }
+        .nut-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(246, 137, 74, 0.3); }
+        .nut-select.correct { border-style: solid; background-color: rgba(246, 137, 74, 0.22); color: var(--accent-deep); background-image: none; padding-right: 10px; opacity: 1; }
+
+        /* How? / 실험하기 / 원리? 버튼 */
+        .how-btn {
+            font-family: 'Jua', sans-serif; font-size: 0.9rem; line-height: 1;
+            padding: 6px 12px; border-radius: 999px; color: #fff;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed); box-shadow: 0 3px 8px rgba(124, 58, 237, 0.3);
+            transition: transform 0.2s;
+        }
+        .how-btn:hover { transform: scale(1.07); }
+        .lab-btn { font-family: 'Jua', sans-serif; font-size: 0.95rem; line-height: 1; padding: 8px 12px; border-radius: 12px; transition: transform 0.2s; white-space: nowrap; }
+        .lab-btn:hover { transform: scale(1.05); }
+
+        /* 3D 뷰어 */
+        .mol-stage {
+            position: relative; width: 100%; height: 360px; border-radius: 16px; overflow: hidden;
+            background: radial-gradient(circle at 50% 40%, #eef2f7 0%, #d5dde8 70%, #c6d0dd 100%);
+            border: 2px solid #e2e8f0; transition: background 1.2s;
+        }
+        .mol-stage canvas { display: block; width: 100% !important; height: 100% !important; cursor: grab; }
+        .mol-label {
+            position: absolute; transform: translate(-50%, -140%); white-space: nowrap; pointer-events: none;
+            font-family: 'Jua', sans-serif; font-size: 0.8rem; padding: 1px 8px; border-radius: 999px;
+            background: rgba(255,255,255,0.92); color: #7a2e12; border: 1.5px solid #f6894a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+        .mol-label.e { background: #fde047; border-color: #ca8a04; color: #713f12; }
+        .mol-label.v { background: #ede9fe; border-color: #7c3aed; color: #4c1d95; }
+        .mol-label.b { background: #e0f2fe; border-color: #0284c7; color: #075985; }
+        .mol-label.r { background: #ffedd5; border-color: #c2410c; color: #7c2d12; }
+        .view-chip { font-family: 'Jua', sans-serif; padding: 6px 14px; border-radius: 999px; border: 2px solid #fdba74; background: #fff; color: #9a3412; transition: all 0.2s; }
+        .view-chip.on { background: linear-gradient(135deg, #fb9a5b, #f2703a); color: #fff; border-color: transparent; }
+        .legend-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #94a3b8; vertical-align: -2px; margin-right: 4px; }
+
+        /* 모달 */
+        .modal-wrap { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-start; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); padding: 24px 12px; overflow-y: auto; opacity: 0; transition: opacity 0.3s; }
+        .modal-wrap.show { opacity: 1; }
+        .modal-wrap.hidden { display: none !important; }
+        .modal-box { background: #fff; border-radius: 20px; width: 100%; max-width: 1040px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); transform: scale(0.96); transition: transform 0.3s; overflow: hidden; margin: auto 0; }
+        .modal-wrap.show .modal-box { transform: scale(1); }
+        .step-card { background: #fff8f2; border: 2px solid #fed7aa; border-radius: 14px; padding: 14px 16px; }
+        .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #f6894a; color: #fff; font-family: 'Jua'; flex-shrink: 0; }
+        .analogy { background: #fefce8; border: 2px dashed #facc15; border-radius: 14px; padding: 12px 14px; }
+
+        input[type=range].nut-range { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #fdba74, #a78bfa); outline: none; }
+        input[type=range].nut-range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 3px solid #f2703a; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        input[type=range].nut-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #f2703a; cursor: pointer; }
+
+        .svg-liquid { transition: fill 1.6s ease-in-out, y 1s ease, height 1s ease; }
+        mjx-container { font-size: 105% !important; }
+        mjx-container[jax="SVG"] > svg { display: inline-block !important; }
+        mjx-container[jax="SVG"][display="true"] > svg { display: inline-block !important; }
+        mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding: 4px 0; }
+        table { font-variant-numeric: tabular-nums; }
+        @media (prefers-reduced-motion: reduce) { .animate-float, .concept-blank::after { animation: none; } }
+    
+    </style>
+    <style>
+        /* ---- 소화계 단원 추가 요소 (기존 디자인 체계 유지) ---- */
+        .start-badge { display: inline-flex; align-items: center; gap: 4px; font-family: 'Jua', sans-serif; font-size: 0.95rem; color: #fff; background: linear-gradient(135deg, #7cc35a, #4c9a2a); padding: 3px 14px; border-radius: 999px 999px 999px 4px; box-shadow: 0 3px 8px rgba(76, 154, 42, 0.3); vertical-align: middle; }
+        .ex-box { display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; border: 1.5px solid #9a3412; color: #9a3412; border-radius: 4px; padding: 0 4px; margin-right: 4px; line-height: 1.3; }
+        .pill-blank {
+            display: inline-flex; align-items: center; justify-content: center; min-width: 108px; height: 32px; padding: 0 18px;
+            border-radius: 999px; color: transparent; font-family: 'Jua', sans-serif; font-size: 1.1rem; cursor: pointer;
+            position: relative; transition: all 0.3s; box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+        .pill-blank.blue { background: #2f6fb5; }
+        .pill-blank.green { background: #4c9a2a; }
+        .pill-blank::after {
+            content: '클릭!'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            color: #fff; font-size: 0.85rem; font-family: 'Jua'; opacity: 0.85; animation: pulse-glow 1.5s infinite alternate; white-space: nowrap;
+        }
+        .pill-blank.revealed { color: #fff; transform: scale(1.05); }
+        .pill-blank.revealed::after { display: none; }
+        .num-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; font-family: 'Jua', sans-serif; flex-shrink: 0; }
+        .num-badge.blue { background: #2f6fb5; }
+        .num-badge.green { background: #4c9a2a; }
+        .organ-box { background: #fff; border: 2px dashed #cbd5e1; border-radius: 14px; padding: 12px 14px; transition: all 0.25s; cursor: pointer; }
+        .organ-box:hover { border-color: #fdba74; }
+        .organ-box.active { border-color: #f6894a; border-style: solid; box-shadow: 0 0 0 4px rgba(246, 137, 74, 0.18); }
+        .organ-box li { margin: 4px 0; line-height: 2.1; }
+        .org { transition: filter 0.3s; }
+        .org-hl { filter: drop-shadow(0 0 3px #facc15) drop-shadow(0 0 7px #f59e0b); }
+        .fig-card { background: #fff; border: 2px solid #fed7aa; border-radius: 16px; padding: 12px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .fig-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -8px rgba(194, 65, 12, 0.3); }
+        .bogi { border: 2px solid #374151; background: #fff; border-radius: 4px; padding: 10px 14px; }
+        .trip-chip { font-family: 'Jua', sans-serif; padding: 6px 12px; border-radius: 999px; border: 2px solid #86efac; background: #fff; color: #166534; transition: all 0.2s; }
+        .trip-chip.on { background: linear-gradient(135deg, #7cc35a, #4c9a2a); color: #fff; border-color: transparent; }
+        .juice-chip { font-family: 'Jua', sans-serif; padding: 6px 12px; border-radius: 999px; border: 2px solid #93c5fd; background: #fff; color: #1e3a8a; transition: all 0.2s; }
+        .juice-chip.on { background: linear-gradient(135deg, #60a5fa, #2f6fb5); color: #fff; border-color: transparent; }
+        textarea.kiwi-input { width: 100%; min-height: 72px; border: 2px dashed #f6894a; border-radius: 14px; padding: 10px 14px; background: rgba(246, 137, 74, 0.06); font-family: 'Gowun Dodum', sans-serif; color: #7a2e12; resize: vertical; }
+        textarea.kiwi-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(246, 137, 74, 0.3); }
+    </style>
+</head>
+<body>
+
+    <div id="overlay" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/95 px-4 backdrop-blur-sm transition-opacity duration-500 overflow-y-auto">
+        <div class="text-center animate-float max-w-2xl py-8">
+            <div class="mb-6 flex justify-center gap-6 text-6xl">
+                <i class="fa-solid fa-bread-slice text-orange-400 drop-shadow-md"></i>
+                <i class="fa-solid fa-bowl-food text-amber-300 drop-shadow-md"></i>
+                <i class="fa-solid fa-droplet text-sky-400 drop-shadow-md"></i>
+            </div>
+            <h1 class="text-center font-cute text-4xl sm:text-5xl md:text-6xl text-orange-700 mb-4 drop-shadow-sm">6. 1. 2. 영양소를 흡수하는 소화계</h1>
+            <p class="text-xl md:text-2xl text-orange-600 mb-8 font-light">우리가 먹은 음식물은 어떻게 몸속으로 들어올까요? 🍙</p>
+
+            <div class="space-y-3 mb-8 text-left max-w-md mx-auto bg-orange-50 p-6 rounded-2xl border border-orange-200 shadow-lg">
+                <h3 class="font-cute text-2xl text-orange-800 mb-3 text-center">💡 오늘 배울 내용</h3>
+                <ul class="text-orange-900 space-y-2.5 text-base">
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-lemon text-lime-500"></i> 1단계: 함께 시작하기 (키위즙의 역할)</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-scissors text-violet-400"></i> 2단계: 소화와 소화 효소 (3D 분해 과정)</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-person text-sky-400"></i> 3단계: 소화 기관의 구조와 기능</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-pencil text-rose-400"></i> 4단계: 실전 문제 풀이</li>
+                </ul>
+            </div>
+
+            <button onclick="startApp()" class="font-cute bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-white text-2xl sm:text-3xl py-4 px-10 rounded-full shadow-xl transition-transform hover:scale-105 active:scale-95">
+                소화계 탐구 시작하기 🚀
+            </button>
+        </div>
+    </div>
+
+    <div id="app" class="max-w-5xl mx-auto p-4 md:p-8 hidden">
+
+        <header class="text-center mb-8 pt-4">
+            <h1 class="font-cute text-4xl md:text-5xl text-orange-800 drop-shadow-sm">🍙 영양소를 흡수하는 소화계</h1>
+            <p class="text-orange-600 mt-2 font-cute text-lg">중학교 2학년 과학 Ⅵ. 동물과 에너지</p>
+        </header>
+
+        <!-- Navigation Bar -->
+        <nav class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 glass-panel p-3">
+            <button onclick="openTab('start')" id="btn-start" class="nav-btn active font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">1. 함께 시작하기</button>
+            <button onclick="openTab('concept')" id="btn-concept" class="nav-btn font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">2. 소화와 소화 효소</button>
+            <button onclick="openTab('organ')" id="btn-organ" class="nav-btn font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">3. 소화 기관</button>
+            <button onclick="openTab('quiz')" id="btn-quiz" class="nav-btn font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">4. 문제 풀이</button>
+        </nav>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: 함께 시작하기 -->
+        <!-- ========================================== -->
+        <section id="tab-start" class="tab-content glass-panel p-6 md:p-10 mb-8">
+            <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-xl mb-6 flex items-start gap-3 shadow-sm">
+                <i class="fa-solid fa-circle-info text-yellow-500 text-2xl mt-1"></i>
+                <p class="text-gray-700">본문의 <strong class="text-orange-600">점선 빈칸</strong>을 클릭해 학습지의 정답을 확인하세요. 스스로 먼저 생각해본 후 클릭하면 학습 효과가 좋습니다!</p>
+            </div>
+
+            <div class="bg-white rounded-xl border-2 border-orange-100 shadow-sm mb-8 overflow-hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-5 border-b border-orange-100">
+                    <div class="bg-orange-50 p-3 font-cute text-lg text-orange-800 flex items-center justify-center">Ⅵ. 동물과 에너지</div>
+                    <div class="p-3 sm:col-span-4 text-gray-700">1. 에너지원의 흡수와 운반 &nbsp;›&nbsp; ⑵ 영양소를 소화하는 소화계 ➒</div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-5">
+                    <div class="bg-orange-50 p-3 font-cute text-lg text-orange-800 flex items-center justify-center">학습 목표</div>
+                    <div class="p-3 sm:col-span-4 text-gray-700">✿ 소화계의 구조와 기능을 설명할 수 있다.</div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="font-cute text-3xl text-orange-700 mb-4">1. <span class="start-badge">함께 시작하기</span> 키위즙의 역할은 무엇일까?</h2>
+                <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg">
+                    <p class="text-gray-600 text-base mb-3">🥩 고기를 재울 때 키위즙을 넣으면 고기가 부드러워져요. 키위즙은 어떤 역할을 할까요? 먼저 내 생각을 적어 보세요.</p>
+                    <textarea id="kiwi-input" class="kiwi-input" placeholder="내 생각: 키위즙은 ..."></textarea>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        <button class="lab-btn bg-orange-100 text-orange-700 border-2 border-orange-300" onclick="revealKiwi()"><i class="fa-solid fa-eye"></i> 예시 답안 확인</button>
+                        <button class="lab-btn bg-sky-100 text-sky-700 border-2 border-sky-300" onclick="openKiwiLab()"><i class="fa-solid fa-flask"></i> 실험하기</button>
+                        <button class="how-btn" onclick="openEnzyme('actinidin')">How?</button>
+                    </div>
+                    <div id="kiwi-answer" class="hidden mt-4 p-4 rounded-xl border-2 border-dashed border-orange-300 bg-orange-50">
+                        <p class="font-cute text-orange-700 mb-1">✏️ 예시 답안</p>
+                        <p class="text-orange-900">키위즙은 <strong class="text-rose-600">단백질 분해효소</strong>를 가지고 있어 고기를 <strong class="text-rose-600">연하게</strong> 만들어준다.</p>
+                        <p class="text-sm text-gray-600 mt-2">→ 효소가 고기 속 단백질을 잘게 끊어 주는 것처럼, 우리 몸에서도 <strong>소화 효소</strong>가 영양소를 잘게 분해해요. 다음 단계에서 자세히 알아봐요!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <button onclick="openTab('concept')" class="font-cute bg-orange-400 hover:bg-orange-500 text-white text-xl py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    다음: 소화와 소화 효소 알아보기 <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: 소화와 소화 효소 -->
+        <!-- ========================================== -->
+        <section id="tab-concept" class="tab-content hidden glass-panel p-6 md:p-10 mb-8">
+            <h2 class="font-cute text-3xl text-orange-700 mb-2"><i class="fa-solid fa-scissors"></i> 2. 소화와 소화 효소</h2>
+            <p class="text-gray-600 mb-6 bg-white p-3 rounded-lg border border-orange-100 inline-block shadow-sm">
+                빈칸은 클릭하고, 선택지는 골라 보세요. 그림을 누르면 <strong class="text-orange-600">움직이는 그림</strong>이, <span class="how-btn inline-block" style="cursor:default">How?</span>를 누르면 3D 모형이 열려요.
+            </p>
+
+            <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose mb-6">
+                <p><strong>1) 소화의 필요성 :</strong> 영양소를 몸에서 이용하려면, 영양소가 ( <span class="concept-blank" onclick="revealBlank(this)">세포 안</span> )으로 흡수 될 수 있을 만큼
+                    ( <span class="concept-blank" onclick="revealBlank(this)">작은 크기로 분해</span> )되어야 한다.</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose mb-6">
+                <p><strong>2) ( <span class="concept-blank" onclick="revealBlank(this)">소화</span> ) :</strong> 탄수화물, 지방, 단백질 등 음식을 먹어서 섭취한 영양소가 세포 안으로 흡수될 수 있을 만큼 작게 분해되는 과정</p>
+
+                <div class="grid md:grid-cols-5 gap-4 mt-4">
+                    <div class="fig-card md:col-span-2" onclick="openNeedFig()">
+                        <div id="fig-need"></div>
+                        <p class="text-center text-base text-gray-700 mt-1">&lt;소화가 필요한 까닭&gt;</p>
+                        <p class="text-center text-sm text-orange-600 font-cute"><i class="fa-solid fa-circle-play"></i> 움직이는 그림으로 보기</p>
+                    </div>
+                    <div class="fig-card md:col-span-3" onclick="openStarchFig()">
+                        <div id="fig-starch"></div>
+                        <p class="text-center text-base text-gray-700 mt-1">&lt;녹말의 소화 과정&gt;</p>
+                        <p class="text-center text-sm text-orange-600 font-cute"><i class="fa-solid fa-circle-play"></i> 움직이는 그림으로 보기</p>
+                    </div>
+                </div>
+
+                <div class="mt-5 space-y-4">
+                    <div class="step-card">
+                        <p>① ( <select class="nut-select" onchange="checkSelect(this,'기계적')"><option value="">선택하세요</option><option>화학적</option><option>기계적</option><option>생물학적</option></select> ) 소화: 음식물을 잘게 부수고, 소화액과 섞고, 다음 기관으로 이동시키는 과정.</p>
+                        <p class="text-base text-gray-700 mt-1"><span class="ex-box">예</span>저작 운동(이), 분절운동(작은창자), 꿈틀 운동(식도, 위, 작은창자, 큰창자)</p>
+                        <button class="how-btn mt-2" onclick="openMotion()">How?</button>
+                    </div>
+                    <div class="step-card">
+                        <p>② ( <select class="nut-select" onchange="checkSelect(this,'화학적')"><option value="">선택하세요</option><option>기계적</option><option>생물학적</option><option>화학적</option></select> ) 소화: 화학적 성질이 다른 작은 영양소로 분해되는 과정.
+                            이러한 소화 작용을 하기 위해서는 ( <span class="concept-blank" onclick="revealBlank(this)">소화 효소</span> )가 필요하다.</p>
+                        <p class="text-base text-gray-700 mt-1"><span class="ex-box">예</span>아밀레이스: 녹말을 엿당으로 분해한다.</p>
+                        <button class="how-btn mt-2" onclick="openEnzyme('amylase')">How?</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose mb-6">
+                <p><strong>3) ( <span class="concept-blank" onclick="revealBlank(this)">소화기관</span> ) :</strong> 소화가 일어나는 데 관여하는 기관 <span class="ex-box">예</span>입, 식도, 위, 작은창자, 큰창자, 간, 이자, 쓸개 등</p>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose">
+                <p><strong>4) ( <span class="concept-blank" onclick="revealBlank(this)">소화계</span> ) :</strong> 여러 소화 기관들로 구성되어 영양소의 흡수와 소화를 담당하는 기관계</p>
+                <p class="pl-3 mt-2">① ( <select class="nut-select" onchange="checkSelect(this,'소화관')"><option value="">선택하세요</option><option>소화샘</option><option>소화관</option></select> ) : 음식물이 직접 통과하는 곳 <span class="ex-box">예</span>입, 식도, 위, 소장, 대장, 항문</p>
+                <p class="pl-3 mt-2">② ( ☼ <select class="nut-select" onchange="checkSelect(this,'소화샘')"><option value="">선택하세요</option><option>소화관</option><option>소화샘</option></select> ) : 음식물이 직접 통과하진 않지만 소화관에 소화액을 분비하는 곳 <span class="ex-box">예</span>침샘, 위샘, 이자, 쓸개 등</p>
+            </div>
+
+            <div class="text-center mt-10">
+                <button onclick="openTab('organ')" class="font-cute bg-orange-400 hover:bg-orange-500 text-white text-xl py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    다음: 소화 기관의 구조와 기능 <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 소화 기관의 구조와 기능 -->
+        <!-- ========================================== -->
+        <section id="tab-organ" class="tab-content hidden glass-panel p-6 md:p-10 mb-8">
+            <h2 class="font-cute text-3xl text-orange-700 mb-2"><i class="fa-solid fa-person"></i> 3. 소화 기관의 구조와 기능</h2>
+            <p class="text-gray-600 mb-4 bg-white p-3 rounded-lg border border-orange-100 inline-block shadow-sm">
+                파란·초록 <strong>이름표</strong>와 <strong>밑줄 빈칸</strong>을 클릭해 정답을 확인하세요. 상자를 누르면 그림에서 그 기관이 반짝여요.
+            </p>
+            <div class="flex flex-wrap gap-2 mb-5">
+                <button class="lab-btn bg-green-100 text-green-700 border-2 border-green-300" onclick="openTrip()">🍙 음식물의 소화 여행</button>
+                <button class="lab-btn bg-sky-100 text-sky-700 border-2 border-sky-300" onclick="openSecrete()">💧 소화샘의 소화액 분비</button>
+            </div>
+
+            <div class="grid lg:grid-cols-[1fr_300px_1fr] gap-4 items-start">
+                <!-- 왼쪽: 소화샘(파랑) + 큰창자·항문 -->
+                <div class="space-y-3 order-2 lg:order-1 text-[15px]">
+                    <div class="organ-box" data-org="saliva" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge blue">1</span><span class="pill-blank blue" onclick="revealPill(event,this)">침샘</span></div>
+                        <ul>
+                            <li>• 침을 만들어 <span class="concept-blank" onclick="revealBlank(this)">입안</span>으로 분비</li>
+                            <li>• 침 속 소화 효소 <span class="concept-blank" onclick="revealBlank(this)">아밀레이스</span><br>&nbsp;&nbsp;: <span class="concept-blank" onclick="revealBlank(this)">녹말</span> → <span class="concept-blank" onclick="revealBlank(this)">엿당</span>으로 분해</li>
+                        </ul>
+                    </div>
+                    <div class="organ-box" data-org="liver" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge blue">2</span><span class="pill-blank blue" onclick="revealPill(event,this)">간</span></div>
+                        <ul><li>• <span class="concept-blank" onclick="revealBlank(this)">쓸개즙</span>을 만들어 <span class="concept-blank" onclick="revealBlank(this)">쓸개</span>로 보냄</li></ul>
+                    </div>
+                    <div class="organ-box" data-org="pancreas" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge blue">3</span><span class="pill-blank blue" onclick="revealPill(event,this)">이자</span></div>
+                        <ul><li>• <span class="concept-blank" onclick="revealBlank(this)">이자액</span>을 만들어 <span class="concept-blank" onclick="revealBlank(this)">작은창자</span>로 분비</li></ul>
+                    </div>
+                    <div class="organ-box" data-org="gall" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge blue">4</span><span class="pill-blank blue" onclick="revealPill(event,this)">쓸개</span></div>
+                        <ul><li>• 저장된 쓸개즙을 <span class="concept-blank" onclick="revealBlank(this)">작은창자</span>로 분비</li></ul>
+                    </div>
+                    <div class="organ-box" data-org="li" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge green">5</span><span class="pill-blank green" onclick="revealPill(event,this)">큰창자</span></div>
+                        <ul>
+                            <li>• 작은창자보다 <span class="concept-blank" onclick="revealBlank(this)">굵은</span> 관</li>
+                            <li>• 남은 물질에서 <span class="concept-blank" onclick="revealBlank(this)">물</span>을 흡수</li>
+                        </ul>
+                    </div>
+                    <div class="organ-box" data-org="anus" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge green">6</span><span class="pill-blank green" onclick="revealPill(event,this)">항문</span></div>
+                        <ul><li>• 남은 물질을 <span class="concept-blank" onclick="revealBlank(this)">몸 밖</span>으로 내보냄</li></ul>
+                    </div>
+                </div>
+
+                <!-- 가운데: 인체 그림 -->
+                <div class="order-1 lg:order-2 bg-white rounded-2xl border-2 border-orange-100 p-2 shadow-sm lg:sticky lg:top-4">
+                    <div id="fig-body" class="max-w-[300px] mx-auto"></div>
+                    <p class="text-xs text-gray-600 px-2 pb-1">※ <strong class="text-green-700">초록 번호 ①→⑥</strong>: 음식물이 지나가는 순서(소화관) · <strong class="text-blue-700">파란 번호</strong>: 소화샘</p>
+                </div>
+
+                <!-- 오른쪽: 소화관(초록) -->
+                <div class="space-y-3 order-3 text-[15px]">
+                    <div class="organ-box" data-org="mouth" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge green">1</span><span class="pill-blank green" onclick="revealPill(event,this)">입</span></div>
+                        <ul>
+                            <li>• 이로 음식물을 <span class="concept-blank" onclick="revealBlank(this)">잘게 부숨</span></li>
+                            <li>• 혀로 음식물과 <span class="concept-blank" onclick="revealBlank(this)">침</span>을 섞음</li>
+                        </ul>
+                    </div>
+                    <div class="organ-box" data-org="eso" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge green">2</span><span class="pill-blank green" onclick="revealPill(event,this)">식도</span></div>
+                        <ul>
+                            <li>• 입과 위를 연결하는 관</li>
+                            <li>• <span class="concept-blank" onclick="revealBlank(this)">꿈틀운동</span>으로 음식물을 위로 보냄</li>
+                        </ul>
+                    </div>
+                    <div class="organ-box" data-org="stomach" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge green">3</span><span class="pill-blank green" onclick="revealPill(event,this)">위</span></div>
+                        <ul>
+                            <li>• <span class="concept-blank" onclick="revealBlank(this)">주머니</span> 모양의 관</li>
+                            <li>• 음식물을 잠시 <span class="concept-blank" onclick="revealBlank(this)">저장</span>하고 <span class="concept-blank" onclick="revealBlank(this)">위액</span>을 분비</li>
+                        </ul>
+                    </div>
+                    <div class="organ-box" data-org="si" onclick="pickBox(this)">
+                        <div class="flex items-center gap-2 mb-1"><span class="num-badge green">4</span><span class="pill-blank green" onclick="revealPill(event,this)">작은창자</span></div>
+                        <ul>
+                            <li>• 가장 <span class="concept-blank" onclick="revealBlank(this)">긴</span> 소화관</li>
+                            <li>• 대부분의 영양소를 <span class="concept-blank" onclick="revealBlank(this)">소화</span>하고 영양소와 물을 <span class="concept-blank" onclick="revealBlank(this)">흡수</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <button onclick="openTab('quiz')" class="font-cute bg-rose-400 hover:bg-rose-500 text-white text-xl py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    마지막 단계: 확인 문제 풀기 💯
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: 문제 풀이 -->
+        <!-- ========================================== -->
+        <section id="tab-quiz" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 md:p-10">
+                <h2 class="font-cute text-3xl text-orange-700 mb-2"><i class="fa-solid fa-pen-clip"></i> 학습지 연습문제</h2>
+                <p class="text-gray-600 mb-8">배운 내용을 바탕으로 정답을 선택해보세요.</p>
+
+                <!-- Question 1 -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 mb-8 shadow-sm">
+                    <div class="flex gap-3 mb-4">
+                        <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">1</div>
+                        <p class="text-gray-800 font-bold leading-relaxed pt-0.5">우리 몸의 소화계에서 음식물이 이동하는 경로를 순서대로 옳게 나열한 것은?</p>
+                    </div>
+                    <div class="space-y-2" id="q1-options">
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 1)">① 입 → 작은창자 → 위 → 식도 → 큰창자 → 항문</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 2)">② 입 → 식도 → 위 → 작은창자 → 큰창자 → 항문</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 3)">③ 입 → 식도 → 간 → 작은창자 → 큰창자 → 항문</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 4)">④ 입 → 식도 → 간 → 위 → 작은창자 → 큰창자 → 항문</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 5)">⑤ 입 → 식도 → 위 → 이자 → 작은창자 → 큰창자 → 항문</div>
+                    </div>
+                    <div id="q1-feedback" class="mt-4 hidden p-3 rounded-lg font-bold text-center"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
+                    <div class="flex gap-3 mb-4">
+                        <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">2</div>
+                        <p class="text-gray-800 font-bold leading-relaxed pt-0.5">소화효소에 대한 설명으로 옳은 것을 &lt;보기&gt;에서 모두 고른 것은?</p>
+                    </div>
+                    <div class="bogi text-gray-800 mb-6 max-w-xl space-y-1">
+                        <p>&lt;보기&gt;</p>
+                        <p>ㄱ. 침, 위액, 이자액, 쓸개즙 등에 들어 있다.</p>
+                        <p>ㄴ. 체온 정도의 온도에서 활발하게 작용한다.</p>
+                        <p>ㄷ. 각 소화효소는 특정 영양소만 분해한다.</p>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="q2-options">
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer text-center" onclick="selectQuiz(2, 1)">① ㄱ</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer text-center" onclick="selectQuiz(2, 2)">② ㄴ</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer text-center" onclick="selectQuiz(2, 3)">③ ㄷ</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer text-center" onclick="selectQuiz(2, 4)">④ ㄱ, ㄴ</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer text-center" onclick="selectQuiz(2, 5)">⑤ ㄴ, ㄷ</div>
+                    </div>
+                    <div id="q2-feedback" class="mt-4 hidden p-3 rounded-lg font-bold text-center"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-orange-800/60 font-cute text-sm">
+            <p>제작: 해누리중학교 과학교사 남국현</p>
+            <p class="mt-1">© 2026 Haenuri Middle School Science Dept. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <!-- 공용 모달 -->
+    <div id="modal" class="modal-wrap hidden" onclick="if(event.target===this) closeModal()">
+        <div class="modal-box">
+            <div id="modal-head" class="bg-orange-500 px-5 py-4 flex items-center justify-between gap-3">
+                <h3 id="modal-title" class="font-cute text-xl sm:text-2xl text-white"></h3>
+                <button onclick="closeModal()" class="w-9 h-9 rounded-full bg-white/25 hover:bg-white/40 text-white text-xl flex-shrink-0" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="modal-body" class="p-4 sm:p-6"></div>
+        </div>
+    </div>
+
+    <!-- ================= 소화 효소 3D 템플릿 ================= -->
+    <template id="tpl-enzyme">
+        <div class="grid lg:grid-cols-5 gap-5">
+            <div class="lg:col-span-3 min-w-0">
+                <div class="flex flex-wrap gap-2 mb-2" data-enz-chips></div>
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <button class="view-chip on text-sm" data-mode="coarse">🧩 쉬운 모형</button>
+                    <button class="view-chip text-sm" data-mode="atom">🔬 원자 모형 (결합이 끊어지는 순간)</button>
+                </div>
+                <div class="mol-stage" data-stage style="height:400px"></div>
+                <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                    <div data-legend class="text-sm text-gray-600 flex flex-wrap gap-x-3 gap-y-1"></div>
+                    <div class="flex flex-wrap gap-2">
+                        <button data-act="play" class="view-chip on text-sm"><i class="fa-solid fa-play"></i> 분해 시작</button>
+                        <button data-act="again" class="view-chip text-sm">↺ 처음으로</button>
+                        <button data-act="spin" class="view-chip text-sm"><i class="fa-solid fa-rotate"></i> 회전</button>
+                        <button data-act="reset" class="view-chip text-sm"><i class="fa-solid fa-crosshairs"></i> 처음 위치</button>
+                    </div>
+                </div>
+                <p data-caption class="mt-3 bg-violet-50 border border-violet-200 rounded-lg p-3 text-sm text-violet-900"></p>
+                <p class="mt-2 text-xs text-gray-500">마우스(손가락)로 끌면 돌아가고, 휠(두 손가락)로 확대할 수 있어요. ‘쉬운 모형’의 효소는 실제 모양을 단순하게 나타낸 것이에요.</p>
+            </div>
+            <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed min-w-0" data-side></div>
+        </div>
+    </template>
+
+    <script>
+        // =====================================================
+        //  분자 데이터 (nutrients.html 과 동일한 RDKit 3D 좌표, 단위 Å)
+        // =====================================================
+        const MOL = {"glucose":{"atoms":[["C",-2.48,0.53,-0.12],["C",-0.96,0.45,-0.35],["C",-0.39,-0.94,-0.03],["C",1.13,-0.94,-0.25],["C",1.76,0.17,0.59],["C",1.09,1.52,0.25],["O",-0.32,1.46,0.46],["O",1.35,1.9,-1.1],["O",3.18,0.21,0.38],["O",1.69,-2.2,0.15],["O",-0.96,-1.97,-0.84],["O",-2.85,-0.07,1.12],["H",-2.8,1.58,-0.1],["H",-3.02,0.01,-0.91],["H",-0.8,0.69,-1.41],["H",-0.57,-1.22,1.02],["H",1.37,-0.82,-1.31],["H",1.6,-0.05,1.65],["H",1.5,2.3,0.9],["H",1.47,2.86,-1.08],["H",3.45,-0.73,0.36],["H",1.13,-2.87,-0.3],["H",-1.85,-2.13,-0.47],["H",-3.73,0.28,1.36]],"bonds":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[5,7,1],[4,8,1],[3,9,1],[2,10,1],[0,11,1],[6,1,1],[0,12,1],[0,13,1],[1,14,1],[2,15,1],[3,16,1],[4,17,1],[5,18,1],[7,19,1],[8,20,1],[9,21,1],[10,22,1],[11,23,1]],"hl":[5,7,18,19],"labels":{"5":"1번 탄소","7":"-OH"}},"maltose":{"atoms":[["O",-4.81,-2.34,-0.03],["C",-3.45,-2.1,0.31],["C",-3.19,-0.65,0.74],["O",-1.85,-0.5,1.26],["C",-0.92,0.01,0.32],["O",0.38,-0.03,0.91],["C",1.46,-0.05,-0.02],["C",2.24,-1.37,0.12],["C",1.38,-2.58,-0.3],["O",2.14,-3.78,-0.18],["O",3.4,-1.38,-0.72],["C",4.33,-0.35,-0.4],["O",4.85,-0.53,0.92],["C",3.69,1.03,-0.53],["O",4.61,2.05,-0.1],["C",2.41,1.12,0.3],["O",1.79,2.38,-0.01],["C",-1.3,1.48,-0.02],["O",-0.8,2.38,1.0],["C",-2.83,1.66,-0.1],["O",-3.16,2.6,-1.13],["C",-3.5,0.33,-0.4],["O",-4.92,0.49,-0.54],["H",-5.21,-1.5,-0.32],["H",-2.82,-2.37,-0.55],["H",-3.17,-2.79,1.12],["H",-3.87,-0.44,1.58],["H",-0.95,-0.63,-0.57],["H",1.1,0.07,-1.05],["H",2.55,-1.54,1.16],["H",0.49,-2.67,0.33],["H",1.07,-2.49,-1.34],["H",3.04,-3.56,-0.49],["H",5.18,-0.44,-1.08],["H",5.28,0.32,1.13],["H",3.46,1.23,-1.59],["H",4.08,2.87,-0.09],["H",2.64,1.15,1.37],["H",1.0,2.46,0.56],["H",-0.81,1.78,-0.95],["H",-0.88,1.89,1.85],["H",-3.23,2.08,0.83],["H",-2.73,3.44,-0.89],["H",-3.14,-0.05,-1.36],["H",-5.03,1.31,-1.07]],"bonds":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,8,1],[8,9,1],[7,10,1],[10,11,1],[11,12,1],[11,13,1],[13,14,1],[13,15,1],[15,16,1],[4,17,1],[17,18,1],[17,19,1],[19,20,1],[19,21,1],[21,22,1],[21,2,1],[15,6,1],[0,23,1],[1,24,1],[1,25,1],[2,26,1],[4,27,1],[6,28,1],[7,29,1],[8,30,1],[8,31,1],[9,32,1],[11,33,1],[12,34,1],[13,35,1],[14,36,1],[15,37,1],[16,38,1],[17,39,1],[18,40,1],[19,41,1],[20,42,1],[21,43,1],[22,44,1]],"hl":[4,5,6],"labels":{"5":"글리코사이드 결합"}},"glycine":{"atoms":[["N",1.3,-0.54,-0.43],["C",0.51,0.59,0.07],["C",-0.99,0.33,-0.06],["O",-1.85,1.17,-0.25],["O",-1.32,-0.97,0.14],["H",2.25,-0.46,-0.08],["H",0.91,-1.4,-0.03],["H",0.73,0.77,1.13],["H",0.76,1.49,-0.51],["H",-2.29,-0.97,0.02]],"bonds":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[0,5,1],[0,6,1],[1,7,1],[1,8,1],[4,9,1]],"hl":[0,2,3,4,5,6,9],"labels":{"0":"아미노기","2":"카복실기"}},"alanine":{"atoms":[["N",0.04,1.56,-0.04],["C",0.24,0.16,-0.47],["C",1.52,-0.38,0.14],["C",-0.96,-0.72,-0.08],["O",-0.97,-1.93,0.04],["O",-2.1,-0.01,0.1],["H",0.0,1.59,0.98],["H",-0.9,1.84,-0.34],["H",0.31,0.14,-1.56],["H",1.72,-1.4,-0.2],["H",2.38,0.24,-0.13],["H",1.46,-0.41,1.24],["H",-2.76,-0.7,0.32]],"bonds":[[0,1,1],[1,2,1],[1,3,1],[3,4,2],[3,5,1],[0,6,1],[0,7,1],[1,8,1],[2,9,1],[2,10,1],[2,11,1],[5,12,1]],"hl":[0,3,4,5,6,7,12],"labels":{"0":"아미노기","3":"카복실기"}},"dipeptide":{"atoms":[["N",-2.52,-0.45,-0.94],["C",-2.47,0.3,0.34],["C",-1.07,0.26,0.96],["O",-0.84,0.69,2.09],["N",-0.11,-0.31,0.15],["C",1.31,-0.17,0.46],["C",2.07,-1.36,-0.1],["C",1.9,1.12,-0.1],["O",3.05,1.51,0.06],["O",1.06,1.82,-0.89],["H",-3.47,-0.37,-1.31],["H",-2.4,-1.44,-0.72],["H",-3.19,-0.12,1.04],["H",-2.72,1.35,0.14],["H",-0.39,-0.3,-0.83],["H",1.42,-0.13,1.55],["H",3.14,-1.3,0.14],["H",1.99,-1.41,-1.19],["H",1.68,-2.3,0.3],["H",1.58,2.61,-1.15]],"bonds":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,1],[5,7,1],[7,8,2],[7,9,1],[0,10,1],[0,11,1],[1,12,1],[1,13,1],[4,14,1],[5,15,1],[6,16,1],[6,17,1],[6,18,1],[9,19,1]],"hl":[2,3,4,14],"labels":{"4":"펩타이드 결합"}},"triglyceride":{"atoms":[["C",-9.48,-0.41,-2.46],["C",-8.19,0.27,-2.03],["C",-6.96,-0.49,-2.53],["C",-5.67,0.2,-2.08],["C",-4.44,-0.56,-2.57],["C",-3.15,0.12,-2.11],["C",-1.91,-0.65,-2.6],["C",-0.62,0.02,-2.12],["C",0.61,-0.74,-2.6],["C",1.9,-0.09,-2.1],["C",3.13,-0.85,-2.58],["C",4.41,-0.2,-2.05],["C",5.66,-0.93,-2.56],["C",6.92,-0.27,-2.01],["C",8.19,-0.93,-2.54],["C",9.39,-0.2,-1.98],["O",9.65,0.96,-2.24],["O",10.07,-1.0,-1.11],["C",11.04,-0.33,-0.28],["C",10.42,0.11,1.06],["C",9.89,-1.07,1.89],["O",8.77,-1.69,1.24],["C",8.16,-2.66,1.97],["O",8.54,-3.07,3.06],["C",6.93,-3.16,1.26],["C",5.72,-2.32,1.67],["C",4.42,-2.9,1.09],["C",3.2,-2.09,1.53],["C",1.91,-2.73,1.02],["C",0.67,-1.94,1.47],["C",-0.61,-2.62,1.0],["C",-1.85,-1.85,1.46],["C",-3.14,-2.56,1.01],["C",-4.38,-1.79,1.46],["C",-5.66,-2.51,1.03],["C",-6.91,-1.73,1.47],["C",-8.19,-2.46,1.06],["C",-9.43,-1.68,1.49],["C",-10.71,-2.4,1.09],["O",9.29,0.98,0.82],["C",9.54,2.3,0.65],["O",10.63,2.83,0.78],["C",8.28,3.03,0.22],["C",7.02,2.53,0.93],["C",5.75,3.14,0.33],["C",4.5,2.58,1.02],["C",3.22,3.09,0.37],["C",1.98,2.55,1.09],["C",0.69,3.03,0.43],["C",-0.54,2.52,1.18],["C",-1.83,3.01,0.52],["C",-3.06,2.52,1.29],["C",-4.35,3.01,0.63],["C",-5.58,2.54,1.41],["C",-6.88,3.01,0.75],["C",-8.1,2.53,1.52],["C",-9.4,2.98,0.86],["H",-9.56,-0.45,-3.55],["H",-9.53,-1.44,-2.08],["H",-10.35,0.14,-2.08],["H",-8.18,1.3,-2.41],["H",-8.17,0.33,-0.94],["H",-6.98,-1.52,-2.15],["H",-6.99,-0.54,-3.63],["H",-5.65,1.23,-2.46],["H",-5.65,0.26,-0.99],["H",-4.45,-0.62,-3.67],["H",-4.47,-1.59,-2.2],["H",-3.14,0.18,-1.02],["H",-3.12,1.15,-2.49],["H",-1.95,-1.68,-2.23],["H",-1.92,-0.69,-3.69],["H",-0.62,0.07,-1.02],["H",-0.58,1.05,-2.49],["H",0.62,-0.78,-3.69],["H",0.56,-1.78,-2.24],["H",1.94,0.95,-2.45],["H",1.89,-0.06,-1.0],["H",3.08,-1.89,-2.25],["H",3.15,-0.86,-3.68],["H",4.45,0.85,-2.37],["H",4.4,-0.21,-0.96],["H",5.68,-0.92,-3.65],["H",5.63,-1.99,-2.24],["H",6.92,0.79,-2.28],["H",6.92,-0.32,-0.91],["H",8.23,-1.99,-2.25],["H",8.25,-0.89,-3.63],["H",11.85,-1.04,-0.1],["H",11.47,0.53,-0.81],["H",11.18,0.63,1.65],["H",9.57,-0.69,2.86],["H",10.69,-1.82,2.03],["H",6.79,-4.21,1.53],["H",7.09,-3.13,0.18],["H",5.85,-1.29,1.32],["H",5.64,-2.28,2.76],["H",4.48,-2.91,-0.01],["H",4.31,-3.94,1.42],["H",3.17,-2.04,2.62],["H",3.28,-1.06,1.16],["H",1.84,-3.76,1.38],["H",1.93,-2.77,-0.08],["H",0.67,-1.87,2.57],["H",0.72,-0.92,1.08],["H",-0.65,-3.64,1.4],["H",-0.61,-2.7,-0.09],["H",-1.85,-1.75,2.55],["H",-1.83,-0.84,1.04],["H",-3.16,-3.57,1.43],["H",-3.14,-2.66,-0.08],["H",-4.36,-0.78,1.03],["H",-4.37,-1.67,2.55],["H",-5.67,-2.63,-0.05],["H",-5.68,-3.51,1.47],["H",-6.89,-0.73,1.03],["H",-6.89,-1.6,2.56],["H",-8.21,-3.46,1.51],["H",-8.2,-2.6,-0.03],["H",-9.43,-1.54,2.57],["H",-9.43,-0.69,1.03],["H",-10.76,-3.39,1.56],["H",-10.76,-2.54,0.0],["H",-11.58,-1.83,1.4],["H",8.42,4.1,0.45],["H",8.19,2.92,-0.86],["H",6.95,1.44,0.85],["H",7.08,2.76,2.0],["H",5.7,2.91,-0.74],["H",5.78,4.23,0.43],["H",4.52,1.48,0.99],["H",4.52,2.86,2.08],["H",3.21,4.19,0.39],["H",3.2,2.79,-0.68],["H",2.0,2.86,2.14],["H",2.01,1.45,1.09],["H",0.68,4.13,0.41],["H",0.66,2.69,-0.61],["H",-0.53,1.43,1.2],["H",-0.5,2.86,2.22],["H",-1.83,4.11,0.49],["H",-1.87,2.65,-0.51],["H",-3.01,2.88,2.32],["H",-3.06,1.43,1.33],["H",-4.35,4.11,0.59],["H",-4.4,2.65,-0.4],["H",-5.53,2.91,2.44],["H",-5.58,1.44,1.46],["H",-6.92,2.64,-0.28],["H",-6.88,4.11,0.7],["H",-8.07,2.92,2.55],["H",-8.1,1.44,1.59],["H",-9.45,4.07,0.81],["H",-9.47,2.59,-0.16],["H",-10.26,2.62,1.43]],"bonds":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,8,1],[8,9,1],[9,10,1],[10,11,1],[11,12,1],[12,13,1],[13,14,1],[14,15,1],[15,16,2],[15,17,1],[17,18,1],[18,19,1],[19,20,1],[20,21,1],[21,22,1],[22,23,2],[22,24,1],[24,25,1],[25,26,1],[26,27,1],[27,28,1],[28,29,1],[29,30,1],[30,31,1],[31,32,1],[32,33,1],[33,34,1],[34,35,1],[35,36,1],[36,37,1],[37,38,1],[19,39,1],[39,40,1],[40,41,2],[40,42,1],[42,43,1],[43,44,1],[44,45,1],[45,46,1],[46,47,1],[47,48,1],[48,49,1],[49,50,1],[50,51,1],[51,52,1],[52,53,1],[53,54,1],[54,55,1],[55,56,1],[0,57,1],[0,58,1],[0,59,1],[1,60,1],[1,61,1],[2,62,1],[2,63,1],[3,64,1],[3,65,1],[4,66,1],[4,67,1],[5,68,1],[5,69,1],[6,70,1],[6,71,1],[7,72,1],[7,73,1],[8,74,1],[8,75,1],[9,76,1],[9,77,1],[10,78,1],[10,79,1],[11,80,1],[11,81,1],[12,82,1],[12,83,1],[13,84,1],[13,85,1],[14,86,1],[14,87,1],[18,88,1],[18,89,1],[19,90,1],[20,91,1],[20,92,1],[24,93,1],[24,94,1],[25,95,1],[25,96,1],[26,97,1],[26,98,1],[27,99,1],[27,100,1],[28,101,1],[28,102,1],[29,103,1],[29,104,1],[30,105,1],[30,106,1],[31,107,1],[31,108,1],[32,109,1],[32,110,1],[33,111,1],[33,112,1],[34,113,1],[34,114,1],[35,115,1],[35,116,1],[36,117,1],[36,118,1],[37,119,1],[37,120,1],[38,121,1],[38,122,1],[38,123,1],[42,124,1],[42,125,1],[43,126,1],[43,127,1],[44,128,1],[44,129,1],[45,130,1],[45,131,1],[46,132,1],[46,133,1],[47,134,1],[47,135,1],[48,136,1],[48,137,1],[49,138,1],[49,139,1],[50,140,1],[50,141,1],[51,142,1],[51,143,1],[52,144,1],[52,145,1],[53,146,1],[53,147,1],[54,148,1],[54,149,1],[55,150,1],[55,151,1],[56,152,1],[56,153,1],[56,154,1]],"hl":[15,16,17,22,23,21,40,41,39],"labels":{"21":"에스터 결합 ×3"}},"palmitic":{"atoms":[["C",9.51,-0.32,0.0],["C",8.24,0.52,0.0],["C",6.99,-0.35,-0.0],["C",5.72,0.49,-0.0],["C",4.46,-0.38,-0.0],["C",3.19,0.47,-0.0],["C",1.94,-0.41,-0.0],["C",0.67,0.44,0.0],["C",-0.59,-0.43,0.0],["C",-1.86,0.42,-0.0],["C",-3.11,-0.46,0.0],["C",-4.38,0.39,-0.0],["C",-5.64,-0.48,-0.0],["C",-6.91,0.37,-0.0],["C",-8.16,-0.51,0.0],["C",-9.42,0.32,0.0],["O",-9.51,1.54,0.0],["O",-10.53,-0.45,0.0],["H",9.56,-0.96,-0.89],["H",10.39,0.32,0.0],["H",9.56,-0.96,0.89],["H",8.24,1.17,-0.88],["H",8.24,1.17,0.88],["H",7.0,-1.01,-0.88],["H",7.0,-1.01,0.88],["H",5.71,1.15,0.88],["H",5.71,1.15,-0.88],["H",4.47,-1.03,0.88],["H",4.47,-1.03,-0.88],["H",3.19,1.12,0.88],["H",3.19,1.12,-0.88],["H",1.95,-1.06,0.88],["H",1.95,-1.06,-0.88],["H",0.66,1.09,0.88],["H",0.66,1.09,-0.88],["H",-0.58,-1.08,0.88],["H",-0.58,-1.08,-0.88],["H",-1.86,1.07,-0.88],["H",-1.86,1.07,0.88],["H",-3.11,-1.11,0.88],["H",-3.11,-1.11,-0.88],["H",-4.39,1.04,-0.88],["H",-4.39,1.04,0.88],["H",-5.63,-1.13,-0.88],["H",-5.63,-1.13,0.88],["H",-6.92,1.02,-0.88],["H",-6.92,1.02,0.88],["H",-8.17,-1.14,-0.89],["H",-8.17,-1.14,0.89],["H",-11.26,0.2,0.0]],"bonds":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,8,1],[8,9,1],[9,10,1],[10,11,1],[11,12,1],[12,13,1],[13,14,1],[14,15,1],[15,16,2],[15,17,1],[0,18,1],[0,19,1],[0,20,1],[1,21,1],[1,22,1],[2,23,1],[2,24,1],[3,25,1],[3,26,1],[4,27,1],[4,28,1],[5,29,1],[5,30,1],[6,31,1],[6,32,1],[7,33,1],[7,34,1],[8,35,1],[8,36,1],[9,37,1],[9,38,1],[10,39,1],[10,40,1],[11,41,1],[11,42,1],[12,43,1],[12,44,1],[13,45,1],[13,46,1],[14,47,1],[14,48,1],[17,49,1]],"hl":[15,16,17,49],"labels":{"15":"카복실기"}},"water":{"atoms":[["O",0.0,0.0,0.0],["H",0.76,0.59,0.0],["H",-0.76,0.59,0.0]],"bonds":[[0,1,1],[0,2,1]],"hl":[0],"labels":{"0":"104.5°"}}};
+
+        // --- Audio Logic ---
+        let synth, polySynth, membraneSynth;
+        async function initAudio() {
+            if (synth) return;
+            try {
+                await Tone.start();
+                synth = new Tone.Synth().toDestination();
+                polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                polySynth.volume.value = -5;
+                membraneSynth = new Tone.MembraneSynth().toDestination();
+                membraneSynth.volume.value = -10;
+            } catch (e) { console.log(e); }
+        }
+        function playSound(type) {
+            if (!synth) return;
+            try {
+                if (type === 'click') synth.triggerAttackRelease("C5", "32n");
+                else if (type === 'reveal') synth.triggerAttackRelease("E5", "16n");
+                else if (type === 'correct') polySynth.triggerAttackRelease(["C5", "E5", "G5"], "8n");
+                else if (type === 'wrong') membraneSynth.triggerAttackRelease("C3", "8n");
+                else if (type === 'start') polySynth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "4n");
+                else if (type === 'chomp') membraneSynth.triggerAttackRelease("G2", "16n");
+                else if (type === 'pop') { const now = Tone.now(); synth.triggerAttackRelease("C6", "32n", now); synth.triggerAttackRelease("G6", "32n", now + 0.1); }
+                else if (type === 'drop') {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("G5", "32n", now);
+                    synth.triggerAttackRelease("C6", "32n", now + 0.12);
+                }
+                else if (type === 'magic') {
+                    const now = Tone.now();
+                    ["C5", "E5", "G5", "B5", "D6"].forEach((n, i) => synth.triggerAttackRelease(n, "32n", now + i * 0.08));
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        async function startApp() {
+            await initAudio();
+            playSound('start');
+            document.getElementById('overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('app').classList.remove('hidden');
+                typeset(document.getElementById('app'));
+            }, 500);
+        }
+
+        function typeset(el) {
+            try { if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]).catch(() => {}); } catch (e) {}
+        }
+
+        function openTab(tabName) {
+            playSound('click');
+            const tabs = ['start', 'concept', 'organ', 'quiz'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const b = document.getElementById(`btn-${t}`);
+                b.classList.remove('active', 'text-white');
+                b.classList.add('bg-white', 'text-orange-800');
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tabName}`);
+            activeBtn.classList.remove('bg-white', 'text-orange-800');
+            activeBtn.classList.add('active', 'text-white');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function revealBlank(element) {
+            playSound('reveal');
+            element.classList.add('revealed');
+            element.removeAttribute('onclick');
+        }
+        function revealPill(ev, el) {
+            ev.stopPropagation();
+            playSound('reveal');
+            el.classList.add('revealed');
+            el.removeAttribute('onclick');
+            pickBox(el.closest('.organ-box'));
+        }
+        function checkSelect(selectElement, correctAnswer) {
+            if (selectElement.value === correctAnswer) {
+                playSound('correct');
+                selectElement.classList.add('correct');
+                selectElement.disabled = true;
+            } else if (selectElement.value !== "") {
+                playSound('wrong');
+                selectElement.classList.add('border-red-400', 'bg-red-50');
+                setTimeout(() => {
+                    selectElement.classList.remove('border-red-400', 'bg-red-50');
+                    selectElement.value = "";
+                }, 800);
+            }
+        }
+        function revealKiwi() {
+            playSound('reveal');
+            document.getElementById('kiwi-answer').classList.remove('hidden');
+        }
+
+        let _uid = 0;
+        const uid = (p) => `${p}${++_uid}`;
+        const NS = 'http://www.w3.org/2000/svg';
+        function hex2rgb(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); }
+        function lerpHex(a, b, t) {
+            const A = hex2rgb(a), B = hex2rgb(b);
+            return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join('');
+        }
+        const polyD = pts => 'M' + pts.map(p => p.join(',')).join(' L');
+
+        // =====================================================
+        //  학습지 그림 ① <소화가 필요한 까닭>
+        // =====================================================
+        function membraneGrid(A, B, C, D, n, m, col) {
+            const L = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+            let s = `<polygon points="${[A, B, C, D].map(p => p.join(',')).join(' ')}" fill="#fdf2f8" fill-opacity=".7" stroke="${col}" stroke-width="1.6"/>`;
+            for (let i = 1; i < n; i++) { const a = L(A, D, i / n), b = L(B, C, i / n); s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${col}" stroke-width=".9"/>`; }
+            for (let i = 1; i < m; i++) { const a = L(A, B, i / m), b = L(D, C, i / m); s += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${col}" stroke-width=".9"/>`; }
+            return s;
+        }
+        const CLUSTER = [[0, 0], [12, 0], [-12, 0], [6, -10], [-6, -10], [6, 10], [-6, 10]];
+        function clusterSVG(cx, cy, s = 1) {
+            return CLUSTER.map(([dx, dy], i) => `<circle cx="${cx + dx * s}" cy="${cy + dy * s}" r="${6.5 * s}" fill="${i % 2 ? '#ffffff' : '#ef4444'}" stroke="#7f1d1d" stroke-width="1"/>`).join('');
+        }
+        const motion = (x, y) => `<text x="${x}" y="${y}" font-size="11" fill="#94a3b8" font-family="Jua">(((</text>`;
+        function figNeedStatic() {
+            let s = `<svg viewBox="0 0 320 200" class="w-full h-auto" role="img" aria-label="큰 분자는 세포막을 통과하지 못하고 작은 분자만 통과하는 그림">`;
+            s += membraneGrid([140, 12], [200, 38], [190, 192], [130, 166], 14, 4, '#f472b6');
+            s += `<text x="168" y="10" font-size="11" fill="#be185d" font-family="Jua">세포막</text>`;
+            s += clusterSVG(70, 58, 0.9) + motion(28, 62) + clusterSVG(56, 132, 0.9) + motion(14, 136) + clusterSVG(108, 98, 0.75);
+            s += `<circle cx="160" cy="92" r="6" fill="#ef4444" stroke="#7f1d1d"/><circle cx="150" cy="128" r="5.5" fill="#fff" stroke="#7f1d1d"/>`;
+            s += `<circle cx="238" cy="62" r="6" fill="#ef4444" stroke="#7f1d1d"/>` + motion(214, 66);
+            s += `<circle cx="258" cy="118" r="6" fill="#ef4444" stroke="#7f1d1d"/>` + motion(234, 122);
+            s += `<circle cx="228" cy="156" r="6" fill="#ef4444" stroke="#7f1d1d"/>` + motion(204, 160);
+            s += `<text x="66" y="186" text-anchor="middle" font-size="12" fill="#b91c1c" font-family="Jua">큰 분자: 통과 ✕</text>`;
+            s += `<text x="258" y="186" text-anchor="middle" font-size="12" fill="#15803d" font-family="Jua">작은 분자: 통과 ○</text>`;
+            return s + `</svg>`;
+        }
+
+        // =====================================================
+        //  학습지 그림 ② <녹말의 소화 과정>
+        // =====================================================
+        function hexPts(cx, cy, r) {
+            return Array.from({ length: 6 }, (_, k) => { const a = Math.PI / 180 * (60 * k - 30); return (cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1); }).join(' ');
+        }
+        function chainPts(cx, cy, n, r) { return Array.from({ length: n }, (_, i) => [cx + (i - (n - 1) / 2) * r * 1.9, cy + (i % 2 ? r * 0.55 : -r * 0.55)]); }
+        function chainSVG(cx, cy, n, r) {
+            const p = chainPts(cx, cy, n, r); let s = '';
+            for (let i = 0; i < n - 1; i++) s += `<line x1="${p[i][0]}" y1="${p[i][1]}" x2="${p[i + 1][0]}" y2="${p[i + 1][1]}" stroke="#6d28d9" stroke-width="${r * 0.25}"/>`;
+            p.forEach(q => s += `<polygon points="${hexPts(q[0], q[1], r)}" fill="#a78bfa" stroke="#6d28d9" stroke-width="1.2"/>`);
+            return s;
+        }
+        function toastPath(x, y, w, h) {
+            return `M${x + 0.08 * w},${y + h} L${x + 0.06 * w},${y + 0.45 * h} Q${x - 0.05 * w},${y + 0.1 * h} ${x + 0.25 * w},${y + 0.05 * h} Q${x + 0.5 * w},${y - 0.06 * h} ${x + 0.75 * w},${y + 0.05 * h} Q${x + 1.05 * w},${y + 0.12 * h} ${x + 0.94 * w},${y + 0.45 * h} L${x + 0.92 * w},${y + h} Z`;
+        }
+        function piece(cx, cy, s, k) {
+            const pts = []; for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2 + k; const r = s * (0.7 + 0.3 * Math.sin(k * 3 + i * 2.1)); pts.push((cx + r * Math.cos(a)).toFixed(1) + ',' + (cy + r * Math.sin(a)).toFixed(1)); }
+            return pts.join(' ');
+        }
+        const tag = (x, y, t, c = '#7c3aed') => `<rect x="${x - 22}" y="${y - 11}" width="44" height="20" rx="10" fill="${c}"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" fill="#fff" font-family="Jua">${t}</text>`;
+        function bigArrow(x, y, w, label) {
+            return `<polygon points="${x},${y - 9} ${x + w - 18},${y - 9} ${x + w - 18},${y - 18} ${x + w},${y} ${x + w - 18},${y + 18} ${x + w - 18},${y + 9} ${x},${y + 9}" fill="#fb7185" opacity=".85"/><text x="${x + w / 2}" y="${y - 24}" text-anchor="middle" font-size="11" fill="#475569" font-family="Jua">${label}</text>`;
+        }
+        function figStarchStatic() {
+            let s = `<svg viewBox="0 0 640 225" class="w-full h-auto" role="img" aria-label="식빵을 이로 씹고 침의 소화 작용으로 녹말이 엿당으로 분해되는 과정">`;
+            // 1) 식빵
+            s += `<path d="${toastPath(25, 30, 130, 115)}" fill="#f9e4b7" stroke="#c58b47" stroke-width="6" stroke-linejoin="round"/>`;
+            s += `<circle cx="92" cy="92" r="9" fill="none" stroke="#ef4444" stroke-width="2"/><line x1="86" y1="99" x2="70" y2="130" stroke="#fca5a5"/><line x1="99" y1="99" x2="118" y2="130" stroke="#fca5a5"/>`;
+            s += `<circle cx="92" cy="168" r="44" fill="#e0f2fe" stroke="#93c5fd" stroke-width="2"/>` + chainSVG(92, 168, 5, 8) + tag(58, 206, '녹말');
+            s += bigArrow(172, 92, 62, '이의 씹는 작용');
+            // 2) 부서진 식빵
+            [[268, 70, 22], [306, 60, 18], [338, 82, 20], [284, 108, 19], [322, 116, 21], [356, 104, 15], [300, 88, 12]].forEach(([x, y, r], k) => s += `<polygon points="${piece(x, y, r, k)}" fill="#f9e4b7" stroke="#c58b47" stroke-width="3" stroke-linejoin="round"/>`);
+            s += `<circle cx="312" cy="92" r="8" fill="none" stroke="#ef4444" stroke-width="2"/>`;
+            s += `<circle cx="312" cy="168" r="44" fill="#e0f2fe" stroke="#93c5fd" stroke-width="2"/>` + chainSVG(312, 168, 5, 8) + tag(278, 206, '녹말');
+            s += bigArrow(392, 92, 62, '침의 소화 작용');
+            // 3) 엿당
+            s += `<ellipse cx="545" cy="112" rx="78" ry="30" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/><ellipse cx="545" cy="106" rx="70" ry="22" fill="#fff" stroke="#e2e8f0"/>`;
+            s += `<path d="M490,108 Q498,84 520,90 Q532,74 552,86 Q570,74 586,92 Q604,96 600,110 Q580,124 545,122 Q505,124 490,108 Z" fill="#f6ead0" stroke="#d6b98a"/>`;
+            for (let i = 0; i < 18; i++) s += `<circle cx="${500 + (i * 37) % 96}" cy="${92 + (i * 13) % 26}" r="2.2" fill="#e7cf9f"/>`;
+            s += tag(510, 178, '엿당');
+            s += `<g>${chainSVG(560, 172, 2, 8)}</g><g>${chainSVG(602, 192, 2, 8)}</g>`;
+            return s + `</svg>`;
+        }
+
+        // =====================================================
+        //  학습지 그림 ③ 소화계 인체 그림
+        // =====================================================
+        const ORG_PTS = (() => {
+            const eso = [[150, 80], [150, 100], [152, 140], [156, 185], [166, 212], [174, 224]];
+            const sto = [[184, 230], [206, 238], [220, 256], [214, 276], [196, 286]];
+            const duo = [[186, 294], [170, 302], [150, 311], [132, 322], [122, 332]];
+            const si = []; for (let r = 0; r < 6; r++) { const y = 332 + 18 * r; const L = r % 2 === 0; si.push([L ? 122 : 198, y]); si.push([L ? 198 : 122, y]); }
+            const ile = [[112, 430], [104, 436]];
+            const li = [[104, 440], [98, 400], [96, 350], [100, 318], [130, 311], [165, 309], [200, 311], [222, 320], [226, 360], [224, 405], [214, 432], [192, 446], [168, 452], [158, 468], [156, 490]];
+            return { eso, sto, duo, si, ile, li };
+        })();
+        function bodySVG(p, big) {
+            const P = ORG_PTS, gut = [...P.duo, ...P.si, ...P.ile];
+            const mk = (x, y, n, c, id) => `<g class="mk" ${p === 'main' ? `onclick="focusOrgan('${id}')" style="cursor:pointer"` : ''}><circle cx="${x}" cy="${y}" r="8" fill="${c}" stroke="#fff" stroke-width="1.6"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10.5" fill="#fff" font-family="Jua">${n}</text></g>`;
+            const G = '#4c9a2a', B = '#2f6fb5';
+            return `<svg viewBox="0 0 300 ${big ? 548 : 530}" class="w-full h-auto" role="img" aria-label="소화계 구조 그림" data-body="${p}">
+                <defs><linearGradient id="${p}-sk" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fde7da"/><stop offset="1" stop-color="#fbd5c0"/></linearGradient></defs>
+                <path d="M96,104 Q150,94 204,104 Q238,116 248,140 Q258,300 238,468 Q206,522 150,528 Q94,522 62,468 Q42,300 52,140 Q62,116 96,104 Z" fill="url(#${p}-sk)" stroke="#f5c3a7" stroke-width="1.5"/>
+                <rect x="136" y="84" width="28" height="24" fill="#fde7da"/>
+                <g id="${p}-li" class="org"><path d="${polyD(P.li)}" fill="none" stroke="#d98a80" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/><path d="${polyD(P.li)}" fill="none" stroke="#efb1a6" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="7 4"/></g>
+                <g id="${p}-pancreas" class="org"><path d="M150,300 C160,290 190,290 222,285 C234,284 234,296 222,298 C196,303 170,308 152,309 Z" fill="#f2c46d" stroke="#d29a35"/></g>
+                <g id="${p}-si" class="org"><path d="${polyD(gut)}" fill="none" stroke="#e08f84" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><path d="${polyD(gut)}" fill="none" stroke="#f7c4b8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>
+                <g id="${p}-head"><circle cx="150" cy="50" r="40" fill="#fde2d0" stroke="#f0b99c" stroke-width="1.5"/><circle cx="135" cy="40" r="3.2" fill="#7a2e12"/><circle cx="165" cy="40" r="3.2" fill="#7a2e12"/><ellipse cx="127" cy="54" rx="6" ry="3.5" fill="#fbb4a5" opacity=".7"/><ellipse cx="173" cy="54" rx="6" ry="3.5" fill="#fbb4a5" opacity=".7"/></g>
+                <g id="${p}-eso" class="org"><path d="${polyD(P.eso)}" fill="none" stroke="#d9605f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><path d="${polyD(P.eso)}" fill="none" stroke="#f09a9a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+                <g id="${p}-mouth" class="org"><ellipse cx="150" cy="68" rx="14" ry="8" fill="#b83a4b"/><rect x="141" y="61" width="18" height="4" rx="1.5" fill="#fff"/><ellipse cx="150" cy="72" rx="9" ry="3.5" fill="#f28b9b"/></g>
+                <g id="${p}-saliva" class="org"><ellipse cx="178" cy="80" rx="9" ry="6.5" fill="#f6c26b" stroke="#d1913a"/><ellipse cx="122" cy="80" rx="9" ry="6.5" fill="#f6c26b" stroke="#d1913a"/></g>
+                <g id="${p}-stomach" class="org"><path d="M172,222 C186,206 232,214 234,250 C236,280 214,296 192,292 C182,290 176,284 180,276 C196,272 200,256 190,246 C182,238 174,236 172,222 Z" fill="#f2a3a0" stroke="#c96a6a" stroke-width="1.5"/><path d="M188,226 C205,222 222,234 224,252" fill="none" stroke="#fbd0cd" stroke-width="3" stroke-linecap="round"/></g>
+                <g id="${p}-liver" class="org"><path d="M76,236 C78,208 120,198 168,204 C180,206 180,216 170,224 C146,244 116,266 90,282 C74,276 72,258 76,236 Z" fill="#9b3434" stroke="#6b1f1f"/><path d="M86,232 C96,214 126,210 150,212" fill="none" stroke="#c45a5a" stroke-width="3" stroke-linecap="round"/></g>
+                <g id="${p}-gall" class="org"><ellipse cx="118" cy="282" rx="8" ry="12" transform="rotate(-25 118 282)" fill="#5f9e3f" stroke="#3f6e27"/></g>
+                <g id="${p}-anus" class="org"><ellipse cx="156" cy="500" rx="7" ry="4" fill="#b83a4b"/></g>
+                ${mk(130, 76, 1, G, 'mouth')}${mk(188, 92, 1, B, 'saliva')}${mk(153, 150, 2, G, 'eso')}${mk(224, 246, 3, G, 'stomach')}
+                ${mk(160, 377, 4, G, 'si')}${mk(96, 366, 5, G, 'li')}${mk(172, 504, 6, G, 'anus')}
+                ${mk(108, 240, 2, B, 'liver')}${mk(206, 300, 3, B, 'pancreas')}${mk(100, 296, 4, B, 'gall')}
+            </svg>`;
+        }
+        function hlOrgan(prefix, ids) {
+            document.querySelectorAll(`[data-body="${prefix}"] .org`).forEach(g => g.classList.remove('org-hl'));
+            [].concat(ids).forEach(id => { const g = document.getElementById(`${prefix}-${id}`); if (g) g.classList.add('org-hl'); });
+        }
+        function pickBox(box) {
+            if (!box) return;
+            document.querySelectorAll('.organ-box').forEach(b => b.classList.toggle('active', b === box));
+            hlOrgan('main', box.dataset.org);
+        }
+        function focusOrgan(id) {
+            playSound('click');
+            const box = document.querySelector(`.organ-box[data-org="${id}"]`);
+            pickBox(box);
+            if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // =====================================================
+        //  문제 풀이
+        // =====================================================
+        const answers = { 1: 2, 2: 5 };
+        const explains = {
+            1: '음식물은 소화관(입 → 식도 → 위 → 작은창자 → 큰창자 → 항문)을 따라 이동해요. 간·이자는 소화샘이라 음식물이 직접 지나가지 않아요.',
+            2: 'ㄱ. 쓸개즙에는 소화 효소가 없어요(지방을 작은 방울로 만들어 소화를 도울 뿐). ㄴ. 소화 효소는 체온(약 37 ℃) 정도에서 활발해요. ㄷ. 아밀레이스는 녹말만 분해하듯, 각 효소는 특정 영양소만 분해해요.'
+        };
+        function selectQuiz(qNum, selectedOpt) {
+            const options = document.getElementById(`q${qNum}-options`).children;
+            const feedback = document.getElementById(`q${qNum}-feedback`);
+            for (let i = 0; i < options.length; i++) {
+                if (!options[i].dataset.base) options[i].dataset.base = options[i].className;
+                options[i].className = options[i].dataset.base;
+            }
+            const selectedDiv = options[selectedOpt - 1];
+            feedback.className = 'mt-4 p-3 rounded-lg font-bold text-center';
+            if (selectedOpt === answers[qNum]) {
+                playSound('correct');
+                selectedDiv.classList.add('correct');
+                feedback.innerHTML = `🎉 정답입니다! 훌륭해요.<span class="block font-normal text-sm mt-1">${explains[qNum]}</span>`;
+                feedback.classList.add('bg-blue-100', 'text-blue-800', 'border', 'border-blue-300');
+            } else {
+                playSound('wrong');
+                selectedDiv.classList.add('wrong');
+                feedback.innerHTML = "❌ 오답입니다. 다시 한번 생각해보세요!";
+                feedback.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-300');
+            }
+        }
+
+        // =====================================================
+        //  공용 모달 · 애니메이션 도구 (nutrients.html 과 동일)
+        // =====================================================
+        let modalCleanups = [];
+        function onModalClose(fn) { modalCleanups.push(fn); }
+        function openModal(title, tplId, headClass) {
+            playSound('click');
+            closeModal(true);
+            const modal = document.getElementById('modal');
+            const head = document.getElementById('modal-head');
+            head.className = `${headClass || 'bg-orange-500'} px-5 py-4 flex items-center justify-between gap-3`;
+            document.getElementById('modal-title').textContent = title;
+            const body = document.getElementById('modal-body');
+            body.innerHTML = '';
+            if (tplId) body.appendChild(document.getElementById(tplId).content.cloneNode(true));
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            requestAnimationFrame(() => modal.classList.add('show'));
+            modal.scrollTop = 0;
+            typeset(body);
+            return body;
+        }
+        function closeModal(silent) {
+            const modal = document.getElementById('modal');
+            modalCleanups.forEach(f => { try { f(); } catch (e) { console.log(e); } });
+            modalCleanups = [];
+            if (modal.classList.contains('hidden')) return;
+            if (!silent) playSound('click');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+            if (silent) { modal.classList.add('hidden'); return; }
+            setTimeout(() => { modal.classList.add('hidden'); document.getElementById('modal-body').innerHTML = ''; }, 280);
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+function animLoop(fn) {
+            let id, alive = true;
+            const f = (t) => { if (!alive) return; if (fn(t) === false) return; id = requestAnimationFrame(f); };
+            id = requestAnimationFrame(f);
+            const stop = () => { alive = false; cancelAnimationFrame(id); };
+            onModalClose(stop);
+            return stop;
+        }
+        function tweenJS(dur, fn) {
+            return new Promise(res => {
+                const t0 = performance.now();
+                animLoop(now => {
+                    const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+                    fn(e, k); if (k >= 1) { res(); return false; }
+                });
+            });
+        }
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        // =====================================================
+        //  3D 분자 뷰어 (nutrients.html 과 동일)
+        //  탄소=검정, 수소=흰색, 산소=빨강, 질소=파랑
+        // =====================================================
+        const ELEM = {
+            H: { c: 0xffffff, r: 0.24, name: '수소(H)', css: '#ffffff' },
+            C: { c: 0x1c1c1c, r: 0.34, name: '탄소(C)', css: '#1c1c1c' },
+            O: { c: 0xe0242b, r: 0.33, name: '산소(O)', css: '#e0242b' },
+            N: { c: 0x2546f0, r: 0.33, name: '질소(N)', css: '#2546f0' },
+            P: { c: 0xff8c1a, r: 0.44, name: '인(P)', css: '#ff8c1a' },
+            Ca: { c: 0x3fae49, r: 0.56, name: '칼슘 이온(Ca²⁺)', css: '#3fae49' },
+            Na: { c: 0x9b59d0, r: 0.5, name: '나트륨 이온(Na⁺)', css: '#9b59d0' },
+            Cl: { c: 0x31c840, r: 0.62, name: '염화 이온(Cl⁻)', css: '#31c840' },
+            Cu: { c: 0xc7782c, r: 0.5, name: '구리(Cu)', css: '#c7782c' },
+            I: { c: 0x7b1fa2, r: 0.62, name: '아이오딘(I)', css: '#7b1fa2' }
+        };
+        const BONDSTYLE = {
+            7: { color: 0x8b5cf6, r: 0.045, dash: true, name: '이온 결합' },
+            8: { color: 0x38bdf8, r: 0.045, dash: true, name: '수소 결합' },
+            9: { color: 0x14b8a6, r: 0.075, dash: false, name: '배위 결합(Cu–리간드)' }
+        };
+        let GEO = null;
+        function geo() {
+            if (!GEO) GEO = { sphere: new THREE.SphereGeometry(1, 28, 20), cyl: new THREE.CylinderGeometry(1, 1, 1, 14, 1) };
+            return GEO;
+        }
+        const _Y = new THREE.Vector3(0, 1, 0);
+        function cylBetween(a, b, r, mat) {
+            const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
+            const m = new THREE.Mesh(geo().cyl, mat);
+            m.scale.set(r, len, r);
+            m.position.copy(a).addScaledVector(d, 0.5);
+            m.quaternion.setFromUnitVectors(_Y, d.clone().normalize());
+            return m;
+        }
+        function dashedBetween(a, b, r, mat, group) {
+            const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
+            const seg = 0.16, gap = 0.13, n = Math.max(1, Math.floor(len / (seg + gap)));
+            const step = len / n, dir = d.clone().normalize(), out = [];
+            for (let i = 0; i < n; i++) {
+                const p0 = a.clone().addScaledVector(dir, i * step + gap / 2);
+                const p1 = p0.clone().addScaledVector(dir, Math.min(seg, step - gap));
+                const m = cylBetween(p0, p1, r, mat); group.add(m); out.push(m);
+            }
+            return out;
+        }
+        function disposeObj(o) {
+            o.traverse(c => {
+                if (c.material) { (Array.isArray(c.material) ? c.material : [c.material]).forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }); }
+                if (c.geometry && c.geometry !== geo().sphere && c.geometry !== geo().cyl) c.geometry.dispose();
+            });
+        }
+        function setGroupOpacity(g, a) {
+            g.traverse(c => {
+                if (c.material && !c.userData.halo) { c.material.transparent = a < 0.999; c.material.opacity = a; c.material.depthWrite = a > 0.5; }
+                if (c.userData.halo) c.userData.haloMul = a;
+            });
+            g.userData.opacity = a;
+        }
+        function radialTexture(hex) {
+            const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+            const ctx = cv.getContext('2d'); const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+            g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.35, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
+            const t = new THREE.CanvasTexture(cv); return t;
+        }
+
+        class MolViewer {
+            constructor(el) {
+                this.el = el; el.innerHTML = '';
+                const w = el.clientWidth || 600, h = el.clientHeight || 360;
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 2000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                this.renderer.setSize(w, h);
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+                el.appendChild(this.renderer.domElement);
+                this.layer = document.createElement('div');
+                this.layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden';
+                el.appendChild(this.layer);
+                this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+                this.scene.add(new THREE.HemisphereLight(0xffffff, 0x8a96a8, 0.45));
+                const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(4, 5, 8);
+                this.camera.add(key); this.scene.add(this.camera);
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true; this.controls.dampingFactor = 0.08;
+                this.controls.autoRotate = true; this.controls.autoRotateSpeed = 1.3;
+                this.root = new THREE.Group(); this.scene.add(this.root);
+                this.labels = []; this.tasks = []; this.persistent = [];
+                this.home = null;
+                this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(el);
+                this._loop = this.loop.bind(this);
+                this.raf = requestAnimationFrame(this._loop);
+                this._v = new THREE.Vector3();
+            }
+            resize() {
+                const w = this.el.clientWidth, h = this.el.clientHeight; if (!w || !h) return;
+                this.renderer.setSize(w, h); this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+            }
+            loop(now) {
+                this.raf = requestAnimationFrame(this._loop);
+                const t = now / 1000;
+                this.persistent.forEach(f => f(t));
+                this.tasks = this.tasks.filter(f => f(t) !== false);
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+                this.updateLabels();
+            }
+            tween(dur, fn, done) {
+                const start = performance.now();
+                return new Promise(res => {
+                    this.tasks.push(() => {
+                        const k = Math.min(1, (performance.now() - start) / (dur * 1000));
+                        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+                        fn(e, k);
+                        if (k >= 1) { if (done) done(); res(); return false; }
+                    });
+                });
+            }
+            clear() {
+                this.root.children.slice().forEach(c => { this.root.remove(c); disposeObj(c); });
+                this.labels.forEach(l => l.el.remove()); this.labels = [];
+                this.tasks = []; this.persistent = [];
+            }
+            build(data, opt = {}) {
+                const g = new THREE.Group();
+                const sc = opt.atomScale || 1;
+                const hl = new Set(opt.hl || data.hl || []);
+                const mats = {};
+                const matFor = el => mats[el] || (mats[el] = new THREE.MeshStandardMaterial({
+                    color: (ELEM[el] || ELEM.C).c, roughness: el === 'H' ? 0.5 : 0.3, metalness: 0.05,
+                    emissive: el === 'H' ? 0x2a2a2a : 0x000000
+                }));
+                const bondMat = new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.45 });
+                const hlBondMat = new THREE.MeshStandardMaterial({ color: 0xf5b301, roughness: 0.35, emissive: 0x3a2a00 });
+                const P = data.atoms.map(a => new THREE.Vector3(a[1], a[2], a[3]));
+                const meshes = [], hMeshes = [];
+                data.atoms.forEach((a, i) => {
+                    const el = a[0], e = ELEM[el] || ELEM.C;
+                    const m = new THREE.Mesh(geo().sphere, matFor(el));
+                    m.scale.setScalar(e.r * sc); m.position.copy(P[i]); m.userData.el = el;
+                    g.add(m); meshes.push(m); if (el === 'H') hMeshes.push(m);
+                });
+                const adj = data.atoms.map(() => []);
+                data.bonds.forEach(([i, j, o]) => { if (o <= 3) { adj[i].push(j); adj[j].push(i); } });
+                data.bonds.forEach(([i, j, o]) => {
+                    const a = P[i], b = P[j]; const isH = data.atoms[i][0] === 'H' || data.atoms[j][0] === 'H';
+                    let parts = [];
+                    if (o === 1 || o === 2 || o === 3) {
+                        const mat = (hl.has(i) && hl.has(j)) ? hlBondMat : bondMat;
+                        if (o === 1) { const c = cylBetween(a, b, 0.1 * sc, mat); g.add(c); parts.push(c); }
+                        else {
+                            const d = new THREE.Vector3().subVectors(b, a).normalize();
+                            let k = adj[i].find(x => x !== j); let ref = k !== undefined ? P[k].clone().sub(a) : null;
+                            if (!ref) { k = adj[j].find(x => x !== i); ref = k !== undefined ? P[k].clone().sub(b) : new THREE.Vector3(0, 0, 1); }
+                            let off = ref.clone().sub(d.clone().multiplyScalar(ref.dot(d)));
+                            if (off.lengthSq() < 1e-6) off = new THREE.Vector3(1, 0, 0).cross(d);
+                            off.normalize().multiplyScalar(0.11 * sc);
+                            const offs = o === 2 ? [off, off.clone().negate()] : [off.clone().multiplyScalar(1.5), new THREE.Vector3(), off.clone().multiplyScalar(-1.5)];
+                            offs.forEach(v => { const c = cylBetween(a.clone().add(v), b.clone().add(v), 0.065 * sc, mat); g.add(c); parts.push(c); });
+                        }
+                    } else if (BONDSTYLE[o]) {
+                        const st = BONDSTYLE[o];
+                        const mat = new THREE.MeshStandardMaterial({ color: st.color, roughness: 0.4, emissive: st.color, emissiveIntensity: 0.15 });
+                        if (st.dash) parts = dashedBetween(a, b, st.r * sc, mat, g);
+                        else { const c = cylBetween(a, b, st.r * sc, mat); g.add(c); parts.push(c); }
+                    }
+                    if (isH) hMeshes.push(...parts);
+                });
+                const halos = [];
+                if (hl.size) {
+                    const haloMat = new THREE.MeshBasicMaterial({ color: opt.haloColor || 0xffd84d, transparent: true, opacity: 0.3, depthWrite: false });
+                    hl.forEach(i => {
+                        const e = ELEM[data.atoms[i][0]] || ELEM.C;
+                        const m = new THREE.Mesh(geo().sphere, haloMat); m.userData.halo = true; m.userData.haloMul = 1;
+                        m.scale.setScalar(e.r * sc * 2.1); m.position.copy(P[i]); g.add(m); halos.push(m);
+                    });
+                    this.persistent.push(t => { haloMat.opacity = (0.2 + 0.14 * Math.sin(t * 3.2)) * (halos[0].userData.haloMul ?? 1); });
+                }
+                g.userData = { meshes, hMeshes, halos, P, opacity: 1 };
+                if (opt.labels !== false && data.labels) {
+                    Object.entries(data.labels).forEach(([idx, text]) => this.label(text, meshes[+idx], g, opt.labelClass || ''));
+                }
+                return g;
+            }
+            show(data, opt = {}) {
+                this.clear();
+                const g = this.build(data, opt); this.root.add(g); this.fit(g, opt.zoom || 1);
+                return g;
+            }
+            fit(obj, k = 1) {
+                obj.updateWorldMatrix(true, true);
+                const box = new THREE.Box3().setFromObject(obj);
+                const sph = box.getBoundingSphere(new THREE.Sphere());
+                const r = Math.max(sph.radius, 2.2);
+                const fov = this.camera.fov * Math.PI / 180;
+                const aspect = Math.min(1, this.camera.aspect || 1);
+                const d = r / Math.sin(fov / 2) / Math.sqrt(aspect) * 0.95 * k;
+                this.home = { pos: sph.center.clone().add(new THREE.Vector3(0, 0, d)), target: sph.center.clone() };
+                this.camera.near = Math.max(0.05, d / 100); this.camera.far = d * 20; this.camera.updateProjectionMatrix();
+                this.reset();
+            }
+            reset() {
+                if (!this.home) return;
+                this.camera.position.copy(this.home.pos); this.controls.target.copy(this.home.target); this.controls.update();
+            }
+            label(text, obj, group, cls) {
+                const el = document.createElement('div'); el.className = 'mol-label ' + (cls || ''); el.innerHTML = text;
+                this.layer.appendChild(el);
+                const L = { el, obj, group, hidden: false };
+                this.labels.push(L); return L;
+            }
+            updateLabels() {
+                const w = this.el.clientWidth, h = this.el.clientHeight;
+                this.labels.forEach(L => {
+                    let shown = true; for (let o = L.obj; o; o = o.parent) { if (o.visible === false) { shown = false; break; } }
+                    const vis = !L.hidden && L.obj && shown && (!L.group || ((L.group.userData.opacity ?? 1) > 0.5 && L.group.visible && L.group.scale.x > 0.5));
+                    if (!vis) { L.el.style.display = 'none'; return; }
+                    L.obj.getWorldPosition(this._v); this._v.project(this.camera);
+                    if (this._v.z > 1) { L.el.style.display = 'none'; return; }
+                    L.el.style.display = 'block';
+                    L.el.style.left = ((this._v.x + 1) / 2 * w) + 'px';
+                    L.el.style.top = ((1 - this._v.y) / 2 * h) + 'px';
+                });
+            }
+            dispose() {
+                cancelAnimationFrame(this.raf); this.ro.disconnect(); this.controls.dispose();
+                this.clear(); this.renderer.dispose();
+                try { this.renderer.forceContextLoss(); } catch (e) {}
+                this.el.innerHTML = '';
+            }
+        }
+
+        function legendHTML(datas) {
+            const els = new Set(), bt = new Set();
+            [].concat(datas).forEach(d => { d.atoms.forEach(a => els.add(a[0])); d.bonds.forEach(b => bt.add(b[2])); });
+            const order = ['C', 'H', 'O', 'N', 'P', 'Ca', 'Na', 'Cl', 'Cu', 'I'];
+            let s = order.filter(e => els.has(e)).map(e => `<span><span class="legend-dot" style="background:${ELEM[e].css}"></span>${ELEM[e].name}</span>`).join('');
+            [7, 8, 9].forEach(o => { if (bt.has(o)) { const c = '#' + BONDSTYLE[o].color.toString(16).padStart(6, '0'); s += `<span><span style="display:inline-block;width:22px;border-top:3px ${BONDSTYLE[o].dash ? 'dashed' : 'solid'} ${c};vertical-align:4px;margin-right:4px"></span>${BONDSTYLE[o].name}</span>`; } });
+            return s;
+        }
+
+        function wireCommonButtons(body, v) {
+            const spin = body.querySelector('[data-act="spin"]');
+            if (spin) {
+                spin.classList.toggle('on', v.controls.autoRotate);
+                spin.onclick = () => { v.controls.autoRotate = !v.controls.autoRotate; spin.classList.toggle('on', v.controls.autoRotate); playSound('click'); };
+            }
+            const rs = body.querySelector('[data-act="reset"]');
+            if (rs) rs.onclick = () => { v.reset(); playSound('click'); };
+        }
+        
+
+        // =====================================================
+        //  모달: <소화가 필요한 까닭> 움직이는 그림
+        // =====================================================
+        function openNeedFig() {
+            const body = openModal('🖼️ 소화가 필요한 까닭', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-3 min-w-0">
+                    <div class="bg-sky-50/60 rounded-2xl border-2 border-sky-200 p-2 overflow-x-auto"><div data-svg class="min-w-[460px]"></div></div>
+                    <div class="flex flex-wrap items-center gap-2 mt-3">
+                        <button data-act="dig" class="font-cute bg-violet-500 hover:bg-violet-600 text-white py-2 px-5 rounded-full shadow">✂️ 소화시키기 (잘게 분해)</button>
+                        <button data-act="reset" class="font-cute bg-white border-2 border-sky-400 text-sky-700 py-2 px-5 rounded-full">↺ 처음으로</button>
+                        <p data-info class="text-[15px] text-sky-900 flex-1 min-w-[200px]"></p>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed">
+                    <div class="step-card flex gap-3"><span class="step-num">1</span><div><p class="font-cute text-lg text-orange-700">세포막은 체</p><p>영양소는 결국 <strong>세포 안</strong>으로 들어가야 쓰일 수 있어요. 세포를 둘러싼 <strong>세포막</strong>은 아주 작은 물질만 통과시켜요.</p></div></div>
+                    <div class="step-card flex gap-3"><span class="step-num">2</span><div><p class="font-cute text-lg text-orange-700">큰 분자는 통과 ✕</p><p>녹말, 단백질, 지방처럼 <strong>크기가 큰 영양소</strong>는 세포막에 막혀 튕겨 나와요.</p></div></div>
+                    <div class="step-card flex gap-3"><span class="step-num">3</span><div><p class="font-cute text-lg text-orange-700">작게 분해하면 통과 ○</p><p>그래서 영양소를 세포막을 통과할 수 있을 만큼 <strong>작은 크기로 분해</strong>해야 해요. 이 과정이 바로 <strong>소화</strong>!</p></div></div>
+                </div>
+            </div>`;
+            const host = body.querySelector('[data-svg]'), info = body.querySelector('[data-info]');
+            const A = [300, 20], Bp = [360, 46], C = [350, 300], D = [290, 274];
+            host.innerHTML = `<svg viewBox="0 0 600 320" class="w-full h-auto" role="img" aria-label="세포막과 분자 움직임 모형">
+                ${membraneGrid(A, Bp, C, D, 18, 5, '#f472b6')}
+                <text x="330" y="16" text-anchor="middle" font-size="13" fill="#be185d" font-family="Jua">세포막</text>
+                <text x="150" y="314" text-anchor="middle" font-size="13" fill="#475569" font-family="Jua">세포 밖 (소화관 속)</text>
+                <text x="470" y="314" text-anchor="middle" font-size="13" fill="#475569" font-family="Jua">세포 안</text>
+                <g data-parts></g>
+                <text data-count x="590" y="30" text-anchor="end" font-size="14" fill="#15803d" font-family="Jua"></text></svg>`;
+            const layer = host.querySelector('[data-parts]'), count = host.querySelector('[data-count]');
+            const xm = y => 300 - (y - 20) * 10 / 254;
+            let parts = [], passed = 0;
+            function addPart(big, x, y) {
+                const el = document.createElementNS(NS, 'g');
+                el.innerHTML = big ? clusterSVG(0, 0, 1.2) : `<circle r="6.5" fill="#ef4444" stroke="#7f1d1d"/>`;
+                layer.appendChild(el);
+                const sp = big ? 1.3 : 1.7, a = (Math.random() - 0.5) * 1.6;
+                parts.push({ big, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, el });
+            }
+            function reset() {
+                layer.innerHTML = ''; parts = []; passed = 0;
+                [[70, 70], [190, 110], [90, 190], [200, 240]].forEach(([x, y]) => addPart(true, x, y));
+                [[140, 60], [60, 250]].forEach(([x, y]) => addPart(false, x, y));
+                info.innerHTML = '큰 분자(덩어리)는 세포막에 부딪혀 <strong>튕겨 나와요.</strong> ‘소화시키기’를 눌러 보세요!';
+            }
+            body.querySelector('[data-act="dig"]').onclick = () => {
+                const bigs = parts.filter(p => p.big); if (!bigs.length) return;
+                playSound('magic');
+                bigs.forEach(p => { p.el.remove(); CLUSTER.forEach(([dx, dy]) => addPart(false, p.x + dx * 1.2, p.y + dy * 1.2)); });
+                parts = parts.filter(p => !p.big);
+                info.innerHTML = '잘게 분해된 <strong>작은 분자</strong>는 세포막을 통과해 <strong>세포 안으로 흡수</strong>돼요!';
+            };
+            body.querySelector('[data-act="reset"]').onclick = () => { playSound('click'); reset(); };
+            reset();
+            animLoop(() => {
+                parts.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.y < 32 || p.y > 290) p.vy *= -1;
+                    if (p.x < 22) p.vx = Math.abs(p.vx);
+                    if (p.big && p.x + 22 > xm(p.y)) { p.x = xm(p.y) - 22; p.vx = -Math.abs(p.vx); }
+                    if (!p.big && p.x > 590) { p.x = 15; passed++; }
+                    p.el.setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)})`);
+                });
+                count.textContent = `세포 안으로 들어간 분자: ${passed}`;
+            });
+        }
+
+        // =====================================================
+        //  모달: <녹말의 소화 과정> 움직이는 그림
+        // =====================================================
+        function openStarchFig() {
+            const body = openModal('🖼️ 녹말의 소화 과정', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="bg-orange-50/60 rounded-2xl border-2 border-orange-200 p-2 overflow-x-auto"><div data-svg class="min-w-[520px]"></div></div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+                <button data-step="1" class="lab-btn bg-orange-100 text-orange-700 border-2 border-orange-300">① 이로 씹기 (기계적 소화) 🦷</button>
+                <button data-step="2" class="lab-btn bg-gray-100 text-gray-400 border-2 border-gray-300" disabled>② 침과 섞기 (화학적 소화) 💧</button>
+                <button data-step="0" class="lab-btn bg-white text-gray-600 border-2 border-gray-300">처음으로 ↺</button>
+            </div>
+            <p data-cap class="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-3 text-[15px] text-orange-900"></p>
+            <div class="grid md:grid-cols-2 gap-3 mt-3 text-[15px]">
+                <div class="step-card"><p class="font-cute text-lg text-orange-700">🦷 기계적 소화</p><p>이로 씹어 음식물을 <strong>잘게 부숴요.</strong> 크기는 작아지지만 <strong>녹말 분자 자체는 그대로</strong>예요.</p></div>
+                <div class="step-card"><p class="font-cute text-lg text-orange-700">💧 화학적 소화</p><p>침 속 소화 효소 <strong>아밀레이스</strong>가 녹말 사슬을 끊어 <strong>엿당</strong>(포도당 2개)으로 분해해요. 성질이 다른 작은 물질이 돼요.</p></div>
+            </div>`;
+            const host = body.querySelector('[data-svg]'), cap = body.querySelector('[data-cap]');
+            const N = 8, R = 15, CX = 470, CY = 150;
+            const hp = chainPts(CX, CY, N, R);
+            const pieces = [[110, 120, 30], [170, 100, 26], [210, 140, 28], [130, 175, 27], [185, 190, 29], [240, 196, 22], [90, 215, 22], [160, 145, 18]];
+            host.innerHTML = `<svg viewBox="0 0 640 300" class="w-full h-auto" role="img" aria-label="녹말의 소화 과정 애니메이션">
+                <g data-whole style="transition:opacity .6s"><path d="${toastPath(60, 70, 200, 190)}" fill="#f9e4b7" stroke="#c58b47" stroke-width="9" stroke-linejoin="round"/></g>
+                <g data-pieces style="opacity:0;transition:opacity .6s">${pieces.map(([x, y, r], k) => `<g style="transition:transform 1s ease;transform:translate(${(160 - x) * 0.9}px,${(160 - y) * 0.9}px)" data-pc><polygon points="${piece(x, y, r, k)}" fill="#f9e4b7" stroke="#c58b47" stroke-width="5" stroke-linejoin="round"/></g>`).join('')}</g>
+                <g data-mush style="opacity:0;transition:opacity .8s"><ellipse cx="165" cy="200" rx="120" ry="42" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="3"/><path d="M75,196 Q90,150 130,160 Q150,136 182,154 Q214,138 238,166 Q262,176 254,200 Q220,222 165,220 Q100,224 75,196 Z" fill="#f6ead0" stroke="#d6b98a" stroke-width="2"/>
+                    <text x="165" y="128" text-anchor="middle" font-size="15" fill="#0369a1" font-family="Jua">💧 침과 섞여 죽처럼!</text></g>
+                <circle cx="160" cy="160" r="12" fill="none" stroke="#ef4444" stroke-width="3"/>
+                <line x1="170" y1="152" x2="${CX - 128}" y2="${CY - 50}" stroke="#fca5a5" stroke-width="2"/><line x1="170" y1="168" x2="${CX - 128}" y2="${CY + 50}" stroke="#fca5a5" stroke-width="2"/>
+                <circle cx="${CX}" cy="${CY}" r="138" fill="#e0f2fe" stroke="#93c5fd" stroke-width="3"/>
+                <text data-mtitle x="${CX}" y="${CY - 100}" text-anchor="middle" font-size="16" fill="#6d28d9" font-family="Jua">확대: 녹말 분자</text>
+                <g data-links>${hp.slice(0, -1).map((q, i) => `<line data-l="${i}" x1="${q[0]}" y1="${q[1]}" x2="${hp[i + 1][0]}" y2="${hp[i + 1][1]}" stroke="#6d28d9" stroke-width="4" style="transition:opacity .3s"/>`).join('')}</g>
+                <g data-hexes>${hp.map((q, i) => `<g data-h="${i}" style="transition:transform 1s ease"><polygon points="${hexPts(q[0], q[1], R)}" fill="#a78bfa" stroke="#6d28d9" stroke-width="2"/></g>`).join('')}</g>
+                <g data-pac style="opacity:0"><path d="M0,0 L20,-12 A23,23 0 1,0 20,12 Z" fill="#60a5fa" stroke="#1d4ed8" stroke-width="2"/><circle cx="-4" cy="-11" r="3" fill="#fff"/><circle cx="-3" cy="-11" r="1.5" fill="#111"/><text x="0" y="-30" text-anchor="middle" font-size="12" fill="#1d4ed8" font-family="Jua">아밀레이스</text></g>
+                <g data-mlabels style="opacity:0;transition:opacity .6s"></g>
+            </svg>`;
+            const $ = s => host.querySelector(s);
+            const btns = [...body.querySelectorAll('[data-step]')];
+            const setBtn = (n, on) => { const b = btns.find(x => x.dataset.step == n); b.disabled = !on; b.className = 'lab-btn border-2 ' + (on ? 'bg-orange-100 text-orange-700 border-orange-300' : 'bg-gray-100 text-gray-400 border-gray-300'); };
+            let stage = 0, busy = false, gen = 0;
+            const CAP = ['식빵 속에는 포도당(보라색 육각형)이 길게 이어진 <strong>녹말</strong>이 들어 있어요.',
+                '이로 씹었더니 빵이 <strong>잘게 부서졌어요(기계적 소화).</strong> 그런데 확대한 녹말 분자는? <strong>여전히 그대로!</strong>',
+                '침 속 <strong>아밀레이스</strong>가 녹말 사슬을 2개씩 끊어 <strong>엿당</strong>이 되었어요(화학적 소화). 이제 성질이 다른 작은 물질이에요!'];
+            function reset() {
+                gen++; stage = 0; busy = false;
+                $('[data-whole]').style.opacity = 1; $('[data-pieces]').style.opacity = 0; $('[data-mush]').style.opacity = 0;
+                host.querySelectorAll('[data-pc]').forEach((g, k) => { const [x, y] = pieces[k]; g.style.transform = `translate(${(160 - x) * 0.9}px,${(160 - y) * 0.9}px)`; });
+                host.querySelectorAll('[data-l]').forEach(l => l.style.opacity = 1);
+                host.querySelectorAll('[data-h]').forEach(h => h.style.transform = 'translate(0px,0px)');
+                $('[data-pac]').style.opacity = 0; $('[data-mlabels]').style.opacity = 0; $('[data-mlabels]').innerHTML = '';
+                $('[data-mtitle]').textContent = '확대: 녹말 분자';
+                cap.innerHTML = CAP[0]; setBtn(1, true); setBtn(2, false);
+            }
+            async function step(n) {
+                if (n === 0) { playSound('click'); reset(); return; }
+                if (busy || n !== stage + 1) return;
+                busy = true; playSound('click'); setBtn(n, false); const my = gen;
+                if (n === 1) {
+                    $('[data-whole]').style.opacity = 0; $('[data-pieces]').style.opacity = 1;
+                    for (let c = 0; c < 3; c++) { playSound('chomp'); await sleep(260); if (my !== gen) return; }
+                    host.querySelectorAll('[data-pc]').forEach(g => g.style.transform = 'translate(0px,0px)');
+                    await sleep(900);
+                } else {
+                    $('[data-pieces]').style.opacity = 0; $('[data-mush]').style.opacity = 1;
+                    const pac = $('[data-pac]'); pac.style.opacity = 1;
+                    for (const gp of [1, 3, 5]) {
+                        const x = (hp[gp][0] + hp[gp + 1][0]) / 2, y = (hp[gp][1] + hp[gp + 1][1]) / 2;
+                        const x0 = pac._x ?? CX - 150, y0 = pac._y ?? CY - 40;
+                        await tweenJS(600, e => { const px = x0 + (x - 30 - x0) * e, py = y0 + (y - y0) * e; pac.setAttribute('transform', `translate(${px},${py})`); pac._x = px; pac._y = py; });
+                        if (my !== gen) return;
+                        playSound('chomp'); host.querySelector(`[data-l="${gp}"]`).style.opacity = 0; await sleep(250);
+                    }
+                    [0, 1, 2, 3].forEach(k => { const dx = (k - 1.5) * 16, dy = k % 2 ? 26 : -26;[2 * k, 2 * k + 1].forEach(i => host.querySelector(`[data-h="${i}"]`).style.transform = `translate(${dx}px,${dy}px)`); });
+                    await tweenJS(500, e => { pac.style.opacity = 1 - e; });
+                    const ml = $('[data-mlabels]');
+                    ml.innerHTML = [0, 1, 2, 3].map(k => { const x = (hp[2 * k][0] + hp[2 * k + 1][0]) / 2 + (k - 1.5) * 16, y = CY + (k % 2 ? 26 : -26) + (k % 2 ? 36 : -34); return tag(x, y, '엿당', '#c2410c'); }).join('');
+                    ml.style.opacity = 1; $('[data-mtitle]').textContent = '확대: 엿당 분자들'; playSound('magic');
+                }
+                stage = n; cap.innerHTML = CAP[n]; if (n < 2) setBtn(n + 1, true); busy = false;
+            }
+            btns.forEach(b => b.onclick = () => step(+b.dataset.step));
+            reset();
+        }
+
+        // =====================================================
+        //  모달: 기계적 소화 운동 (저작·분절·꿈틀)
+        // =====================================================
+        function openMotion() {
+            const body = openModal('💡 How? 기계적 소화 – 소화 기관의 운동', null, 'bg-violet-500');
+            body.innerHTML = `
+            <div class="flex flex-wrap gap-2 mb-3">
+                <button class="view-chip" data-m="chew">🦷 저작 운동 (이)</button>
+                <button class="view-chip" data-m="seg">〰️ 분절 운동 (작은창자)</button>
+                <button class="view-chip" data-m="peri">🐛 꿈틀 운동 (식도·위·작은창자·큰창자)</button>
+            </div>
+            <div class="bg-rose-50/60 rounded-2xl border-2 border-rose-200 p-2 overflow-x-auto"><div data-svg class="min-w-[480px]"></div></div>
+            <p data-cap class="mt-3 bg-violet-50 border border-violet-200 rounded-lg p-3 text-[15px] text-violet-900"></p>
+            <div class="analogy text-[15px] mt-3"><p class="font-cute text-orange-700">🔎 기억해 두세요</p><p>기계적 소화는 음식물을 <strong>부수고·섞고·이동시키는</strong> 과정이에요. 영양소의 <strong>화학적 성질은 변하지 않아요.</strong></p></div>`;
+            const host = body.querySelector('[data-svg]'), cap = body.querySelector('[data-cap]');
+            const CAPS = {
+                chew: '<strong>저작 운동</strong>: 이로 음식물을 씹어 잘게 부숴요. 덩어리가 작아질수록 소화액과 닿는 면이 넓어져 소화가 잘 돼요.',
+                seg: '<strong>분절 운동</strong>: 작은창자의 여러 곳이 번갈아 조였다 풀렸다 하면서 음식물과 소화액을 <strong>골고루 섞어요.</strong>',
+                peri: '<strong>꿈틀 운동</strong>: 관의 근육이 차례로 조이면서 파도처럼 음식물을 <strong>다음 기관으로 밀어 보내요.</strong>'
+            };
+            let mode = 'chew', t0 = performance.now(), dots = [];
+            const W = 600, Y = 110;
+            function sel(m) {
+                mode = m; t0 = performance.now(); playSound('click');
+                body.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+                cap.innerHTML = CAPS[m];
+                dots = Array.from({ length: 34 }, () => ({ x: 40 + Math.random() * 520, y: Y + (Math.random() - 0.5) * 30, c: ['#f59e0b', '#a3e635', '#fb923c', '#facc15'][Math.floor(Math.random() * 4)] }));
+            }
+            body.querySelectorAll('[data-m]').forEach(b => b.onclick = () => sel(b.dataset.m));
+            function tube(wf) {
+                let top = '', bot = '';
+                for (let x = 0; x <= W; x += 6) { const w = wf(x); top += (x ? ' L' : 'M') + x + ',' + (Y - w).toFixed(1); bot += (x ? ' L' : 'M') + x + ',' + (Y + w).toFixed(1); }
+                let fill = top; for (let x = W; x >= 0; x -= 6) fill += ` L${x},${(Y + wf(x)).toFixed(1)}`;
+                return `<path d="${fill} Z" fill="#fde2e0"/><path d="${top}" fill="none" stroke="#d9605f" stroke-width="7" stroke-linecap="round"/><path d="${bot}" fill="none" stroke="#d9605f" stroke-width="7" stroke-linecap="round"/>`;
+            }
+            sel('chew');
+            animLoop(now => {
+                const t = (now - t0) / 1000; let s = '';
+                if (mode === 'chew') {
+                    const cyc = Math.floor(t / 0.9) % 6, ph = (t % 0.9) / 0.9, open = 28 + 22 * Math.cos(ph * Math.PI * 2);
+                    const n = Math.pow(2, cyc), r = 34 / Math.sqrt(n);
+                    s += `<rect x="150" y="${Y - 40 - open}" width="300" height="34" rx="14" fill="#f9a8b8"/><rect x="150" y="${Y + 6 + open}" width="300" height="34" rx="14" fill="#f9a8b8"/>`;
+                    for (let i = 0; i < 9; i++) { s += `<rect x="${162 + i * 31}" y="${Y - 10 - open}" width="24" height="20" rx="5" fill="#fff" stroke="#cbd5e1"/><rect x="${162 + i * 31}" y="${Y - 6 + open}" width="24" height="20" rx="5" fill="#fff" stroke="#cbd5e1"/>`; }
+                    for (let i = 0; i < n; i++) { const a = i * 2.4, rr = n > 1 ? 10 + 34 * Math.sqrt(i / n) : 0; s += `<circle cx="${300 + rr * Math.cos(a) * 2.2}" cy="${Y + rr * Math.sin(a) * 0.35}" r="${r}" fill="#f9e4b7" stroke="#c58b47" stroke-width="2"/>`; }
+                    s += `<text x="300" y="214" text-anchor="middle" font-size="15" fill="#9a3412" font-family="Jua">조각 수: ${n}개</text>`;
+                } else if (mode === 'seg') {
+                    const ph = 0.5 - 0.5 * Math.cos(t * 2.4);
+                    const wf = x => 34 - 20 * Math.pow(Math.max(0, Math.cos(2 * Math.PI * x / 120 + Math.PI * ph)), 6);
+                    s += tube(wf);
+                    dots.forEach(d => { d.x += (Math.random() - 0.5) * 3; d.y += (Math.random() - 0.5) * 3; d.x = Math.max(8, Math.min(592, d.x)); const w = wf(d.x) - 7; d.y = Math.max(Y - w, Math.min(Y + w, d.y)); s += `<circle cx="${d.x.toFixed(1)}" cy="${d.y.toFixed(1)}" r="4" fill="${d.c}"/>`; });
+                    s += `<text x="300" y="200" text-anchor="middle" font-size="15" fill="#9a3412" font-family="Jua">조였다 풀었다 → 섞기!</text>`;
+                } else {
+                    const c = ((t * 110) % 760) - 80;
+                    const wf = x => 34 - 24 * Math.exp(-((x - c) ** 2) / 500);
+                    s += tube(wf);
+                    const bx = Math.min(640, c + 52);
+                    s += `<ellipse cx="${bx}" cy="${Y}" rx="24" ry="20" fill="#d9a066" stroke="#92400e" stroke-width="2"/>`;
+                    s += `<text x="300" y="200" text-anchor="middle" font-size="15" fill="#9a3412" font-family="Jua">조이는 부분이 이동 → 음식물이 앞으로!</text>`;
+                }
+                host.innerHTML = `<svg viewBox="0 0 600 220" class="w-full h-auto" role="img" aria-label="소화 기관의 운동 애니메이션">${s}</svg>`;
+            });
+        }
+
+        // =====================================================
+        //  모달: 키위즙 가상 실험
+        // =====================================================
+        function openKiwiLab() {
+            const body = openModal('🧪 가상 실험: 키위즙에 고기를 재우면?', null, 'bg-sky-500');
+            body.innerHTML = `
+            <div class="bg-sky-50/60 rounded-2xl border-2 border-sky-200 p-2 overflow-x-auto"><div data-svg class="min-w-[520px]"></div></div>
+            <div class="mt-3"><input type="range" min="0" max="60" value="0" class="nut-range" data-range aria-label="시간">
+                <div class="flex justify-between text-sm text-gray-600 mt-1"><span>0분</span><span>재운 시간</span><span>60분</span></div></div>
+            <div class="flex flex-wrap items-center gap-3 mt-3">
+                <button data-act="go" class="font-cute bg-sky-500 hover:bg-sky-600 text-white py-2 px-5 rounded-full shadow">⏱️ 시간 흐르게 하기</button>
+                <p data-info class="text-[15px] text-sky-900 flex-1 min-w-[220px]"></p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-3 mt-4 text-[15px]">
+                <div class="step-card"><p class="font-cute text-lg text-orange-700">🥝 키위 속 효소</p><p>키위에는 <strong>단백질 분해효소(액티니딘)</strong>가 들어 있어 고기 단백질을 잘게 끊어 고기를 <strong>연하게</strong> 해요.</p></div>
+                <div class="step-card"><p class="font-cute text-lg text-orange-700">🔥 끓인 키위즙은?</p><p>효소는 단백질로 되어 있어 <strong>높은 온도</strong>에서 모양이 변하면 일을 하지 못해요. 그래서 끓인 키위즙은 효과가 거의 없어요.</p></div>
+            </div>`;
+            const host = body.querySelector('[data-svg]'), range = body.querySelector('[data-range]'), info = body.querySelector('[data-info]');
+            const dishes = [{ x: 100, name: '물', liq: '#dbeafe', k: 0 }, { x: 300, name: '키위즙', liq: '#bef264', k: 1 }, { x: 500, name: '끓인 키위즙', liq: '#e2e8b0', k: 0 }];
+            function draw() {
+                const t = +range.value; let s = '';
+                dishes.forEach((d, i) => {
+                    const p = Math.min(1, t / 40) * d.k, id = 'kc' + i, w = 120, h = 58;
+                    s += `<ellipse cx="${d.x}" cy="128" rx="88" ry="30" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/><ellipse cx="${d.x}" cy="124" rx="76" ry="22" fill="${d.liq}" opacity=".85"/>`;
+                    s += `<defs><clipPath id="${id}"><rect x="${d.x - w / 2}" y="${84 + 8 * p}" width="${w}" height="${h - 8 * p}" rx="${16 + 10 * p}"/></clipPath></defs>`;
+                    s += `<g clip-path="url(#${id})"><rect x="${d.x - w / 2}" y="80" width="${w}" height="${h + 6}" fill="${lerpHex('#d9534f', '#f2a39a', p)}"/>`;
+                    for (let j = 0; j < 6; j++) { const y = 92 + j * 8; s += `<path d="M${d.x - w / 2},${y} Q${d.x - 20},${y - 4} ${d.x},${y} T${d.x + w / 2},${y}" fill="none" stroke="#9f1d1d" stroke-width="2" ${p > 0 ? `stroke-dasharray="${(22 - 18 * p).toFixed(1)} ${(1 + 10 * p).toFixed(1)}"` : ''} opacity="${1 - 0.5 * p}"/>`; }
+                    s += `</g>`;
+                    if (d.k && p > 0) for (let j = 0; j < Math.round(p * 6); j++) s += `<text x="${d.x - 50 + j * 20}" y="${78 - (j % 2) * 8}" font-size="13">✂️</text>`;
+                    s += `<text x="${d.x}" y="182" text-anchor="middle" font-size="16" fill="#0f172a" font-family="Jua">${d.name}</text>`;
+                    s += `<rect x="${d.x - 60}" y="194" width="120" height="12" rx="6" fill="#e2e8f0"/><rect x="${d.x - 60}" y="194" width="${(120 * (0.1 + 0.9 * p)).toFixed(1)}" height="12" rx="6" fill="#fb923c"/>`;
+                    s += `<text x="${d.x}" y="222" text-anchor="middle" font-size="12" fill="#475569">부드러움</text>`;
+                });
+                host.innerHTML = `<svg viewBox="0 0 600 232" class="w-full h-auto" role="img" aria-label="물, 키위즙, 끓인 키위즙에 재운 고기 비교">${s}</svg>`;
+                info.innerHTML = t === 0 ? '세 접시에 똑같은 고기를 넣었어요. 시간을 흐르게 해 보세요!' : t < 40 ? `${t}분: 키위즙 속 고기의 단백질이 끊어지고 있어요… ✂️` : `${t}분: <strong>키위즙</strong>에 재운 고기만 연해졌어요! 물·끓인 키위즙은 그대로예요.`;
+            }
+            range.oninput = draw;
+            body.querySelector('[data-act="go"]').onclick = () => { playSound('click'); const s0 = +range.value >= 60 ? 0 : +range.value; tweenJS(2500 * (60 - s0) / 60, (e, k) => { range.value = Math.round(s0 + (60 - s0) * k); draw(); }); };
+            draw();
+        }
+
+        // =====================================================
+        //  모달: 소화 효소 3D (분해 과정)
+        // =====================================================
+        const ENZ = {
+            amylase: {
+                chip: '아밀레이스', short: '아밀레이스', color: 0x60a5fa, sub: 'starch',
+                cap0: '보라색 육각형(포도당)이 길게 이어진 <strong>녹말</strong>이에요. ‘분해 시작’을 눌러 아밀레이스가 녹말을 자르는 모습을 보세요!',
+                capEnd: '녹말이 포도당 2개짜리 <strong>엿당</strong>으로 분해되었어요. 효소는 반응 뒤에도 <strong>변하지 않고 다시 쓰여요.</strong>',
+                legend: [['#a78bfa', '포도당 단위'], ['#e0242b', '연결 부위의 산소(O)'], ['#60a5fa', '효소(아밀레이스)']],
+                atom: { mol: 'maltose', cuts: [[4, 5]], names: { 4: '포도당 단위', 6: '포도당 단위' }, cap0: '녹말 사슬 속 <strong>포도당과 포도당이 이어진 부분(글리코사이드 결합)</strong>을 확대했어요. 노란 막대가 끊어질 결합이에요.', capEnd: '물 분자(H₂O)가 들어가 결합이 끊어졌어요. 한쪽에는 H, 다른 쪽에는 OH가 붙어요. 녹말에서 이런 연결이 하나 건너 하나씩 끊어지면 <strong>엿당</strong>이 돼요.' },
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">어디에서 나올까?</p><p><strong>침샘(침)</strong>과 <strong>이자(이자액)</strong>에서 나와 입과 작은창자에서 일해요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">무엇을 분해할까?</p><p><strong>녹말 → 엿당</strong> (포도당 2개가 붙은 당)</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">어떻게 자를까?</p><p>포도당 사이의 연결 부위에 <strong>물 분자</strong>를 넣어 결합을 끊어요. 소화 효소는 모두 이렇게 물을 이용해 영양소를 잘라요.</p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700">✂️ 맞춤 가위</p><p>아밀레이스는 <strong>녹말만</strong> 자르는 맞춤 가위예요(단백질·지방은 못 잘라요). 또 <strong>체온 정도(약 37 ℃)</strong>에서 가장 잘 일해요.</p></div>`
+            },
+            pepsin: {
+                chip: '펩신', short: '펩신', color: 0xf87171, sub: 'protein', n: 12, cuts: [3, 7], frag: '단백질 조각', main: '단백질',
+                cap0: '색색의 구슬(아미노산)이 길게 이어진 <strong>단백질</strong>이에요. 위액 속 펩신이 어떻게 자르는지 보세요!',
+                capEnd: '긴 단백질이 <strong>크기가 작은 단백질 조각</strong>으로 나뉘었어요. 이 조각들은 작은창자에서 더 잘게 분해돼요.',
+                legend: [['#f87171', '아미노산 (색이 달라요)'], ['#2546f0', '연결 부위의 질소(N)'], ['#f87171', '효소(펩신)']],
+                atom: { mol: 'dipeptide', cuts: [[2, 4]], names: { 0: '아미노산', 5: '아미노산' }, cap0: '단백질 속 아미노산과 아미노산을 잇는 <strong>펩타이드 결합(–CO–NH–)</strong>을 확대했어요.', capEnd: '물 분자가 들어가 펩타이드 결합이 끊어지고, 각각 <strong>아미노산</strong>이 되었어요.' },
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">어디에서 나올까?</p><p><strong>위샘</strong>에서 분비되는 <strong>위액</strong> 속에 들어 있어요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">무엇을 분해할까?</p><p><strong>단백질 → 크기가 작은 단백질 조각</strong></p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">특별한 점</p><p>위액에는 <strong>염산</strong>도 있어 위 속이 강한 산성이에요. 펩신은 이런 산성 환경에서 잘 일하고, 염산은 세균도 없애 줘요.</p></div>`
+            },
+            trypsin: {
+                chip: '트립신', short: '트립신', color: 0xfbbf24, sub: 'protein', n: 8, cuts: [1, 3, 5], frag: '더 작은 조각', main: '단백질 조각',
+                cap0: '위에서 잘린 <strong>단백질 조각</strong>이에요. 이자액 속 트립신이 더 잘게 잘라요!',
+                capEnd: '단백질 조각이 <strong>더 작은 조각</strong>으로 나뉘었어요. 마지막에 작은창자의 소화 효소가 <strong>아미노산</strong>까지 분해해요.',
+                legend: [['#34d399', '아미노산'], ['#2546f0', '연결 부위의 질소(N)'], ['#fbbf24', '효소(트립신)']],
+                atom: { mol: 'dipeptide', cuts: [[2, 4]], names: { 0: '아미노산', 5: '아미노산' }, cap0: '단백질 조각 속 <strong>펩타이드 결합(–CO–NH–)</strong>을 확대했어요.', capEnd: '물 분자가 들어가 결합이 끊어졌어요. 이렇게 끊고 또 끊어 결국 <strong>아미노산</strong>이 돼요.' },
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">어디에서 나올까?</p><p><strong>이자</strong>에서 만든 <strong>이자액</strong> 속에 들어 있어 <strong>작은창자</strong>로 분비돼요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">무엇을 분해할까?</p><p><strong>단백질(조각) → 더 작은 조각</strong></p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">이자액은 만능!</p><p>이자액에는 <strong>아밀레이스(녹말), 트립신(단백질), 라이페이스(지방)</strong>가 모두 들어 있어요.</p></div>`
+            },
+            lipase: {
+                chip: '라이페이스', short: '라이페이스', color: 0x34d399, sub: 'fat',
+                cap0: '노란 글리세롤에 긴 꼬리(지방산) 3개가 붙은 <strong>지방(중성 지방)</strong>이에요.',
+                capEnd: '지방이 <strong>지방산 2개 + 모노글리세리드</strong>로 분해되었어요.',
+                legend: [['#fde047', '글리세롤'], ['#1c1c1c', '지방산 꼬리(탄소)'], ['#e0242b', '산소(O)'], ['#34d399', '효소(라이페이스)']],
+                atom: { mol: 'triglyceride', cuts: [[15, 17], [21, 22]], names: { 0: '지방산', 38: '지방산', 18: '모노글리세리드' }, zoom: 0.9, cap0: '중성 지방 분자예요. 노란 막대 2곳이 끊어질 <strong>에스터 결합</strong>이에요.', capEnd: '물 분자가 들어가 두 결합이 끊어져 <strong>지방산 2개</strong>와 <strong>모노글리세리드</strong>가 되었어요.' },
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">어디에서 나올까?</p><p><strong>이자액</strong> 속에 들어 있어 <strong>작은창자</strong>에서 일해요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">무엇을 분해할까?</p><p><strong>지방 → 지방산 + 모노글리세리드</strong></p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700">🤝 쓸개즙이 도와줘요</p><p>지방은 물에 잘 섞이지 않아 큰 덩어리로 뭉쳐요. 쓸개즙이 먼저 지방을 작은 방울로 만들어 주면 라이페이스가 훨씬 잘 일해요. (‘쓸개즙’ 버튼 확인!)</p></div>`
+            },
+            bile: {
+                chip: '쓸개즙 (효소 ✕)', short: '쓸개즙', sub: 'bile',
+                cap0: '물속에서 뭉쳐 있는 <strong>큰 지방 덩어리</strong>예요. 파란 머리를 가진 쓸개즙 성분이 다가와요.',
+                capEnd: '큰 지방 덩어리가 <strong>작은 지방 방울</strong>로 나뉘었어요(유화). 분자는 끊어지지 않았지만, 표면적이 넓어져 라이페이스가 잘 작용해요.',
+                legend: [['#fcd34d', '지방'], ['#2563eb', '쓸개즙 성분 (머리)'], ['#64748b', '쓸개즙 성분 (꼬리)']],
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">어디에서 나올까?</p><p><strong>간</strong>에서 만들어 <strong>쓸개</strong>에 저장했다가 <strong>작은창자</strong>로 분비돼요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-rose-600 mb-1">⚠️ 소화 효소가 없어요!</p><p>쓸개즙에는 <strong>소화 효소가 들어 있지 않아요.</strong> 영양소를 화학적으로 분해하지 못해요. (연습문제 2번 ㄱ이 틀린 까닭!)</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">그럼 하는 일은?</p><p>지방 덩어리를 <strong>작은 방울</strong>로 나누어(유화) 라이페이스가 지방에 닿는 면을 넓혀 줘요. 지방의 소화를 <strong>돕는</strong> 역할!</p></div>`
+            },
+            actinidin: {
+                chip: '🥝 키위 효소', short: '액티니딘', color: 0x84cc16, sub: 'protein', n: 12, cuts: [2, 5, 8], frag: '조각', main: '고기 단백질',
+                cap0: '고기 속 <strong>단백질</strong>이에요. 키위즙 속 단백질 분해효소(액티니딘)가 다가가요!',
+                capEnd: '긴 고기 단백질이 잘게 끊어졌어요. 그래서 키위즙에 재운 고기는 <strong>연해져요!</strong>',
+                legend: [['#f87171', '아미노산'], ['#2546f0', '연결 부위의 질소(N)'], ['#84cc16', '효소(액티니딘)']],
+                atom: { mol: 'dipeptide', cuts: [[2, 4]], names: { 0: '아미노산', 5: '아미노산' }, cap0: '고기 단백질 속 <strong>펩타이드 결합(–CO–NH–)</strong>을 확대했어요.', capEnd: '물 분자가 들어가 펩타이드 결합이 끊어졌어요. 우리 몸의 단백질 소화 효소도 똑같이 일해요!' },
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">키위즙의 비밀</p><p>키위에는 <strong>단백질 분해효소(액티니딘)</strong>가 들어 있어요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">고기가 연해지는 까닭</p><p>고기의 질긴 단백질 사슬을 효소가 잘게 끊어 주기 때문이에요.</p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700">🔗 우리 몸과 연결</p><p>위액의 <strong>펩신</strong>, 이자액의 <strong>트립신</strong>도 같은 방식으로 단백질을 분해해요. 위의 버튼으로 비교해 보세요!</p></div>`
+            }
+        };
+        const AA_COLORS = [0xf87171, 0x60a5fa, 0x34d399, 0xfbbf24, 0xa78bfa, 0xf472b6, 0x22d3ee, 0xfb923c];
+
+        function makePac(color) {
+            const R = 1.0, g = new THREE.Group();
+            const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide });
+            const inner = new THREE.MeshStandardMaterial({ color: 0xfb7185, roughness: 0.7, side: THREE.DoubleSide });
+            const hemi = new THREE.SphereGeometry(R, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2);
+            const disc = new THREE.CircleGeometry(R * 0.99, 40);
+            const top = new THREE.Group(), bot = new THREE.Group();
+            const t = new THREE.Mesh(hemi, mat), c1 = new THREE.Mesh(disc, inner); c1.rotation.x = Math.PI / 2; top.add(t, c1);
+            const b = new THREE.Mesh(hemi, mat); b.rotation.x = Math.PI; const c2 = new THREE.Mesh(disc, inner); c2.rotation.x = -Math.PI / 2; bot.add(b, c2);
+            const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 }), black = new THREE.MeshStandardMaterial({ color: 0x111111 });
+            [-1, 1].forEach(s => {
+                const d = new THREE.Vector3(0.2, 0.8, 0.45 * s).normalize().multiplyScalar(R * 0.92);
+                const e = new THREE.Mesh(geo().sphere, white); e.scale.setScalar(0.2); e.position.copy(d);
+                const p = new THREE.Mesh(geo().sphere, black); p.scale.setScalar(0.1); p.position.copy(d.clone().multiplyScalar(1.12)).add(new THREE.Vector3(0.06, 0, 0));
+                top.add(e, p);
+            });
+            g.add(top, bot);
+            g.userData.anchor = t;
+            g.userData.setOpen = a => { top.rotation.z = a; bot.rotation.z = -a; };
+            g.userData.setOpen(0.55);
+            return g;
+        }
+        function waterMesh() {
+            const g = new THREE.Group();
+            const o = new THREE.Mesh(geo().sphere, new THREE.MeshStandardMaterial({ color: 0xe0242b, roughness: 0.3 })); o.scale.setScalar(0.24); g.add(o);
+            const hm = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.4, emissive: 0x2a2a2a });
+            [-1, 1].forEach(s => { const h = new THREE.Mesh(geo().sphere, hm); h.scale.setScalar(0.15); h.position.set(0.2 * s, 0.16, 0); g.add(h); });
+            g.userData.anchor = o;
+            return g;
+        }
+        function flashAt(v, parent, pos) {
+            const m = new THREE.SpriteMaterial({ map: radialTexture(), color: 0xfff3a0, transparent: true, depthWrite: false });
+            const s = new THREE.Sprite(m); s.position.copy(pos); parent.add(s);
+            v.tween(0.5, e => { s.scale.setScalar(0.5 + 2.5 * e); m.opacity = 1 - e; }, () => { parent.remove(s); m.map.dispose(); m.dispose(); });
+        }
+        function stdMat(c, extra = {}) { return new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.4 }, extra)); }
+
+        function openEnzyme(key) {
+            const body = openModal('🔬 How? 소화 효소의 분해 과정', 'tpl-enzyme', 'bg-violet-500');
+            const v = new MolViewer(body.querySelector('[data-stage]'));
+            onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            wireCommonButtons(body, v);
+            const cap = body.querySelector('[data-caption]'), side = body.querySelector('[data-side]'), leg = body.querySelector('[data-legend]');
+            const chips = body.querySelector('[data-enz-chips]');
+            const atomChip = body.querySelector('[data-mode="atom"]');
+            chips.innerHTML = Object.keys(ENZ).map(k => `<button class="view-chip" data-k="${k}">${ENZ[k].chip}</button>`).join('');
+            let cur = key, mode = 'coarse', gen = 0, busy = false, sc = null;
+            const setCap = h => { cap.innerHTML = h; typeset(cap); };
+
+            // ---------- 쉬운 모형 ----------
+            function linkMesh(a, b, dot) {
+                const g = new THREE.Group();
+                g.add(cylBetween(a, b, 0.09, stdMat(0x9aa3ad)));
+                const d = new THREE.Mesh(geo().sphere, stdMat(dot)); d.scale.setScalar(0.18); d.position.copy(a).lerp(b, 0.5); g.add(d);
+                return g;
+            }
+            function hexUnit() {
+                const g = new THREE.Group();
+                const geom = new THREE.CylinderGeometry(0.6, 0.6, 0.3, 6);
+                const m = new THREE.Mesh(geom, stdMat(0xa78bfa, { emissive: 0x2e1065, emissiveIntensity: 0.15 })); m.rotation.x = Math.PI / 2; g.add(m);
+                const e = new THREE.LineSegments(new THREE.EdgesGeometry(geom), new THREE.LineBasicMaterial({ color: 0x5b21b6 })); e.rotation.x = Math.PI / 2; g.add(e);
+                return g;
+            }
+            function beadUnit(i, seed) { const m = new THREE.Mesh(geo().sphere, stdMat(AA_COLORS[(i * 3 + seed) % AA_COLORS.length], { roughness: 0.3 })); m.scale.setScalar(0.46); return m; }
+            function chainScene(root, o) {
+                const x0 = -(o.n - 1) * o.gap / 2;
+                const pos = i => new THREE.Vector3(x0 + i * o.gap, 0.35 * Math.sin(i * 1.3), 0.3 * Math.cos(i * 0.8));
+                const frags = []; let curG = new THREE.Group(); root.add(curG); frags.push({ g: curG, first: null });
+                const cutSet = new Set(o.cuts), cutLinks = {}, units = [];
+                for (let i = 0; i < o.n; i++) {
+                    const u = o.unit(i); u.position.copy(pos(i)); curG.add(u); units.push(u);
+                    if (!frags[frags.length - 1].first) frags[frags.length - 1].first = u;
+                    if (i < o.n - 1) {
+                        const L = linkMesh(pos(i), pos(i + 1), o.dot);
+                        if (cutSet.has(i)) { root.add(L); cutLinks[i] = L; curG = new THREE.Group(); root.add(curG); frags.push({ g: curG, first: null }); }
+                        else curG.add(L);
+                    }
+                }
+                const cuts = o.cuts.map((gp, idx) => ({
+                    pos: pos(gp).lerp(pos(gp + 1), 0.5), link: cutLinks[gp], detach: frags[idx].g, labelObj: frags[idx].first, labelText: o.frag,
+                    dir: new THREE.Vector3(-0.2, -1.8 - 0.3 * (idx % 2), idx % 2 ? 0.7 : -0.7)
+                }));
+                const lf = frags[frags.length - 1];
+                return { cuts, last: { g: lf.g, obj: lf.first, dir: new THREE.Vector3(0.2, -1.8, 0.5), text: o.frag }, mainLabel: v.label(o.main, units[Math.floor(o.n / 2)], null, 'r') };
+            }
+            function fatScene(root) {
+                const gly = new THREE.Group(); root.add(gly);
+                const ys = [1.6, 0, -1.6], grey = stdMat(0x9aa3ad), yel = stdMat(0xfde047, { roughness: 0.35 }), red = stdMat(0xe0242b, { roughness: 0.3 }), dark = stdMat(0x1c1c1c, { roughness: 0.35 });
+                const gp = ys.map(y => new THREE.Vector3(-1.4, y, 0));
+                gp.forEach(p => { const m = new THREE.Mesh(geo().sphere, yel); m.scale.setScalar(0.5); m.position.copy(p); gly.add(m); });
+                gly.add(cylBetween(gp[0], gp[1], 0.1, grey), cylBetween(gp[1], gp[2], 0.1, grey));
+                const cuts = [];
+                ys.forEach((y, k) => {
+                    const op = new THREE.Vector3(-0.45, y, 0);
+                    const om = new THREE.Mesh(geo().sphere, red); om.scale.setScalar(0.27); om.position.copy(op); gly.add(om); gly.add(cylBetween(gp[k], op, 0.09, grey));
+                    const tail = new THREE.Group(), tp = [];
+                    for (let j = 0; j < 10; j++) tp.push(new THREE.Vector3(0.45 + j * 0.52, y + (j % 2 ? 0.2 : -0.2), 0));
+                    tp.forEach((p, j) => { const m = new THREE.Mesh(geo().sphere, dark); m.scale.setScalar(j === 0 ? 0.3 : 0.24); m.position.copy(p); tail.add(m); if (j) tail.add(cylBetween(tp[j - 1], p, 0.07, grey)); });
+                    const co = new THREE.Mesh(geo().sphere, red); co.scale.setScalar(0.22); co.position.copy(tp[0]).add(new THREE.Vector3(0, 0, 0.55)); tail.add(co); tail.add(cylBetween(tp[0], co.position, 0.06, grey));
+                    const link = cylBetween(op, tp[0], 0.09, stdMat(0xf5b301, { emissive: 0x3a2a00 }));
+                    if (k === 1) { tail.add(link); gly.add(tail); }
+                    else { root.add(tail); root.add(link); cuts.push({ pos: op.clone().lerp(tp[0], 0.5), link, detach: tail, labelObj: tail.children[0], labelText: '지방산', dir: new THREE.Vector3(1.4, k === 0 ? 1.7 : -1.7, 0.3), approach: new THREE.Vector3(0, k === 0 ? 1 : -1, 0) }); }
+                });
+                return { cuts, last: { g: gly, obj: gly.children[1], dir: new THREE.Vector3(-0.8, 0, 0), text: '모노글리세리드' }, mainLabel: v.label('중성 지방', gly.children[0], null, 'r') };
+            }
+            function bileScene(root) {
+                const big = new THREE.Mesh(geo().sphere, stdMat(0xfcd34d, { roughness: 0.2, transparent: true, opacity: 0.9 })); big.scale.setScalar(2.3); root.add(big);
+                const lab = v.label('큰 지방 덩어리', big, null, 'r');
+                const headM = stdMat(0x2563eb, { roughness: 0.3 }), tailM = stdMat(0x64748b);
+                function salt() { const g = new THREE.Group(); const h = new THREE.Mesh(geo().sphere, headM); h.scale.setScalar(0.2); h.position.y = 0.38; const t = new THREE.Mesh(geo().cyl, tailM); t.scale.set(0.06, 0.7, 0.06); g.add(h, t); return g; }
+                const Y = new THREE.Vector3(0, 1, 0);
+                const dirs = Array.from({ length: 26 }, (_, i) => { const y = 1 - 2 * (i + 0.5) / 26, r = Math.sqrt(1 - y * y), a = i * 2.4; return new THREE.Vector3(r * Math.cos(a), y, r * Math.sin(a)); });
+                const salts = dirs.map(d => { const s = salt(); s.quaternion.setFromUnitVectors(Y, d); s.position.copy(d).multiplyScalar(6); root.add(s); return s; });
+                const play = async (my) => {
+                    lab.hidden = true;
+                    setCap('쓸개즙 성분의 <strong>꼬리</strong>는 지방 쪽, <strong>머리</strong>는 물 쪽을 향해 지방 표면에 달라붙어요.');
+                    await v.tween(1.6, e => salts.forEach((s, i) => s.position.copy(dirs[i]).multiplyScalar(6 - 3.35 * e))); if (my !== gen) return;
+                    await sleep(400); if (my !== gen) return;
+                    playSound('magic');
+                    const smallDirs = Array.from({ length: 10 }, (_, i) => { const y = 1 - 2 * (i + 0.5) / 10, r = Math.sqrt(1 - y * y), a = i * 2.4; return new THREE.Vector3(r * Math.cos(a), y, r * Math.sin(a)); });
+                    const drops = smallDirs.map(d => {
+                        const g = new THREE.Group(); const m = new THREE.Mesh(geo().sphere, stdMat(0xfcd34d, { roughness: 0.2 })); m.scale.setScalar(0.62); g.add(m);
+                        for (let j = 0; j < 8; j++) { const y = 1 - 2 * (j + 0.5) / 8, r = Math.sqrt(1 - y * y), a = j * 2.4; const dd = new THREE.Vector3(r * Math.cos(a), y, r * Math.sin(a)); const s = salt(); s.scale.setScalar(0.6); s.quaternion.setFromUnitVectors(Y, dd); s.position.copy(dd).multiplyScalar(0.8); g.add(s); }
+                        g.scale.setScalar(0.01); root.add(g); return { g, d };
+                    });
+                    await v.tween(1.6, e => {
+                        big.scale.setScalar(Math.max(0.01, 2.3 * (1 - e)));
+                        salts.forEach(s => s.scale.setScalar(Math.max(0.01, 1 - e)));
+                        drops.forEach(({ g, d }) => { g.scale.setScalar(Math.max(0.01, e)); g.position.copy(d).multiplyScalar(3.6 * e); });
+                    }); if (my !== gen) return;
+                    v.label('작은 지방 방울', drops[0].g.children[0], null, 'e');
+                };
+                return { play };
+            }
+            function buildCoarse() {
+                const E = ENZ[cur], root = new THREE.Group(); v.root.add(root);
+                let s;
+                if (E.sub === 'starch') s = chainScene(root, { n: 8, gap: 1.55, unit: () => hexUnit(), dot: 0xe0242b, cuts: [1, 3, 5], frag: '엿당', main: '녹말' });
+                else if (E.sub === 'protein') s = chainScene(root, { n: E.n, gap: 1.15, unit: i => beadUnit(i, E.n), dot: 0x2546f0, cuts: E.cuts, frag: E.frag, main: E.main });
+                else if (E.sub === 'fat') s = fatScene(root);
+                else s = bileScene(root);
+                s.root = root;
+                if (E.sub !== 'bile') {
+                    const pac = makePac(E.color);
+                    const bb = new THREE.Box3().setFromObject(root);
+                    pac.position.set(bb.min.x - 1.4, bb.max.y + 1.6, 0);
+                    s.home = pac.position.clone(); root.add(pac); s.pac = pac;
+                    v.label(E.short, pac.userData.anchor, null, 'v');
+                }
+                v.fit(v.root, E.sub === 'bile' ? 1.05 : 0.95);
+                leg.innerHTML = E.legend.map(([c, n]) => `<span><span class="legend-dot" style="background:${c}"></span>${n}</span>`).join('') + (E.sub !== 'bile' ? `<span><span class="legend-dot" style="background:#e0242b"></span>+<span class="legend-dot" style="background:#fff"></span>물 분자</span>` : '');
+                setCap(E.cap0);
+                return s;
+            }
+            async function playCoarse(s, my) {
+                if (s.play) return s.play(my);
+                const pac = s.pac, X = new THREE.Vector3(1, 0, 0);
+                if (s.mainLabel) s.mainLabel.hidden = true;
+                for (const c of s.cuts) {
+                    const ap = c.approach || new THREE.Vector3(0, 1, 0);
+                    const target = c.pos.clone().addScaledVector(ap, 0.85);
+                    const q0 = pac.quaternion.clone(), q1 = new THREE.Quaternion().setFromUnitVectors(X, ap.clone().negate());
+                    const p0 = pac.position.clone();
+                    setCap('효소가 결합 부위를 찾아가요… 🔍');
+                    await v.tween(0.9, e => { pac.position.lerpVectors(p0, target, e); pac.quaternion.copy(q0).slerp(q1, e); }); if (my !== gen) return;
+                    const w = waterMesh(); s.root.add(w);
+                    const ws = c.pos.clone().add(new THREE.Vector3(0, 0, 1.8)).addScaledVector(ap, -1.3);
+                    w.position.copy(ws);
+                    const wl = v.label('H₂O', w.userData.anchor, null, 'b');
+                    setCap('<strong>물 분자</strong>가 결합 부위로 들어가요 💧');
+                    await v.tween(0.6, e => w.position.lerpVectors(ws, c.pos, e)); if (my !== gen) return;
+                    playSound('chomp');
+                    await v.tween(0.22, e => pac.userData.setOpen(0.55 - 0.5 * e)); if (my !== gen) return;
+                    c.link.visible = false; w.visible = false; wl.el.remove(); v.labels = v.labels.filter(x => x !== wl);
+                    flashAt(v, s.root, c.pos);
+                    setCap('싹둑! ✂️ 결합이 끊어졌어요.');
+                    await v.tween(0.22, e => pac.userData.setOpen(0.05 + 0.5 * e)); if (my !== gen) return;
+                    const d0 = c.detach.position.clone();
+                    await v.tween(0.7, e => c.detach.position.copy(d0).addScaledVector(c.dir, e)); if (my !== gen) return;
+                    v.label(c.labelText, c.labelObj, null, 'e');
+                }
+                if (s.last) {
+                    const d0 = s.last.g.position.clone();
+                    await v.tween(0.7, e => s.last.g.position.copy(d0).addScaledVector(s.last.dir, e)); if (my !== gen) return;
+                    v.label(s.last.text, s.last.obj, null, 'e');
+                }
+                const p0 = pac.position.clone(), q0 = pac.quaternion.clone();
+                await v.tween(1.0, e => { pac.position.lerpVectors(p0, s.home, e); pac.quaternion.copy(q0).slerp(new THREE.Quaternion(), e); });
+                v.label('그대로예요!', pac.userData.anchor, null, 'v').el.style.transform = 'translate(-50%, 60%)';
+            }
+
+            // ---------- 원자 모형 ----------
+            function buildAtom() {
+                const A = ENZ[cur].atom, data = MOL[A.mol], n = data.atoms.length;
+                const key = (a, b) => a < b ? a + '-' + b : b + '-' + a;
+                const cutSet = new Set(A.cuts.map(c => key(c[0], c[1])));
+                const adj = data.atoms.map(() => []);
+                data.bonds.forEach(([i, j]) => { if (!cutSet.has(key(i, j))) { adj[i].push(j); adj[j].push(i); } });
+                const comp = new Array(n).fill(-1); let nc = 0;
+                for (let s = 0; s < n; s++) { if (comp[s] >= 0) continue; const st = [s]; comp[s] = nc; while (st.length) { const x = st.pop(); adj[x].forEach(y => { if (comp[y] < 0) { comp[y] = nc; st.push(y); } }); } nc++; }
+                const cutAtoms = new Set(A.cuts.flat());
+                const P = data.atoms.map(a => new THREE.Vector3(a[1], a[2], a[3]));
+                const groups = [];
+                for (let c = 0; c < nc; c++) {
+                    const map = {}, atoms = [];
+                    data.atoms.forEach((a, i) => { if (comp[i] === c) { map[i] = atoms.length; atoms.push(a); } });
+                    const bonds = data.bonds.filter(([i, j]) => comp[i] === c && comp[j] === c && !cutSet.has(key(i, j))).map(([i, j, o]) => [map[i], map[j], o]);
+                    const hl = [...cutAtoms].filter(i => comp[i] === c).map(i => map[i]);
+                    const g = v.build({ atoms, bonds }, { hl, labels: false });
+                    g.userData.map = map; v.root.add(g); groups.push(g);
+                }
+                const hm = stdMat(0xf5b301, { emissive: 0x3a2a00 });
+                const cutMeshes = A.cuts.map(([a, b]) => { const m = cylBetween(P[a], P[b], 0.1, hm); v.root.add(m); return m; });
+                v.fit(v.root, A.zoom || 1);
+                const [a0] = A.cuts[0];
+                const cutLab = v.label('끊어질 결합', groups[comp[a0]].userData.meshes[groups[comp[a0]].userData.map[a0]], null, 'e');
+                leg.innerHTML = legendHTML([data]) + `<span><span style="display:inline-block;width:22px;border-top:4px solid #f5b301;vertical-align:4px;margin-right:4px"></span>끊어질 결합</span>`;
+                setCap(A.cap0);
+                const play = async (my) => {
+                    cutLab.hidden = true;
+                    const bondM = stdMat(0x9aa3ad, { roughness: 0.45 });
+                    const addAtom = (g, el, p) => { const e = ELEM[el]; const m = new THREE.Mesh(geo().sphere, stdMat(e.c, { roughness: 0.3, emissive: 0x806000 })); m.scale.setScalar(e.r); m.position.copy(p); g.add(m); return m; };
+                    for (let ci = 0; ci < A.cuts.length; ci++) {
+                        const [a, b] = A.cuts[ci];
+                        const C = data.atoms[a][0] === 'C' ? a : b, X = C === a ? b : a;
+                        const mid = P[a].clone().lerp(P[b], 0.5);
+                        const w = waterMesh(); v.root.add(w);
+                        const ws = mid.clone().add(new THREE.Vector3(0, 1.2, 2.6)); w.position.copy(ws);
+                        const wl = v.label('H₂O', w.userData.anchor, null, 'b');
+                        setCap('<strong>물 분자(H₂O)</strong>가 결합 부위로 다가가요 💧');
+                        await v.tween(0.9, e => w.position.lerpVectors(ws, mid, e)); if (my !== gen) return;
+                        playSound('chomp');
+                        w.visible = false; wl.el.remove(); v.labels = v.labels.filter(x => x !== wl);
+                        cutMeshes[ci].visible = false; flashAt(v, v.root, mid);
+                        const gx = groups[comp[X]], gc = groups[comp[C]];
+                        const u = P[C].clone().sub(P[X]).normalize();
+                        const hPos = P[X].clone().addScaledVector(u, 1.0);
+                        addAtom(gx, 'H', hPos); gx.add(cylBetween(P[X], hPos, 0.1, bondM));
+                        const oPos = P[C].clone().addScaledVector(u, -1.36);
+                        let pp = new THREE.Vector3().crossVectors(u, new THREE.Vector3(0, 0, 1)); if (pp.lengthSq() < 1e-3) pp.set(0, 1, 0); pp.normalize();
+                        const h2 = oPos.clone().addScaledVector(u, -0.25).addScaledVector(pp, 0.93);
+                        addAtom(gc, 'O', oPos); addAtom(gc, 'H', h2); gc.add(cylBetween(P[C], oPos, 0.1, bondM), cylBetween(oPos, h2, 0.1, bondM));
+                        const lh = v.label('+H', gx.children[gx.children.length - 2], null, 'b'), lo = v.label('+OH', gc.children[gc.children.length - 4], null, 'r');
+                        setCap('결합이 끊어지고, 물에서 나온 <strong>H</strong>와 <strong>OH</strong>가 양쪽에 하나씩 붙었어요!');
+                        await sleep(1300); if (my !== gen) return;
+                        [lh, lo].forEach(L => { L.el.remove(); v.labels = v.labels.filter(x => x !== L); });
+                    }
+                    const cen = new THREE.Vector3(); P.forEach(p => cen.add(p)); cen.multiplyScalar(1 / P.length);
+                    const dirs = groups.map((g, c) => { const gc = new THREE.Vector3(); let k = 0; P.forEach((p, i) => { if (comp[i] === c) { gc.add(p); k++; } }); gc.multiplyScalar(1 / k).sub(cen); if (gc.lengthSq() < 0.3) return new THREE.Vector3(-1.5, 0, 0); return gc.normalize().multiplyScalar(2.4); });
+                    await v.tween(1.0, e => groups.forEach((g, c) => g.position.copy(dirs[c]).multiplyScalar(e))); if (my !== gen) return;
+                    Object.entries(A.names).forEach(([idx, nm]) => { const g = groups[comp[+idx]]; v.label(nm, g.userData.meshes[g.userData.map[+idx]], null, 'e'); });
+                };
+                return { play };
+            }
+
+            function load() {
+                gen++; busy = false; v.clear();
+                const E = ENZ[cur];
+                chips.querySelectorAll('[data-k]').forEach(b => b.classList.toggle('on', b.dataset.k === cur));
+                atomChip.style.display = E.atom ? '' : 'none';
+                if (!E.atom) mode = 'coarse';
+                body.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+                side.innerHTML = E.side; typeset(side);
+                sc = mode === 'atom' ? buildAtom() : buildCoarse();
+                sc.done = false;
+            }
+            chips.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { playSound('click'); cur = b.dataset.k; load(); });
+            body.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { playSound('click'); mode = b.dataset.mode; load(); });
+            body.querySelector('[data-act="again"]').onclick = () => { playSound('click'); load(); };
+            body.querySelector('[data-act="play"]').onclick = async () => {
+                if (busy || sc.done) return;
+                busy = true; playSound('click'); const my = gen;
+                if (mode === 'atom') await sc.play(my); else await playCoarse(sc, my);
+                if (my !== gen) return;
+                sc.done = true; busy = false; playSound('magic');
+                setCap(mode === 'atom' ? ENZ[cur].atom.capEnd : ENZ[cur].capEnd);
+            };
+            load();
+        }
+
+        // =====================================================
+        //  모달: 음식물의 소화 여행
+        // =====================================================
+        const TRIP = [
+            { org: 'mouth', name: '① 입', text: '이로 음식물을 <strong>잘게 부수고</strong>(저작 운동), 혀로 음식물과 <strong>침</strong>을 섞어요. 침 속 <strong>아밀레이스</strong>가 녹말을 엿당으로 분해하기 시작해요.' },
+            { org: 'eso', name: '② 식도', text: '입과 위를 연결하는 관이에요. <strong>꿈틀운동</strong>으로 음식물을 위로 보내요. (식도에서는 소화액이 나오지 않아요)' },
+            { org: 'stomach', name: '③ 위', text: '<strong>주머니</strong> 모양의 관이에요. 음식물을 잠시 <strong>저장</strong>하고 <strong>위액</strong>을 분비해 음식물과 섞어요. 위액 속 펩신이 단백질을 분해해요.' },
+            { org: 'si', name: '④ 작은창자', text: '가장 <strong>긴</strong> 소화관(약 6~7 m)이에요. 쓸개즙과 이자액이 들어와 대부분의 영양소를 <strong>소화</strong>하고, 영양소와 물을 <strong>흡수</strong>해요.' },
+            { org: 'li', name: '⑤ 큰창자', text: '작은창자보다 <strong>굵은</strong> 관이에요. 소화되고 남은 물질에서 <strong>물</strong>을 흡수해요.' },
+            { org: 'anus', name: '⑥ 항문', text: '남은 물질을 <strong>몸 밖</strong>으로 내보내요. 💩 “안녕~ 다음에 또 만나!” 이렇게 소화 여행이 끝나요.' }
+        ];
+        function openTrip() {
+            const body = openModal('🍙 음식물의 소화 여행', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-2 min-w-0"><div class="bg-white rounded-2xl border-2 border-orange-100 p-2"><div data-svg class="max-w-[340px] mx-auto"></div></div></div>
+                <div class="lg:col-span-3 space-y-3 min-w-0">
+                    <div class="flex flex-wrap gap-2" data-chips>${TRIP.map((s, i) => `<button class="trip-chip text-sm" data-i="${i}">${s.name}</button>`).join('')}</div>
+                    <div class="flex flex-wrap gap-2">
+                        <button data-act="all" class="font-cute bg-orange-500 hover:bg-orange-600 text-white py-2 px-5 rounded-full shadow">▶ 처음부터 여행하기</button>
+                        <button data-act="next" class="font-cute bg-white border-2 border-orange-400 text-orange-700 py-2 px-5 rounded-full">다음 기관 ▶</button>
+                    </div>
+                    <div class="step-card min-h-[130px]"><p data-title class="font-cute text-2xl text-orange-700 mb-1">출발 준비!</p><p data-text class="text-[15px] leading-relaxed">‘처음부터 여행하기’를 누르면 주먹밥 🍙이 소화관을 따라 여행을 떠나요. 기관 이름 버튼을 누르면 그 기관만 볼 수 있어요.</p></div>
+                    <div class="analogy text-[15px]"><p class="font-cute text-orange-700">🧭 여행 경로 (소화관)</p><p>입 → 식도 → 위 → 작은창자 → 큰창자 → 항문<br><span class="text-sm text-gray-600">※ 간, 이자, 쓸개, 침샘은 음식물이 지나가지 않는 <strong>소화샘</strong>이에요!</span></p></div>
+                </div>
+            </div>`;
+            const host = body.querySelector('[data-svg]'); host.innerHTML = bodySVG('trip', true);
+            const svg = host.querySelector('svg');
+            const fx = document.createElementNS(NS, 'g'); svg.appendChild(fx);
+            const food = document.createElementNS(NS, 'g'); svg.appendChild(food);
+            food.innerHTML = `<circle data-b r="8" fill="#d9a066" stroke="#92400e" stroke-width="1.2" opacity="0"/><text data-e text-anchor="middle" dy="6" font-size="18">🍙</text>`;
+            const P = ORG_PTS; let gen = 0, cur = -1, fpos = [150, 64];
+            const ttl = body.querySelector('[data-title]'), txt = body.querySelector('[data-text]');
+            function setFood(kind) {
+                const c = food.querySelector('[data-b]'), t = food.querySelector('[data-e]');
+                const K = { rice: ['#fff', 0, '🍙'], bolus: ['#d9a066', 1, ''], chyme: ['#f4a261', 1, ''], rest: ['#a47148', 1, ''], poop: ['#000', 0, '💩'] }[kind];
+                c.setAttribute('fill', K[0]); c.setAttribute('opacity', K[1]); t.textContent = K[2];
+            }
+            const place = (x, y, s = 1) => { food.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${s})`); fpos = [x, y]; };
+            const tw = (dur, fn, my) => tweenJS(dur, (e, k) => { if (my === gen) fn(e, k); });
+            async function moveAlong(pts, dur, my, onStep) {
+                const segs = []; let L = 0;
+                for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(d); L += d; }
+                await tw(dur, (e, k) => {
+                    let d = k * L, i = 0; while (i < segs.length - 1 && d > segs[i]) { d -= segs[i]; i++; }
+                    const a = pts[i], b = pts[i + 1], t = segs[i] ? Math.min(1, d / segs[i]) : 1;
+                    place(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t);
+                    if (onStep) onStep(k);
+                }, my);
+            }
+            function emit(x, y, o = {}) {
+                const { dx = 0, dy = -20, dur = 900, color = '#60a5fa', r = 3, text = null, size = 12 } = o;
+                const el = document.createElementNS(NS, text ? 'text' : 'circle');
+                if (text) { el.textContent = text; el.setAttribute('font-size', size); el.setAttribute('text-anchor', 'middle'); el.setAttribute('font-family', 'Jua'); el.setAttribute('fill', o.fill || '#1e3a8a'); }
+                else { el.setAttribute('r', r); el.setAttribute('fill', color); }
+                fx.appendChild(el);
+                tweenJS(dur, (e, k) => { el.setAttribute(text ? 'x' : 'cx', x + dx * k); el.setAttribute(text ? 'y' : 'cy', y + dy * k); el.setAttribute('opacity', 1 - k * k); if (k >= 1) el.remove(); });
+            }
+            function show(i) {
+                cur = i; hlOrgan('trip', TRIP[i].org);
+                body.querySelectorAll('[data-i]').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+                ttl.textContent = TRIP[i].name; txt.innerHTML = TRIP[i].text;
+            }
+            async function stage(i, my) {
+                show(i); fx.innerHTML = '';
+                if (i === 0) {
+                    place(150, 64); setFood('rice');
+                    for (let c = 0; c < 3; c++) {
+                        emit(178, 80, { dx: -24, dy: -10 }); emit(122, 80, { dx: 24, dy: -10 }); playSound('chomp');
+                        await tw(420, e => place(150, 64, 1 - 0.18 * Math.sin(e * Math.PI)), my); if (my !== gen) return;
+                    }
+                    setFood('bolus'); emit(150, 40, { text: '냠냠 🦷', dy: -14, dur: 1100, fill: '#9a3412' });
+                    await sleep(700);
+                } else if (i === 1) {
+                    setFood('bolus'); emit(186, 150, { text: '꿈틀꿈틀', dy: -6, dur: 1800, fill: '#be123c', size: 11 });
+                    await moveAlong(P.eso, 1800, my);
+                } else if (i === 2) {
+                    setFood('bolus'); await moveAlong(P.sto.slice(0, 3), 900, my); if (my !== gen) return;
+                    emit(240, 228, { text: '위액 💧', dy: -6, dur: 1600, fill: '#15803d', size: 11 });
+                    await tw(1500, (e, k) => {
+                        const a = k * Math.PI * 6; place(206 + 8 * Math.cos(a), 256 + 6 * Math.sin(a));
+                        if (Math.random() < 0.25) { const w = [[184, 222], [222, 226], [232, 254], [222, 280]][Math.floor(Math.random() * 4)]; emit(w[0], w[1], { dx: (206 - w[0]) * 0.7, dy: (256 - w[1]) * 0.7, color: '#22c55e', r: 2.5, dur: 700 }); }
+                    }, my); if (my !== gen) return;
+                    setFood('chyme'); await moveAlong([[206, 256], ...P.sto.slice(3)], 700, my);
+                } else if (i === 3) {
+                    setFood('chyme');
+                    emit(130, 296, { text: '쓸개즙', dx: 18, dy: 4, dur: 1400, fill: '#4d7c0f', size: 10 });
+                    emit(226, 296, { text: '이자액', dx: -26, dy: 4, dur: 1400, fill: '#b45309', size: 10 });
+                    const cols = ['#f59e0b', '#22c55e', '#3b82f6', '#ec4899'];
+                    await moveAlong([...P.duo, ...P.si, ...P.ile], 4600, my, () => {
+                        if (Math.random() < 0.2) emit(fpos[0], fpos[1], { dx: (Math.random() - 0.5) * 50, dy: (Math.random() - 0.5) * 40, color: cols[Math.floor(Math.random() * 4)], r: 2.5 });
+                    }); if (my !== gen) return;
+                    emit(160, 450, { text: '영양소 흡수!', dy: -10, dur: 1300, fill: '#1d4ed8', size: 11 });
+                    setFood('rest');
+                } else if (i === 4) {
+                    setFood('rest');
+                    await moveAlong(P.li, 3400, my, () => { if (Math.random() < 0.06) emit(fpos[0], fpos[1], { text: '💧', dx: (Math.random() - 0.5) * 30, dy: -18, size: 10 }); }); if (my !== gen) return;
+                    emit(196, 380, { text: '물 흡수', dy: -8, dur: 1300, fill: '#0369a1', size: 11 });
+                } else {
+                    place(156, 490); setFood('poop'); playSound('pop');
+                    await tw(400, e => place(156, 490, 1 + 0.4 * Math.sin(e * Math.PI)), my); if (my !== gen) return;
+                    await moveAlong([[156, 490], [156, 526]], 900, my); if (my !== gen) return;
+                    playSound('magic');
+                    [[-26, -10], [26, -12], [-18, 14], [22, 12]].forEach(([dx, dy]) => emit(156, 526, { text: '✨', dx, dy, dur: 1200, size: 12 }));
+                    emit(222, 520, { text: '뿅! 안녕~ 👋', dy: -6, dur: 2200, fill: '#be123c', size: 12 });
+                    await tw(600, e => place(156, 526, 1 + 0.3 * Math.sin(e * Math.PI * 2)), my);
+                }
+            }
+            async function runFrom(i, all) {
+                const my = ++gen; playSound('click');
+                for (let k = i; k < (all ? TRIP.length : i + 1); k++) {
+                    await stage(k, my); if (my !== gen) return;
+                    if (all) { await sleep(700); if (my !== gen) return; }
+                }
+            }
+            body.querySelectorAll('[data-i]').forEach(b => b.onclick = () => runFrom(+b.dataset.i, false));
+            body.querySelector('[data-act="all"]').onclick = () => runFrom(0, true);
+            body.querySelector('[data-act="next"]').onclick = () => runFrom((cur + 1) % TRIP.length, false);
+            place(150, 64); setFood('rice');
+        }
+
+        // =====================================================
+        //  모달: 소화샘의 소화액 분비
+        // =====================================================
+        const JUICE = {
+            saliva: { name: '침', gland: '침샘', org: ['saliva', 'mouth'], color: '#60a5fa', to: '입안', enz: '아밀레이스', role: '녹말 → 엿당', ek: 'amylase', paths: [[[178, 80], [166, 73], [156, 70]], [[122, 80], [134, 73], [144, 70]]] },
+            gastric: { name: '위액', gland: '위샘 (위의 안쪽 벽)', org: ['stomach'], color: '#22c55e', to: '위', enz: '펩신, 염산', role: '펩신: 단백질 분해 / 염산: 세균을 없애고 펩신이 잘 작용하도록 도움', ek: 'pepsin', gastric: true },
+            bile: { name: '쓸개즙', gland: '간 → 쓸개에 저장', org: ['liver', 'gall', 'si'], color: '#84cc16', to: '작은창자', enz: '없음 ✕', role: '지방 덩어리를 작은 방울로 만들어(유화) 지방의 소화를 도움', ek: 'bile', paths: [[[120, 236], [122, 258], [118, 280], [130, 296], [148, 304], [160, 307]]] },
+            pancreatic: { name: '이자액', gland: '이자', org: ['pancreas', 'si'], color: '#f59e0b', to: '작은창자', enz: '아밀레이스, 트립신, 라이페이스', role: '녹말·단백질·지방을 모두 분해', ek: 'lipase', paths: [[[214, 291], [190, 296], [170, 303], [160, 307]]] }
+        };
+        function openSecrete() {
+            const body = openModal('💧 소화샘의 소화액 분비', null, 'bg-sky-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-2 min-w-0"><div class="bg-white rounded-2xl border-2 border-sky-100 p-2"><div data-svg class="max-w-[340px] mx-auto"></div></div></div>
+                <div class="lg:col-span-3 space-y-3 min-w-0">
+                    <div class="flex flex-wrap gap-2">${Object.entries(JUICE).map(([k, j]) => `<button class="juice-chip text-sm" data-j="${k}">${j.gland.split(' ')[0]} → ${j.name}</button>`).join('')}<button class="juice-chip text-sm" data-j="all">모두 보기</button></div>
+                    <div class="step-card" data-card></div>
+                    <div class="overflow-x-auto bg-white rounded-xl border-2 border-sky-200">
+                        <table class="w-full text-sm text-center border-collapse min-w-[460px]">
+                            <thead><tr class="bg-sky-100 text-sky-900 font-cute"><th class="p-2">소화액</th><th class="p-2">만드는 곳</th><th class="p-2">분비되는 곳</th><th class="p-2">소화 효소</th></tr></thead>
+                            <tbody>${Object.values(JUICE).map(j => `<tr class="border-t border-sky-100"><td class="p-2 font-bold" style="color:${j.color}">${j.name}</td><td class="p-2">${j.gland}</td><td class="p-2">${j.to}</td><td class="p-2 ${j.enz.startsWith('없음') ? 'text-rose-600 font-bold' : ''}">${j.enz}</td></tr>`).join('')}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
+            const host = body.querySelector('[data-svg]'); host.innerHTML = bodySVG('sec', true);
+            const svg = host.querySelector('svg');
+            const ducts = document.createElementNS(NS, 'g'), layer = document.createElementNS(NS, 'g'); svg.appendChild(ducts); svg.appendChild(layer);
+            const card = body.querySelector('[data-card]');
+            let active = [], drops = [], last = 0;
+            const wall = [[180, 222], [200, 214], [224, 226], [232, 252], [226, 278], [206, 290]];
+            function sel(k) {
+                playSound('click');
+                active = k === 'all' ? Object.keys(JUICE) : [k];
+                body.querySelectorAll('[data-j]').forEach(b => b.classList.toggle('on', b.dataset.j === k));
+                hlOrgan('sec', active.flatMap(a => JUICE[a].org));
+                ducts.innerHTML = active.flatMap(a => (JUICE[a].paths || []).map(p => `<path d="${polyD(p)}" fill="none" stroke="${JUICE[a].color}" stroke-width="2.5" stroke-dasharray="4 3" opacity=".8"/>`)).join('')
+                    + (active.includes('bile') ? `<text x="96" y="304" font-size="10" fill="#4d7c0f" font-family="Jua">저장</text>` : '');
+                if (k === 'all') { card.innerHTML = `<p class="font-cute text-xl text-sky-700 mb-1">모든 소화샘이 일하는 중!</p><p class="text-[15px]">침은 <strong>입</strong>으로, 위액은 <strong>위</strong>로, 쓸개즙과 이자액은 <strong>작은창자</strong>로 분비돼요. 그래서 작은창자에서 대부분의 소화가 일어나요.</p>`; return; }
+                const j = JUICE[k];
+                card.innerHTML = `<p class="font-cute text-xl mb-1" style="color:${j.color}">${j.name}</p>
+                    <p class="text-[15px]">📍 만드는 곳: <strong>${j.gland}</strong> → 분비: <strong>${j.to}</strong></p>
+                    <p class="text-[15px]">🧪 소화 효소: <strong class="${j.enz.startsWith('없음') ? 'text-rose-600' : ''}">${j.enz}</strong></p>
+                    <p class="text-[15px]">✨ 하는 일: ${j.role}</p>
+                    <button class="how-btn mt-2" data-how="${j.ek}">How? 3D로 보기</button>`;
+                card.querySelector('[data-how]').onclick = () => openEnzyme(j.ek);
+            }
+            body.querySelectorAll('[data-j]').forEach(b => b.onclick = () => sel(b.dataset.j));
+            const interp = (pts, k) => {
+                const segs = []; let L = 0; for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); segs.push(d); L += d; }
+                let d = k * L, i = 0; while (i < segs.length - 1 && d > segs[i]) { d -= segs[i]; i++; }
+                const a = pts[i], b = pts[i + 1], t = segs[i] ? Math.min(1, d / segs[i]) : 1; return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
+            };
+            animLoop(now => {
+                if (now - last > 230) {
+                    last = now;
+                    active.forEach(a => {
+                        const j = JUICE[a];
+                        const paths = j.gastric ? [[wall[Math.floor(Math.random() * wall.length)], [206, 256]]] : j.paths;
+                        paths.forEach(p => { const el = document.createElementNS(NS, 'circle'); el.setAttribute('r', 3.2); el.setAttribute('fill', j.color); el.setAttribute('stroke', '#fff'); el.setAttribute('stroke-width', '.8'); layer.appendChild(el); drops.push({ el, p, t0: now, dur: j.gastric ? 900 : 1500 }); });
+                    });
+                }
+                drops = drops.filter(d => {
+                    const k = (now - d.t0) / d.dur; if (k >= 1) { d.el.remove(); return false; }
+                    const [x, y] = interp(d.p, k); d.el.setAttribute('cx', x.toFixed(1)); d.el.setAttribute('cy', y.toFixed(1)); d.el.setAttribute('opacity', k > 0.85 ? (1 - k) / 0.15 : 1);
+                    return true;
+                });
+            });
+            sel('saliva');
+        }
+
+        // =====================================================
+        //  초기화
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fig-need').innerHTML = figNeedStatic();
+            document.getElementById('fig-starch').innerHTML = figStarchStatic();
+            document.getElementById('fig-body').innerHTML = bodySVG('main', false);
+        });
+    </script>
+</body>
+</html>
