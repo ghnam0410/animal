@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중학교 2학년 과학 - 6. 동물과 에너지</title>
+
+    <style>
+        /* 온라인 환경에서 폰트 불러오기 (오프라인 시 기본 폰트로 대체됨 — emhub.html과 동일한 방식) */
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap');
+
+        :root {
+            --font-title: 'Jua', 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            --font-text: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            --bg-pastel-apricot: #fff4ec;   /* 파스텔 살구 (nutrients.html과 동일 체계) */
+            --bg-peach: #ffe6d5;
+            --panel-bg: rgba(255, 255, 255, 0.86);
+            --text-main: #7a2e12;           /* 짙은 살구 갈색 */
+            --text-muted: #9a5a3c;
+            --accent-apricot: #f6894a;      /* 살구 주황 */
+            --accent-deep: #c2410c;
+            --accent-yellow: #f59e0b;
+            --accent-rose: #f472b6;
+            --accent-violet: #a78bfa;
+            --accent-sky: #60a5fa;
+            --accent-green: #4c9a2a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-pastel-apricot);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(246, 137, 74, 0.08), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(244, 114, 182, 0.06), transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: var(--font-text);
+            font-size: 18px;
+            line-height: 1.7;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #bg-canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: -2; pointer-events: none;
+        }
+
+        /* ---------- 페이지 제목 영역 ---------- */
+        .page-header {
+            position: relative;
+            padding: 6rem 2rem 5rem 2rem;
+            text-align: center;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #ffe6d5 0%, #fff0e4 70%, var(--bg-pastel-apricot) 100%);
+            border-bottom: 2px solid rgba(246, 137, 74, 0.22);
+            z-index: 1;
+        }
+        .header-art {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+        }
+        .creator-info {
+            position: absolute; top: 20px; left: 20px;
+            font-family: var(--font-title);
+            font-size: 1.25rem;
+            color: var(--accent-deep);
+            background: rgba(255, 255, 255, 0.85);
+            padding: 0.5rem 1.2rem;
+            border-radius: 999px;
+            border: 2px solid rgba(246, 137, 74, 0.45);
+            box-shadow: 0 4px 12px rgba(194, 65, 12, 0.15);
+            backdrop-filter: blur(4px);
+            letter-spacing: 0.5px;
+        }
+        .main-title {
+            font-family: var(--font-title);
+            font-size: clamp(2.6rem, 5.5vw, 4.6rem);
+            color: #9a3412;
+            text-shadow: 0 3px 0 #fff, 0 6px 18px rgba(246, 137, 74, 0.35);
+            margin-bottom: 1rem;
+            line-height: 1.25;
+            word-break: keep-all;
+            letter-spacing: 0.5px;
+        }
+        .sub-title {
+            font-family: var(--font-text);
+            font-size: clamp(1.25rem, 2.6vw, 1.9rem);
+            color: var(--text-main);
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0.6rem 1.4rem;
+            background: rgba(255, 255, 255, 0.72);
+            border-radius: 999px;
+            display: inline-block;
+            word-break: keep-all;
+            box-shadow: 0 4px 14px rgba(194, 65, 12, 0.12);
+        }
+
+        /* ---------- 본문 ---------- */
+        .layout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3.5rem;
+        }
+        .module {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 2px solid rgba(246, 137, 74, 0.22);
+            box-shadow: 0 10px 30px -10px rgba(194, 65, 12, 0.18);
+            padding: 2rem;
+        }
+        .section-header {
+            font-family: var(--font-title);
+            font-size: 2.2rem;
+            color: var(--accent-deep);
+            margin-bottom: 1.8rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 3px dashed rgba(246, 137, 74, 0.4);
+            display: flex; align-items: center; gap: 12px;
+            word-break: keep-all;
+        }
+        .section-header .section-mark {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, #fb9a5b, #f2703a);
+            color: #fff; font-size: 1.4rem;
+            box-shadow: 0 4px 10px rgba(246, 137, 74, 0.4);
+            flex-shrink: 0;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        .card {
+            background: #fff;
+            border: 2px solid #fed7aa;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            box-shadow: 0 8px 20px -8px rgba(194, 65, 12, 0.2);
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 34px -10px rgba(194, 65, 12, 0.35);
+            border-color: var(--accent-apricot);
+        }
+        .card-image-wrap {
+            width: 100%; height: 190px;
+            background: linear-gradient(135deg, #fff7f0, #ffe6d5);
+            position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            border-bottom: 2px solid #ffe6d5;
+        }
+        .card-image-wrap svg {
+            width: 100%; height: 100%;
+            transition: transform 0.5s ease;
+        }
+        .card:hover .card-image-wrap svg { transform: scale(1.05); }
+
+        .card-content {
+            padding: 1.4rem 1.5rem 1.5rem;
+            display: flex; flex-direction: column; flex-grow: 1;
+        }
+        .card-title {
+            font-family: var(--font-title);
+            font-size: 1.5rem;
+            color: #9a3412;
+            margin-bottom: 0.7rem;
+            line-height: 1.35;
+            word-break: keep-all;
+        }
+        .card-desc {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            margin-bottom: 1.4rem;
+            flex-grow: 1;
+            word-break: keep-all;
+        }
+        .card-btn {
+            display: block; text-align: center;
+            padding: 0.85rem;
+            background: linear-gradient(135deg, #fb9a5b, #f2703a);
+            color: #fff; text-decoration: none;
+            font-family: var(--font-title);
+            font-size: 1.3rem;
+            border-radius: 999px;
+            box-shadow: 0 5px 14px rgba(246, 137, 74, 0.4);
+            transition: all 0.25s ease;
+            letter-spacing: 1px;
+        }
+        .card-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 20px rgba(246, 137, 74, 0.55);
+            background: linear-gradient(135deg, #fca974, #f6894a);
+        }
+
+        /* ---------- 하단 ---------- */
+        .page-footer {
+            margin: 1rem 0 3rem;
+            text-align: center;
+            font-family: var(--font-title);
+            color: rgba(122, 46, 18, 0.65);
+            font-size: 1rem;
+            line-height: 1.9;
+        }
+
+        /* 모바일 반응형 처리 */
+        @media (max-width: 900px) {
+            body { font-size: 17px; }
+            .page-header { padding: 2rem 1.2rem 3.5rem; }
+            .creator-info {
+                position: relative; display: inline-block;
+                top: 0; left: 0; margin-bottom: 1.8rem;
+            }
+            .layout-container { padding: 2rem 1rem; gap: 2.5rem; }
+            .module { padding: 1.3rem; }
+            .section-header { font-size: 1.8rem; }
+            .card-grid { grid-template-columns: 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .card, .card-image-wrap svg, .card-btn { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <header class="page-header">
+        <!-- 제목 배경 그림: 동물과 에너지 (세포·영양소·심장·적혈구·허파·ATP) -->
+        <svg class="header-art" viewBox="0 0 1400 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+                <radialGradient id="hgGlow" cx="50%" cy="40%" r="60%">
+                    <stop offset="0" stop-color="#fff" stop-opacity="0.9"/>
+                    <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="hgFade" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#fff4ec" stop-opacity="0"/>
+                    <stop offset="1" stop-color="#fff4ec" stop-opacity="1"/>
+                </linearGradient>
+                <radialGradient id="hgCell" cx="40%" cy="35%" r="65%">
+                    <stop offset="0" stop-color="#fff9f4"/>
+                    <stop offset="1" stop-color="#fde3d3"/>
+                </radialGradient>
+            </defs>
+
+            <!-- 부드러운 배경 덩어리 -->
+            <ellipse cx="220" cy="140" rx="260" ry="170" fill="#ffd9c4" opacity="0.55"/>
+            <ellipse cx="1180" cy="120" rx="280" ry="180" fill="#fde2e4" opacity="0.5"/>
+            <ellipse cx="700" cy="470" rx="520" ry="150" fill="#ffe6d5" opacity="0.7"/>
+            <ellipse cx="1000" cy="420" rx="260" ry="120" fill="#fbe7c6" opacity="0.5"/>
+
+            <!-- 큰 세포 (왼쪽) -->
+            <g opacity="0.9">
+                <path d="M110,300 C60,220 120,120 230,120 C330,110 400,190 380,290 C360,380 260,420 180,390 C130,370 120,340 110,300 Z" fill="url(#hgCell)" stroke="#f6a37a" stroke-width="3"/>
+                <circle cx="230" cy="250" r="44" fill="#fcd0b8" stroke="#f6894a" stroke-width="2.5"/>
+                <circle cx="222" cy="244" r="12" fill="#f6894a" opacity="0.7"/>
+                <ellipse cx="300" cy="320" rx="30" ry="14" transform="rotate(-25 300 320)" fill="#fde68a" stroke="#f59e0b" stroke-width="2"/>
+                <path d="M283,318 q8,-6 16,0 t16,0" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                <ellipse cx="160" cy="330" rx="26" ry="12" transform="rotate(20 160 330)" fill="#fde68a" stroke="#f59e0b" stroke-width="2"/>
+                <path d="M145,328 q7,-6 14,0 t14,0" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                <circle cx="310" cy="200" r="9" fill="#a78bfa" opacity="0.8"/>
+                <circle cx="170" cy="190" r="7" fill="#a78bfa" opacity="0.8"/>
+            </g>
+
+            <!-- 혈관과 적혈구 (오른쪽 하단) -->
+            <g opacity="0.85">
+                <path d="M900,330 C1000,290 1100,380 1200,340 C1280,308 1340,330 1400,310" fill="none" stroke="#f8b4a8" stroke-width="46" stroke-linecap="round"/>
+                <path d="M900,330 C1000,290 1100,380 1200,340 C1280,308 1340,330 1400,310" fill="none" stroke="#fde2dc" stroke-width="30" stroke-linecap="round"/>
+                <g fill="#e53935" stroke="#9b1c2e" stroke-width="2">
+                    <ellipse cx="960" cy="318" rx="20" ry="11"/>
+                    <ellipse cx="1040" cy="335" rx="20" ry="11" transform="rotate(20 1040 335)"/>
+                    <ellipse cx="1130" cy="352" rx="20" ry="11" transform="rotate(-10 1130 352)"/>
+                    <ellipse cx="1230" cy="332" rx="20" ry="11" transform="rotate(15 1230 332)"/>
+                    <ellipse cx="1320" cy="320" rx="20" ry="11"/>
+                </g>
+                <g fill="#fff" opacity="0.55">
+                    <ellipse cx="960" cy="316" rx="8" ry="4"/>
+                    <ellipse cx="1040" cy="333" rx="8" ry="4"/>
+                    <ellipse cx="1130" cy="350" rx="8" ry="4"/>
+                    <ellipse cx="1230" cy="330" rx="8" ry="4"/>
+                    <ellipse cx="1320" cy="318" rx="8" ry="4"/>
+                </g>
+            </g>
+
+            <!-- 심장 (오른쪽 위) -->
+            <g transform="translate(1120,110) scale(5.2)" opacity="0.9">
+                <path d="M0,4 C0,-2 -8,-5 -8,1 C-8,5 -3,8 0,12 C3,8 8,5 8,1 C8,-5 0,-2 0,4 Z" fill="#f48c8c" stroke="#c0392b" stroke-width="0.6"/>
+                <path d="M-6,1 C-4,-1.5 -1,-1 0,1" fill="none" stroke="#fff" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>
+            </g>
+            <path d="M1030,160 l18,0 l10,-24 l14,48 l12,-36 l8,12 l24,0" fill="none" stroke="#e11d48" stroke-width="4" stroke-linejoin="round" opacity="0.8"/>
+
+            <!-- 허파 (왼쪽 위) -->
+            <g transform="translate(430,70)" opacity="0.8">
+                <rect x="-6" y="-10" width="12" height="60" rx="6" fill="#f6b3a5" stroke="#d9605f" stroke-width="2"/>
+                <path d="M-10,52 C-10,20 -40,10 -60,30 C-80,50 -80,110 -50,120 C-25,128 -10,100 -10,52 Z" fill="#fbd0cd" stroke="#d9605f" stroke-width="2"/>
+                <path d="M10,52 C10,20 40,10 60,30 C80,50 80,110 50,120 C25,128 10,100 10,52 Z" fill="#fbd0cd" stroke="#d9605f" stroke-width="2"/>
+                <path d="M-6,50 L-26,62 M-26,62 L-40,78 M-26,62 L-20,90 M6,50 L26,62 M26,62 L40,78 M26,62 L20,90" fill="none" stroke="#e08f84" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="-40" cy="90" r="4" fill="#bfe3ff" stroke="#60a5fa"/>
+                <circle cx="46" cy="92" r="4" fill="#bfe3ff" stroke="#60a5fa"/>
+            </g>
+
+            <!-- 포도당 육각형 사슬 (가운데 위) -->
+            <g fill="#c4b5fd" stroke="#6d28d9" stroke-width="2" opacity="0.75">
+                <polygon points="640,52 660,64 660,88 640,100 620,88 620,64"/>
+                <polygon points="690,72 710,84 710,108 690,120 670,108 670,84"/>
+                <polygon points="740,52 760,64 760,88 740,100 720,88 720,64"/>
+                <polygon points="790,72 810,84 810,108 790,120 770,108 770,84"/>
+            </g>
+            <g stroke="#6d28d9" stroke-width="3" opacity="0.7">
+                <line x1="660" y1="76" x2="670" y2="96"/><line x1="710" y1="96" x2="720" y2="76"/><line x1="760" y1="76" x2="770" y2="96"/>
+            </g>
+
+            <!-- ATP 에너지 번개 (가운데 아래) -->
+            <g transform="translate(560,380)" opacity="0.85">
+                <circle cx="0" cy="0" r="46" fill="#fde68a" stroke="#f59e0b" stroke-width="3"/>
+                <path d="M8,-30 L-14,4 L2,4 L-8,30 L16,-6 L0,-6 Z" fill="#f59e0b" stroke="#b45309" stroke-width="2" stroke-linejoin="round"/>
+            </g>
+            <g transform="translate(820,400)" opacity="0.8">
+                <circle cx="-18" cy="0" r="10" fill="#e0242b"/><circle cx="18" cy="0" r="10" fill="#e0242b"/>
+                <line x1="-10" y1="-3" x2="10" y2="-3" stroke="#9aa3ad" stroke-width="3"/><line x1="-10" y1="3" x2="10" y2="3" stroke="#9aa3ad" stroke-width="3"/>
+            </g>
+            <g transform="translate(680,420)" opacity="0.75">
+                <circle cx="0" cy="0" r="9" fill="#1c1c1c"/><circle cx="-22" cy="0" r="8" fill="#e0242b"/><circle cx="22" cy="0" r="8" fill="#e0242b"/>
+                <line x1="-14" y1="0" x2="-9" y2="0" stroke="#9aa3ad" stroke-width="4"/><line x1="9" y1="0" x2="14" y2="0" stroke="#9aa3ad" stroke-width="4"/>
+            </g>
+
+            <!-- 가운데 밝은 빛과 아래쪽 자연스러운 이어짐 -->
+            <rect x="0" y="0" width="1400" height="520" fill="url(#hgGlow)"/>
+            <rect x="0" y="330" width="1400" height="190" fill="url(#hgFade)"/>
+        </svg>
+
+        <div class="creator-info">해누리중학교 과학교사 남국현</div>
+        <h1 class="main-title">중학교 2학년 과학<br>6. 동물과 에너지</h1>
+        <p class="sub-title">우리는 어떻게 에너지를 얻고 살아가고 있을까?</p>
+    </header>
+
+    <main class="layout-container">
+
+        <!-- ==============================================
+             섹션 01. 에너지원의 흡수와 운반
+             ============================================== -->
+        <section class="module">
+            <h2 class="section-header"><span class="section-mark">🍱</span>01. 에너지원의 흡수와 운반</h2>
+            <div class="card-grid">
+
+                <!-- ▶ 반복 규칙: 새 카드를 추가하려면 <article class="card"> ... </article> 블록 전체를 복사해서
+                     ① 그림(svg) ② 카드 제목 ③ 설명 ④ href 파일명 만 바꾸면 됩니다. -->
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <!-- 그림: 밥·달걀·당근 등 음식물 속 영양소 -->
+                        <svg viewBox="0 0 320 190" aria-label="음식물에 들어있는 영양소">
+                            <ellipse cx="160" cy="150" rx="130" ry="26" fill="#fde2d0" opacity="0.8"/>
+                            <ellipse cx="100" cy="118" rx="58" ry="22" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+                            <path d="M50,112 Q60,76 100,78 Q140,76 150,112 Z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+                            <circle cx="84" cy="96" r="3" fill="#e2e8f0"/><circle cx="104" cy="90" r="3" fill="#e2e8f0"/><circle cx="118" cy="100" r="3" fill="#e2e8f0"/>
+                            <ellipse cx="206" cy="104" rx="26" ry="34" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                            <circle cx="206" cy="108" r="12" fill="#fbbf24"/>
+                            <path d="M250,138 L292,84" stroke="#f97316" stroke-width="16" stroke-linecap="round"/>
+                            <path d="M290,86 l8,-20 M292,84 l20,-6" stroke="#4c9a2a" stroke-width="5" stroke-linecap="round"/>
+                            <polygon points="44,40 58,48 58,64 44,72 30,64 30,48" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2"/>
+                            <polygon points="80,30 94,38 94,54 80,62 66,54 66,38" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2"/>
+                            <line x1="58" y1="56" x2="66" y2="46" stroke="#6d28d9" stroke-width="3"/>
+                            <circle cx="150" cy="40" r="8" fill="#ef4444"/><circle cx="170" cy="36" r="8" fill="#3b82f6"/><circle cx="190" cy="44" r="8" fill="#22c55e"/>
+                            <line x1="158" y1="40" x2="162" y2="36" stroke="#64748b" stroke-width="2"/><line x1="178" y1="36" x2="182" y2="44" stroke="#64748b" stroke-width="2"/>
+                            <rect x="240" y="30" width="6" height="30" rx="2" fill="#c2410c"/>
+                            <rect x="246" y="32" width="26" height="5" rx="2" fill="#f59e0b"/><rect x="246" y="42" width="26" height="5" rx="2" fill="#f59e0b"/><rect x="246" y="52" width="26" height="5" rx="2" fill="#f59e0b"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">6. 1. 1. 음식물에 들어있는 영양소</h3>
+                        <p class="card-desc">우리가 먹는 음식물 속에는 무엇이 들어 있을까?</p>
+                        <a href="nutrients.html" class="card-btn">열기</a>
+                    </div>
+                </article>
+                <!-- ◀ 카드 1개 끝 -->
+
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <!-- 그림: 소화 기관(입·식도·위·창자) -->
+                        <svg viewBox="0 0 320 190" aria-label="영양소를 소화하는 소화계">
+                            <circle cx="160" cy="28" r="18" fill="#fde2d0" stroke="#f0b99c" stroke-width="2"/>
+                            <ellipse cx="160" cy="36" rx="7" ry="3.5" fill="#b83a4b"/>
+                            <path d="M160,46 C160,62 158,80 164,94" fill="none" stroke="#d9605f" stroke-width="9" stroke-linecap="round"/>
+                            <path d="M164,94 C178,86 206,94 206,116 C206,134 190,142 176,140 C170,139 166,134 170,130 C182,126 184,116 176,110 C170,106 164,104 164,94 Z" fill="#f2a3a0" stroke="#c96a6a" stroke-width="2"/>
+                            <path d="M170,140 C150,146 120,150 116,164 C112,178 140,182 160,174 C180,166 210,166 206,180" fill="none" stroke="#e08f84" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M170,140 C150,146 120,150 116,164 C112,178 140,182 160,174 C180,166 210,166 206,180" fill="none" stroke="#f7c4b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M96,96 C98,80 124,74 150,80 C156,82 154,90 148,94 C132,104 114,112 102,116 C94,112 94,104 96,96 Z" fill="#9b3434" stroke="#6b1f1f" stroke-width="1.5"/>
+                            <ellipse cx="120" cy="124" rx="5" ry="8" fill="#5f9e3f" stroke="#3f6e27"/>
+                            <path d="M58,60 L98,100" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="54" cy="56" r="14" fill="#a3e635" stroke="#4c9a2a" stroke-width="2"/>
+                            <circle cx="54" cy="56" r="5" fill="#fff"/>
+                            <polygon points="250,70 262,77 262,91 250,98 238,91 238,77" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2"/>
+                            <polygon points="282,70 294,77 294,91 282,98 270,91 270,77" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2"/>
+                            <path d="M266,84 l-10,-12 M266,84 l-10,12" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">6. 1. 2. 영양소를 소화하는 소화계</h3>
+                        <p class="card-desc">우리가 먹은 음식물은 어떻게 몸속으로 들어올까?</p>
+                        <a href="digest.html" class="card-btn">열기</a>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <!-- 그림: 소화 효소(가위·팩맨)가 영양소 사슬을 자름 -->
+                        <svg viewBox="0 0 320 190" aria-label="소화효소가 작용하는 소화 과정">
+                            <g stroke="#6d28d9" stroke-width="3">
+                                <line x1="56" y1="70" x2="76" y2="90"/><line x1="76" y1="90" x2="96" y2="70"/><line x1="96" y1="70" x2="116" y2="90"/>
+                            </g>
+                            <g fill="#c4b5fd" stroke="#6d28d9" stroke-width="2">
+                                <polygon points="56,58 66,64 66,76 56,82 46,76 46,64"/><polygon points="76,78 86,84 86,96 76,102 66,96 66,84"/>
+                                <polygon points="96,58 106,64 106,76 96,82 86,76 86,64"/><polygon points="116,78 126,84 126,96 116,102 106,96 106,84"/>
+                            </g>
+                            <path d="M170,80 L198,64 A32,32 0 1 0 198,96 Z" fill="#7c5cd6"/>
+                            <circle cx="170" cy="66" r="4" fill="#fff"/>
+                            <circle cx="150" cy="80" r="6" fill="#e0242b"/><circle cx="144" cy="74" r="3.5" fill="#fff" stroke="#94a3b8"/><circle cx="156" cy="74" r="3.5" fill="#fff" stroke="#94a3b8"/>
+                            <g fill="#c4b5fd" stroke="#6d28d9" stroke-width="2">
+                                <polygon points="244,44 254,50 254,62 244,68 234,62 234,50"/><polygon points="262,56 272,62 272,74 262,80 252,74 252,62"/>
+                                <polygon points="238,98 248,104 248,116 238,122 228,116 228,104"/><polygon points="280,96 290,102 290,114 280,120 270,114 270,102"/>
+                            </g>
+                            <line x1="254" y1="56" x2="252" y2="68" stroke="#6d28d9" stroke-width="3"/>
+                            <path d="M40,148 L90,148 M66,140 L80,148 L66,156" fill="none" stroke="#f6894a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="130" cy="150" r="7" fill="#ef4444"/><circle cx="146" cy="150" r="7" fill="#f59e0b"/><circle cx="162" cy="150" r="7" fill="#22c55e"/><circle cx="178" cy="150" r="7" fill="#3b82f6"/>
+                            <line x1="137" y1="150" x2="139" y2="150" stroke="#64748b" stroke-width="3"/><line x1="153" y1="150" x2="155" y2="150" stroke="#64748b" stroke-width="3"/><line x1="169" y1="150" x2="171" y2="150" stroke="#64748b" stroke-width="3"/>
+                            <path d="M210,138 L218,162 M228,138 L220,162" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                            <circle cx="208" cy="166" r="6" fill="none" stroke="#1f8a6b" stroke-width="3"/><circle cx="230" cy="166" r="6" fill="none" stroke="#1f8a6b" stroke-width="3"/>
+                            <circle cx="270" cy="150" r="7" fill="#22c55e"/><circle cx="292" cy="146" r="7" fill="#3b82f6"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">6. 1. 3. 소화효소가 작용하는 소화 과정</h3>
+                        <p class="card-desc">소화 효소는 영양소를 어떻게, 어디에서 잘게 자를까?</p>
+                        <a href="digestion.html" class="card-btn">열기</a>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <!-- 그림: 심장과 혈관, 적혈구 -->
+                        <svg viewBox="0 0 320 190" aria-label="물질을 운반하는 순환계">
+                            <path d="M40,120 C80,90 120,150 160,118" fill="none" stroke="#3f7fd6" stroke-width="16" stroke-linecap="round"/>
+                            <path d="M40,120 C80,90 120,150 160,118" fill="none" stroke="#a9cdf5" stroke-width="7" stroke-linecap="round"/>
+                            <path d="M160,118 C200,90 240,150 280,118" fill="none" stroke="#d63a2f" stroke-width="16" stroke-linecap="round"/>
+                            <path d="M160,118 C200,90 240,150 280,118" fill="none" stroke="#f6a39b" stroke-width="7" stroke-linecap="round"/>
+                            <g transform="translate(160,74) scale(4.2)">
+                                <path d="M0,4 C0,-2 -8,-5 -8,1 C-8,5 -3,8 0,12 C3,8 8,5 8,1 C8,-5 0,-2 0,4 Z" fill="#f48c8c" stroke="#c0392b" stroke-width="0.7"/>
+                                <path d="M-6,1 C-4,-1.5 -1,-1 0,1" fill="none" stroke="#fff" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>
+                            </g>
+                            <g fill="#e53935" stroke="#9b1c2e" stroke-width="1.5">
+                                <ellipse cx="60" cy="112" rx="11" ry="6"/><ellipse cx="110" cy="128" rx="11" ry="6" transform="rotate(20 110 128)"/>
+                                <ellipse cx="210" cy="108" rx="11" ry="6" transform="rotate(-15 210 108)"/><ellipse cx="258" cy="128" rx="11" ry="6"/>
+                            </g>
+                            <path d="M24,160 l16,0 l8,-20 l10,40 l10,-30 l6,10 l22,0" fill="none" stroke="#e11d48" stroke-width="3.5" stroke-linejoin="round"/>
+                            <path d="M232,162 l10,-14 l10,14 M242,148 l0,30" fill="none" stroke="#2f6fb5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M276,176 l10,-14 l10,14 M286,162 l0,30" fill="none" stroke="#2f6fb5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">6. 1. 4. 물질을 운반하는 순환계</h3>
+                        <p class="card-desc">심장은 어떻게 쉬지 않고 온몸으로 혈액을 보낼까?</p>
+                        <a href="circulation.html" class="card-btn">열기</a>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <!-- 그림: 온몸 순환과 폐순환 경로 -->
+                        <svg viewBox="0 0 320 190" aria-label="혈액이 순환하는 경로">
+                            <defs>
+                                <marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3f7fd6"/></marker>
+                                <marker id="arrR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#d63a2f"/></marker>
+                            </defs>
+                            <rect x="124" y="60" width="72" height="72" rx="14" fill="#fde2e4" stroke="#f48c8c" stroke-width="2"/>
+                            <g transform="translate(160,86) scale(2.6)">
+                                <path d="M0,4 C0,-2 -8,-5 -8,1 C-8,5 -3,8 0,12 C3,8 8,5 8,1 C8,-5 0,-2 0,4 Z" fill="#f48c8c" stroke="#c0392b" stroke-width="0.8"/>
+                            </g>
+                            <g transform="translate(160,26)">
+                                <rect x="-3" y="-8" width="6" height="16" rx="3" fill="#f6b3a5" stroke="#d9605f" stroke-width="1.5"/>
+                                <path d="M-4,8 C-4,-2 -16,-4 -22,2 C-30,10 -28,24 -16,26 C-8,27 -4,20 -4,8 Z" fill="#fbd0cd" stroke="#d9605f" stroke-width="1.5"/>
+                                <path d="M4,8 C4,-2 16,-4 22,2 C30,10 28,24 16,26 C8,27 4,20 4,8 Z" fill="#fbd0cd" stroke="#d9605f" stroke-width="1.5"/>
+                            </g>
+                            <circle cx="160" cy="166" r="16" fill="#f9d8a7" stroke="#d6a76b" stroke-width="2"/>
+                            <circle cx="164" cy="164" r="5" fill="#8b5cf6"/>
+                            <path d="M138,66 C110,50 110,20 136,20" fill="none" stroke="#3f7fd6" stroke-width="5" marker-end="url(#arrB)"/>
+                            <path d="M184,20 C210,20 210,50 182,66" fill="none" stroke="#d63a2f" stroke-width="5" marker-end="url(#arrR)"/>
+                            <path d="M182,128 C224,146 220,178 180,170" fill="none" stroke="#d63a2f" stroke-width="5" marker-end="url(#arrR)"/>
+                            <path d="M140,170 C100,178 96,146 138,128" fill="none" stroke="#3f7fd6" stroke-width="5" marker-end="url(#arrB)"/>
+                            <ellipse cx="116" cy="34" rx="9" ry="5" fill="#3b6fd6" stroke="#22508f"/>
+                            <ellipse cx="204" cy="34" rx="9" ry="5" fill="#e53935" stroke="#9b1c2e"/>
+                            <ellipse cx="208" cy="156" rx="9" ry="5" fill="#e53935" stroke="#9b1c2e"/>
+                            <ellipse cx="112" cy="156" rx="9" ry="5" fill="#3b6fd6" stroke="#22508f"/>
+                            <circle cx="262" cy="64" r="7" fill="#e0242b"/><circle cx="278" cy="64" r="7" fill="#e0242b"/>
+                            <circle cx="48" cy="120" r="7" fill="#1c1c1c"/><circle cx="34" cy="120" r="6" fill="#e0242b"/><circle cx="62" cy="120" r="6" fill="#e0242b"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">6. 1. 5. 혈액이 순환하는 경로</h3>
+                        <p class="card-desc">심장에서 나간 혈액은 어떤 길을 돌아 다시 심장으로 올까?</p>
+                        <a href="blood.html" class="card-btn">열기</a>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- ==============================================
+             섹션 02. 세포호흡과 에너지
+             ============================================== -->
+        <section class="module">
+            <h2 class="section-header"><span class="section-mark">⚡</span>02. 세포호흡과 에너지</h2>
+            <div class="card-grid">
+
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <!-- 그림: 허파와 폐포의 기체 교환 -->
+                        <svg viewBox="0 0 320 190" aria-label="기체를 교환하는 호흡계">
+                            <rect x="104" y="18" width="12" height="52" rx="6" fill="#f6b3a5" stroke="#d9605f" stroke-width="2"/>
+                            <path d="M100,66 C100,40 70,30 52,48 C32,68 34,130 62,138 C86,146 100,112 100,66 Z" fill="#fbd0cd" stroke="#d9605f" stroke-width="2"/>
+                            <path d="M120,66 C120,40 150,30 168,48 C188,68 186,130 158,138 C134,146 120,112 120,66 Z" fill="#fbd0cd" stroke="#d9605f" stroke-width="2"/>
+                            <path d="M104,66 L86,78 M86,78 L72,92 M86,78 L80,104 M116,66 L134,78 M134,78 L148,92 M134,78 L140,104" fill="none" stroke="#e08f84" stroke-width="3" stroke-linecap="round"/>
+                            <g fill="#bfe3ff" stroke="#60a5fa" stroke-width="2">
+                                <circle cx="70" cy="110" r="8"/><circle cx="150" cy="110" r="8"/><circle cx="64" cy="96" r="6"/><circle cx="156" cy="96" r="6"/>
+                            </g>
+                            <circle cx="248" cy="96" r="42" fill="#e0f2fe" stroke="#60a5fa" stroke-width="2.5"/>
+                            <path d="M214,70 C234,54 262,58 280,76" fill="none" stroke="#f8b4a8" stroke-width="10" stroke-linecap="round"/>
+                            <path d="M214,70 C234,54 262,58 280,76" fill="none" stroke="#fde2dc" stroke-width="4" stroke-linecap="round"/>
+                            <ellipse cx="246" cy="64" rx="9" ry="5" fill="#e53935" stroke="#9b1c2e"/>
+                            <circle cx="236" cy="96" r="5" fill="#e0242b"/><circle cx="246" cy="96" r="5" fill="#e0242b"/>
+                            <path d="M241,104 l0,-22" stroke="#e0242b" stroke-width="3" marker-end="url(#arrUp)"/>
+                            <circle cx="268" cy="118" r="4.5" fill="#1c1c1c"/><circle cx="259" cy="118" r="4" fill="#e0242b"/><circle cx="277" cy="118" r="4" fill="#e0242b"/>
+                            <path d="M268,96 l0,14" stroke="#1c1c1c" stroke-width="3"/>
+                            <defs><marker id="arrUp" viewBox="0 0 10 10" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,10 L5,0 L10,10 z" fill="#e0242b"/></marker></defs>
+                            <path d="M30,160 l14,-10 M30,160 l14,10 M30,160 l60,0" stroke="#60a5fa" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <text x="98" y="166" font-size="16" fill="#1e3a8a" font-family="'Jua','Gowun Dodum',sans-serif">들숨</text>
+                            <path d="M176,160 l-14,-10 M176,160 l-14,10 M176,160 l-60,0" stroke="#f472b6" stroke-width="3" fill="none" stroke-linecap="round" transform="translate(70,0)"/>
+                            <text x="184" y="166" font-size="16" fill="#9d174d" font-family="'Jua','Gowun Dodum',sans-serif">날숨</text>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">6. 2. 1. 기체를 교환하는 호흡계</h3>
+                        <p class="card-desc">우리는 숨을 쉴 때 어떤 기체를 들이마시고 내보낼까?</p>
+                        <a href="respiration.html" class="card-btn">열기</a>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <!-- 그림: 콩팥과 오줌관, 방광 — 노폐물 배설 -->
+                        <svg viewBox="0 0 320 190" aria-label="노폐물을 내보내는 배설계">
+                            <path d="M90,48 C62,44 48,70 52,96 C56,122 80,130 96,118 C106,110 102,96 96,88 C90,80 90,66 90,48 Z" fill="#b45309" stroke="#78350f" stroke-width="2"/>
+                            <path d="M230,48 C258,44 272,70 268,96 C264,122 240,130 224,118 C214,110 218,96 224,88 C230,80 230,66 230,48 Z" fill="#b45309" stroke="#78350f" stroke-width="2"/>
+                            <path d="M70,66 C76,78 76,96 70,110" fill="none" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M250,66 C244,78 244,96 250,110" fill="none" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M100,104 C120,128 146,140 160,158" fill="none" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M220,104 C200,128 174,140 160,158" fill="none" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+                            <ellipse cx="160" cy="166" rx="30" ry="18" fill="#fde68a" stroke="#d97706" stroke-width="2"/>
+                            <path d="M118,30 C140,20 180,20 202,30" fill="none" stroke="#d63a2f" stroke-width="7" stroke-linecap="round"/>
+                            <path d="M118,30 C140,20 180,20 202,30" fill="none" stroke="#f6a39b" stroke-width="3" stroke-linecap="round"/>
+                            <ellipse cx="160" cy="24" rx="9" ry="5" fill="#e53935" stroke="#9b1c2e"/>
+                            <path d="M160,40 l0,20" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M90,40 l0,-10 l-30,0" fill="none" stroke="#d63a2f" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M230,40 l0,-10 l30,0" fill="none" stroke="#d63a2f" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="150" cy="88" r="7" fill="#1c1c1c"/><circle cx="162" cy="78" r="6" fill="#2546f0"/><circle cx="172" cy="94" r="6" fill="#2546f0"/><circle cx="140" cy="100" r="5" fill="#e0242b"/>
+                            <line x1="155" y1="83" x2="158" y2="81" stroke="#9aa3ad" stroke-width="3"/><line x1="156" y1="91" x2="166" y2="93" stroke="#9aa3ad" stroke-width="3"/><line x1="144" y1="94" x2="147" y2="92" stroke="#9aa3ad" stroke-width="3"/>
+                            <circle cx="60" cy="150" r="5" fill="#60a5fa"/><circle cx="46" cy="160" r="4" fill="#60a5fa"/><circle cx="268" cy="152" r="5" fill="#60a5fa"/><circle cx="282" cy="162" r="4" fill="#60a5fa"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">6. 2. 2. 노폐물을 내보내는 배설계</h3>
+                        <p class="card-desc">몸속에서 생긴 노폐물은 어떻게 몸 밖으로 나갈까?</p>
+                        <a href="excretion.html" class="card-btn">열기</a>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <div class="card-image-wrap">
+                        <!-- 그림: 세포 속 미토콘드리아에서 포도당 + 산소 → 에너지(ATP) -->
+                        <svg viewBox="0 0 320 190" aria-label="세포호흡으로 얻는 에너지">
+                            <path d="M40,100 C36,50 90,28 150,34 C220,40 290,70 280,120 C272,164 200,176 140,166 C80,158 44,146 40,100 Z" fill="#fff7f0" stroke="#f6a37a" stroke-width="3"/>
+                            <ellipse cx="160" cy="100" rx="64" ry="34" fill="#fde68a" stroke="#f59e0b" stroke-width="3"/>
+                            <path d="M110,100 q12,-14 24,0 t24,0 t24,0 t24,0" fill="none" stroke="#f59e0b" stroke-width="3"/>
+                            <path d="M118,110 q12,12 24,0 t24,0 t24,0" fill="none" stroke="#f59e0b" stroke-width="3"/>
+                            <polygon points="64,78 76,85 76,99 64,106 52,99 52,85" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2"/>
+                            <circle cx="58" cy="126" r="6" fill="#e0242b"/><circle cx="72" cy="126" r="6" fill="#e0242b"/>
+                            <path d="M84,100 l16,0 M94,94 l6,6 l-6,6" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M232,100 l16,0 M242,94 l6,6 l-6,6" fill="none" stroke="#c2410c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M270,86 L256,106 L266,106 L260,124 L276,102 L266,102 Z" fill="#f59e0b" stroke="#b45309" stroke-width="2" stroke-linejoin="round"/>
+                            <text x="236" y="78" font-size="14" fill="#b45309" font-family="'Jua','Gowun Dodum',sans-serif">에너지</text>
+                            <circle cx="238" cy="140" r="5" fill="#1c1c1c"/><circle cx="229" cy="140" r="4.5" fill="#e0242b"/><circle cx="247" cy="140" r="4.5" fill="#e0242b"/>
+                            <circle cx="266" cy="148" r="4.5" fill="#e0242b"/><circle cx="273" cy="142" r="3" fill="#fff" stroke="#94a3b8"/><circle cx="259" cy="142" r="3" fill="#fff" stroke="#94a3b8"/>
+                            <g fill="#fde047" stroke="#ca8a04" stroke-width="1.5">
+                                <polygon points="100,46 103,54 112,54 105,59 108,67 100,62 92,67 95,59 88,54 97,54"/>
+                                <polygon points="210,150 213,158 222,158 215,163 218,171 210,166 202,171 205,163 198,158 207,158"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">6. 2. 3. 세포호흡으로 얻는 에너지</h3>
+                        <p class="card-desc">세포는 영양소와 산소로 어떻게 에너지를 만들어 낼까?</p>
+                        <a href="atp.html" class="card-btn">열기</a>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="page-footer">
+        <p>제작: 해누리중학교 과학교사 남국현</p>
+        <p>© 2026 Haenuri Middle School Science Dept. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // 배경 애니메이션: 포도당(육각형)·적혈구·산소 분자가 살랑살랑 떠다니는 모습
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resizeCanvas() {
+            width = window.innerWidth; height = window.innerHeight;
+            canvas.width = width; canvas.height = height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        class Particle {
+            constructor() { this.reset(true); }
+            reset(initial) {
+                this.type = ['hex', 'rbc', 'o2', 'rbc'][Math.floor(Math.random() * 4)];
+                this.x = Math.random() * width;
+                this.y = initial ? Math.random() * height : height + 30;
+                this.size = Math.random() * 10 + 8;
+                this.speed = Math.random() * 0.5 + 0.25;
+                this.drift = (Math.random() - 0.5) * 0.4;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.01;
+                this.opacity = Math.random() * 0.25 + 0.15;
+            }
+            update() {
+                this.y -= this.speed;
+                this.x += this.drift + Math.sin(this.y / 60) * 0.3;
+                this.angle += this.spin;
+                if (this.y < -40 || this.x < -40 || this.x > width + 40) this.reset(false);
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y); ctx.rotate(this.angle);
+                ctx.globalAlpha = this.opacity;
+                if (this.type === 'hex') {
+                    ctx.beginPath();
+                    for (let k = 0; k < 6; k++) { const a = Math.PI / 3 * k; ctx.lineTo(this.size * Math.cos(a), this.size * Math.sin(a)); }
+                    ctx.closePath();
+                    ctx.fillStyle = '#c4b5fd'; ctx.fill();
+                    ctx.strokeStyle = '#8b5cf6'; ctx.lineWidth = 1.5; ctx.stroke();
+                } else if (this.type === 'rbc') {
+                    ctx.beginPath(); ctx.ellipse(0, 0, this.size, this.size * 0.55, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = '#f87171'; ctx.fill();
+                    ctx.beginPath(); ctx.ellipse(0, 0, this.size * 0.45, this.size * 0.22, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fecaca'; ctx.fill();
+                } else {
+                    const r = this.size * 0.4;
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath(); ctx.arc(-r * 0.9, 0, r, 0, Math.PI * 2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(r * 0.9, 0, r, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        const particles = [];
+        for (let i = 0; i < 36; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => { p.update(); p.draw(ctx); });
+            if (!reduceMotion) requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
