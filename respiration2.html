@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>6. 2. 1. - (2) 호흡운동의 원리를 모형으로 설명하기 🎈</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts: 주아체 (Title), 고운돋움 (Body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+    <!-- FontAwesome (SVG/JS 버전) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <!-- Tone.js for Audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- three.js (3D 모형) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- MathJax (화학식은 \mathrm 로마체) -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+            svg: { fontCache: 'global' },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'select', 'option'] }
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+
+    <style>
+        :root {
+            --bg-pastel-apricot: #fff4ec;   /* 파스텔 살구 */
+            --bg-peach: #ffe6d5;
+            --panel-bg: rgba(255, 255, 255, 0.86);
+            --text-main: #7a2e12;           /* 짙은 살구 갈색 */
+            --accent-apricot: #f6894a;      /* 살구 주황 */
+            --accent-deep: #c2410c;
+            --accent-yellow: #f59e0b;
+        }
+
+        body {
+            font-family: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-pastel-apricot);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(246, 137, 74, 0.08), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(244, 114, 182, 0.06), transparent 40%);
+            background-attachment: fixed;
+            margin: 0; overflow-x: hidden; touch-action: manipulation;
+            color: var(--text-main); line-height: 1.7;
+        }
+
+        .font-cute { font-family: 'Jua', 'Gowun Dodum', sans-serif; letter-spacing: 0.5px; }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px; border: 2px solid rgba(246, 137, 74, 0.22);
+            box-shadow: 0 10px 30px -10px rgba(194, 65, 12, 0.18);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+
+        .concept-blank {
+            display: inline-block; background: rgba(246, 137, 74, 0.12);
+            color: transparent; border-bottom: 3px dashed var(--accent-apricot);
+            padding: 0 12px; margin: 0 4px; border-radius: 8px;
+            cursor: pointer; transition: all 0.3s; position: relative; font-weight: 700;
+        }
+        .concept-blank::after {
+            content: '클릭!'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            color: var(--accent-apricot); font-size: 0.85rem; font-family: 'Jua';
+            opacity: 0.8; animation: pulse-glow 1.5s infinite alternate; white-space: nowrap;
+        }
+        @keyframes pulse-glow { 0% { opacity: 0.5; } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } }
+
+        .concept-blank.revealed {
+            background: rgba(246, 137, 74, 0.22); color: var(--accent-deep);
+            border-bottom: 3px solid var(--accent-apricot); transform: scale(1.05);
+        }
+        .concept-blank.revealed::after { display: none; }
+
+        /* Navigation Buttons */
+        .nav-btn { position: relative; overflow: hidden; transition: all 0.3s; border: 2px solid transparent; }
+        .nav-btn.active {
+            background: linear-gradient(135deg, #fb9a5b, #f2703a);
+            border-color: rgba(255,255,255,0.5); box-shadow: 0 5px 15px rgba(246, 137, 74, 0.4);
+            color: white; transform: translateY(-2px);
+        }
+
+        /* Quiz Box */
+        .quiz-option { transition: all 0.2s; border: 2px solid #e2e8f0; }
+        .quiz-option:hover { border-color: #f6894a; background-color: #fff3ea; }
+        .quiz-option.correct { border-color: #3b82f6; background-color: #dbeafe; color: #1e3a8a; }
+        .quiz-option.wrong { border-color: #ef4444; background-color: #fee2e2; color: #991b1b; }
+
+        /* Select (선택지) */
+        .nut-select {
+            appearance: none; -webkit-appearance: none; background-color: rgba(246, 137, 74, 0.12);
+            border: 2px dashed var(--accent-apricot); color: var(--text-main);
+            padding: 2px 26px 2px 10px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; font-family: 'Gowun Dodum', sans-serif;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23f6894a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right 8px top 50%; background-size: 10px auto;
+        }
+        .nut-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(246, 137, 74, 0.3); }
+        .nut-select.correct { border-style: solid; background-color: rgba(246, 137, 74, 0.22); color: var(--accent-deep); background-image: none; padding-right: 10px; opacity: 1; }
+
+        /* How? / 실험하기 / 원리? 버튼 */
+        .how-btn {
+            font-family: 'Jua', sans-serif; font-size: 0.9rem; line-height: 1;
+            padding: 6px 12px; border-radius: 999px; color: #fff;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed); box-shadow: 0 3px 8px rgba(124, 58, 237, 0.3);
+            transition: transform 0.2s;
+        }
+        .how-btn:hover { transform: scale(1.07); }
+        .lab-btn { font-family: 'Jua', sans-serif; font-size: 0.95rem; line-height: 1; padding: 8px 12px; border-radius: 12px; transition: transform 0.2s; white-space: nowrap; }
+        .lab-btn:hover { transform: scale(1.05); }
+
+        /* 3D 뷰어 */
+        .mol-stage {
+            position: relative; width: 100%; height: 360px; border-radius: 16px; overflow: hidden;
+            background: radial-gradient(circle at 50% 40%, #eef2f7 0%, #d5dde8 70%, #c6d0dd 100%);
+            border: 2px solid #e2e8f0; transition: background 1.2s;
+        }
+        .mol-stage canvas { display: block; width: 100% !important; height: 100% !important; cursor: grab; }
+        .mol-label {
+            position: absolute; transform: translate(-50%, -140%); white-space: nowrap; pointer-events: none;
+            font-family: 'Jua', sans-serif; font-size: 0.8rem; padding: 1px 8px; border-radius: 999px;
+            background: rgba(255,255,255,0.92); color: #7a2e12; border: 1.5px solid #f6894a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+        .mol-label.e { background: #fde047; border-color: #ca8a04; color: #713f12; }
+        .mol-label.v { background: #ede9fe; border-color: #7c3aed; color: #4c1d95; }
+        .mol-label.b { background: #e0f2fe; border-color: #0284c7; color: #075985; }
+        .mol-label.r { background: #ffedd5; border-color: #c2410c; color: #7c2d12; }
+        .view-chip { font-family: 'Jua', sans-serif; padding: 6px 14px; border-radius: 999px; border: 2px solid #fdba74; background: #fff; color: #9a3412; transition: all 0.2s; }
+        .view-chip.on { background: linear-gradient(135deg, #fb9a5b, #f2703a); color: #fff; border-color: transparent; }
+        .legend-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #94a3b8; vertical-align: -2px; margin-right: 4px; }
+
+        /* 모달 */
+        .modal-wrap { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-start; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); padding: 24px 12px; overflow-y: auto; opacity: 0; transition: opacity 0.3s; }
+        .modal-wrap.show { opacity: 1; }
+        .modal-wrap.hidden { display: none !important; }
+        .modal-box { background: #fff; border-radius: 20px; width: 100%; max-width: 1040px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); transform: scale(0.96); transition: transform 0.3s; overflow: hidden; margin: auto 0; }
+        .modal-wrap.show .modal-box { transform: scale(1); }
+        #modal2 { z-index: 120; background: rgba(0,0,0,0.45); }
+        .step-card { background: #fff8f2; border: 2px solid #fed7aa; border-radius: 14px; padding: 14px 16px; }
+        .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #f6894a; color: #fff; font-family: 'Jua'; flex-shrink: 0; }
+        .analogy { background: #fefce8; border: 2px dashed #facc15; border-radius: 14px; padding: 12px 14px; }
+
+        input[type=range].nut-range { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #fdba74, #a78bfa); outline: none; }
+        input[type=range].nut-range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 3px solid #f2703a; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        input[type=range].nut-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #f2703a; cursor: pointer; }
+
+        mjx-container { font-size: 105% !important; }
+        mjx-container[jax="SVG"] > svg { display: inline-block !important; }
+        mjx-container[jax="SVG"][display="true"] > svg { display: inline-block !important; }
+        mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding: 4px 0; }
+        table { font-variant-numeric: tabular-nums; }
+        @media (prefers-reduced-motion: reduce) { .animate-float, .concept-blank::after { animation: none; } }
+    </style>
+    <style>
+        /* ---- 소화계 단원과 동일한 요소 ---- */
+        .start-badge { display: inline-flex; align-items: center; gap: 4px; font-family: 'Jua', sans-serif; font-size: 0.95rem; color: #fff; background: linear-gradient(135deg, #7cc35a, #4c9a2a); padding: 3px 14px; border-radius: 999px 999px 999px 4px; box-shadow: 0 3px 8px rgba(76, 154, 42, 0.3); vertical-align: middle; }
+        .fig-card { background: #fff; border: 2px solid #fed7aa; border-radius: 16px; padding: 12px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .fig-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -8px rgba(194, 65, 12, 0.3); }
+        .bogi { border: 2px solid #374151; background: #fff; border-radius: 4px; padding: 10px 14px; }
+        textarea.kiwi-input { width: 100%; min-height: 72px; border: 2px dashed #f6894a; border-radius: 14px; padding: 10px 14px; background: rgba(246, 137, 74, 0.06); font-family: 'Gowun Dodum', sans-serif; color: #7a2e12; resize: vertical; }
+        textarea.kiwi-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(246, 137, 74, 0.3); }
+        .svg-blank { cursor: pointer; }
+        .svg-blank .ans { opacity: 0; transition: opacity .3s; }
+        .svg-blank .hint { opacity: .85; }
+        .svg-blank.revealed .ans { opacity: 1; }
+        .svg-blank.revealed .hint { display: none; }
+        .svg-blank:hover rect { fill: #fff7ed; }
+        .anim-btn { font-family: 'Jua', sans-serif; padding: 7px 14px; border-radius: 12px; border: 2px solid #fdba74; background: #fff; color: #9a3412; transition: transform .2s; }
+        .anim-btn:hover { transform: scale(1.05); }
+        .anim-btn.on { background: #fff1e4; }
+    </style>
+    <style>
+        /* ---- 순환계 단원 추가 요소 (기존 디자인 체계 유지) ---- */
+        .phase-pill { font-family: 'Jua', sans-serif; font-size: 0.9rem; padding: 3px 12px; border-radius: 999px; border: 2px solid #fecaca; background: #fff; color: #9f1239; transition: all .25s; }
+        .phase-pill.on { background: linear-gradient(135deg, #fb7185, #e11d48); color: #fff; border-color: transparent; transform: scale(1.06); }
+        .cyc-arrow { opacity: 0; transition: opacity .6s; }
+        .show-arrows .cyc-arrow { opacity: 1; }
+        .cyc-text { display: none; }
+        .show-arrows .cyc-text { display: block; }
+        .row-head { font-family: 'Jua', sans-serif; }
+        .flow-arrow { display: inline-block; width: 60px; height: 24px; vertical-align: middle; margin-right: 8px; background: linear-gradient(90deg, #fde047, #facc15); clip-path: polygon(0 30%, 70% 30%, 70% 0, 100% 50%, 70% 100%, 70% 70%, 0 70%); }
+        .deep-box { background: linear-gradient(135deg, #f5f3ff, #fff1f2); border: 2px solid #ddd6fe; border-radius: 18px; padding: 18px; }
+        .deep-btn { font-family: 'Jua', sans-serif; padding: 10px 12px; border-radius: 12px; border: 2px solid #c4b5fd; background: #fff; color: #5b21b6; transition: transform .2s; text-align: left; }
+        .deep-btn:hover { transform: scale(1.03); background: #faf5ff; }
+        .prob-bar { height: 22px; border-radius: 999px; background: #f1f5f9; overflow: hidden; }
+        .prob-bar > i { display: block; height: 100%; border-radius: 999px; transition: width .3s; }
+        .gibbs-num { font-variant-numeric: tabular-nums; font-weight: 700; }
+        @keyframes beat { 0% { transform: scale(1); } 30% { transform: scale(1.35); } 100% { transform: scale(1); } }
+        .beating { animation: beat .5s ease-out; transform-box: fill-box; transform-origin: center; }
+        @keyframes press { 0% { transform: translateY(0); } 30% { transform: translateY(7px); } 100% { transform: translateY(0); } }
+        .pressing { animation: press .5s ease-out; }
+    </style>
+    <style>
+        /* ---- 혈액 순환 경로 단원 추가 요소 (기존 디자인 체계 유지) ---- */
+        #flow-wrap .flow-dot { opacity: 0; transition: opacity .4s; }
+        #flow-wrap.run-flow .flow-dot { opacity: 1; }
+        .phase-pill[data-sp] { font-size: 0.82rem; padding: 2px 10px; }
+    </style>
+    <style>
+        /* ---- 호흡운동 단원 추가 요소 (기존 디자인 체계 유지) ---- */
+        .gauge { position: relative; height: 18px; border-radius: 999px; background: linear-gradient(90deg, #bfdbfe, #f8fafc 50%, #fecaca); border: 1px solid #e5e7eb; }
+        .gauge > i { position: absolute; top: -4px; width: 6px; height: 24px; margin-left: -3px; border-radius: 3px; background: #1f2937; transition: left .12s; }
+        .gauge::after { content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; background: #94a3b8; }
+        .hud-row td { border: 1px solid #fed7aa; padding: 5px 8px; }
+        .principle td { border: 1px solid #9ca3af; padding: 8px 6px; }
+        .q2-row { display: grid; grid-template-columns: 28px repeat(5, 1fr); gap: 4px; text-align: center; }
+        .kw-ok { color: #047857; } .kw-no { color: #b91c1c; }
+    </style>
+
+</head>
+<body>
+
+    <div id="overlay" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/95 px-4 backdrop-blur-sm transition-opacity duration-500 overflow-y-auto">
+        <div class="text-center animate-float max-w-2xl py-8">
+            <div class="mb-6 flex justify-center gap-6 text-6xl">
+                <i class="fa-solid fa-lungs text-rose-400 drop-shadow-md"></i>
+                <i class="fa-solid fa-arrows-up-down text-orange-400 drop-shadow-md"></i>
+                <i class="fa-solid fa-wind text-sky-400 drop-shadow-md"></i>
+            </div>
+            <h1 class="text-center font-cute text-4xl sm:text-5xl md:text-6xl text-orange-700 mb-4 drop-shadow-sm">6. 2. 1. - (2) 호흡운동의 원리를 모형으로 설명하기</h1>
+            <p class="text-xl md:text-2xl text-orange-600 mb-8 font-light">근육이 없는 폐는 어떻게 부풀었다 줄어들까요? 🎈</p>
+
+            <div class="space-y-3 mb-8 text-left max-w-md mx-auto bg-orange-50 p-6 rounded-2xl border border-orange-200 shadow-lg">
+                <h3 class="font-cute text-2xl text-orange-800 mb-3 text-center">💡 오늘 배울 내용</h3>
+                <ul class="text-orange-900 space-y-2.5 text-base">
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-flask text-rose-400"></i> 1단계: 호흡운동과 모형 (3D 고무막 모형)</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-arrows-up-down text-orange-400"></i> 2단계: 호흡운동의 원리 (3D 주사기 · 3D 호흡운동)</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-pencil text-sky-400"></i> 3단계: 실전 문제 풀이</li>
+                </ul>
+            </div>
+
+            <button onclick="startApp()" class="font-cute bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-white text-2xl sm:text-3xl py-4 px-10 rounded-full shadow-xl transition-transform hover:scale-105 active:scale-95">
+                호흡운동 탐구 시작하기 🚀
+            </button>
+        </div>
+    </div>
+
+    <div id="app" class="max-w-5xl mx-auto p-4 md:p-8 hidden">
+
+        <header class="text-center mb-8 pt-4">
+            <h1 class="font-cute text-4xl md:text-5xl text-orange-800 drop-shadow-sm">🎈 호흡운동의 원리를 모형으로 설명하기</h1>
+            <p class="text-orange-600 mt-2 font-cute text-lg">중학교 2학년 과학 Ⅵ. 동물과 에너지</p>
+        </header>
+
+        <!-- Navigation Bar -->
+        <nav class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 glass-panel p-3">
+            <button onclick="openTab('model')" id="btn-model" class="nav-btn active font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">1. 호흡운동과 모형</button>
+            <button onclick="openTab('principle')" id="btn-principle" class="nav-btn font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">2. 호흡운동의 원리</button>
+            <button onclick="openTab('quiz')" id="btn-quiz" class="nav-btn font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">3. 문제 풀이</button>
+        </nav>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: 생각해보기 · 호흡운동 · 해보기 -->
+        <!-- ========================================== -->
+        <section id="tab-model" class="tab-content glass-panel p-6 md:p-10 mb-8">
+            <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-xl mb-6 flex items-start gap-3 shadow-sm">
+                <i class="fa-solid fa-circle-info text-yellow-500 text-2xl mt-1"></i>
+                <p class="text-gray-700">본문의 <strong class="text-orange-600">점선 빈칸</strong>을 클릭해 학습지의 정답을 확인하세요. 스스로 먼저 생각해본 후 클릭하면 학습 효과가 좋습니다!</p>
+            </div>
+
+            <div class="bg-white rounded-xl border-2 border-orange-100 shadow-sm mb-8 overflow-hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-5 border-b border-orange-100">
+                    <div class="bg-orange-50 p-3 font-cute text-lg text-orange-800 flex items-center justify-center">Ⅵ. 동물과 에너지</div>
+                    <div class="p-3 sm:col-span-4 text-gray-700">2. 세포호흡과 에너지 &nbsp;›&nbsp; ⑴ 기체를 교환하는 호흡계 ⓯</div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-5">
+                    <div class="bg-orange-50 p-3 font-cute text-lg text-orange-800 flex items-center justify-center">학습 목표</div>
+                    <div class="p-3 sm:col-span-4 text-gray-700">✿ 호흡운동의 원리를 모형으로 설명할 수 있다.</div>
+                </div>
+            </div>
+
+            <!-- 생각해보기 -->
+            <div class="mb-8">
+                <p class="text-lg leading-loose"><span class="font-cute text-xl bg-teal-500 text-white px-3 py-1 rounded-lg mr-2">생각해보기</span> 심장은 스스로 움직(심장박동)일 수 있는 반면, 폐는 스스로 움직일 수 없다. 그 까닭은 무엇일까?</p>
+                <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose mt-3">
+                    <p>✏️ 심장과 달리 폐는 ( <span class="concept-blank" onclick="revealBlank(this)">근육</span> )이 없어서 스스로 움직일 수 없다. 따라서 폐는 흉강을 둘러싸고 있는 ( <span class="concept-blank" onclick="revealBlank(this)">가로막</span> )과 갈비뼈의 움직임에 의해 크기가 변한다. <button class="how-btn ml-1" onclick="openMotion('auto')">How?</button></p>
+                </div>
+            </div>
+
+            <!-- 1. 호흡운동 -->
+            <div class="mb-8">
+                <h2 class="font-cute text-3xl text-orange-700 mb-4"><i class="fa-solid fa-lungs"></i> 1. 호흡운동</h2>
+                <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose">
+                    <p>: 숨을 들이마셔 폐로 공기가 들어오는 ( <span class="concept-blank" onclick="revealBlank(this)">들숨</span> ), 숨을 내쉬어 폐에서 공기가 나가는 ( <span class="concept-blank" onclick="revealBlank(this)">날숨</span> )의 반복 <button class="how-btn ml-1" onclick="openMotion('auto')">How?</button></p>
+                </div>
+            </div>
+
+            <!-- 해보기 -->
+            <div>
+                <h2 class="font-cute text-3xl text-orange-700 mb-4"><span class="font-cute text-xl bg-teal-500 text-white px-3 py-1 rounded-lg mr-1 align-middle">해보기</span> 모형으로 알아보는 호흡운동의 원리</h2>
+                <div class="grid lg:grid-cols-5 gap-4 items-start">
+                    <div class="lg:col-span-2 fig-card" onclick="figClick(event, 'jar')">
+                        <div id="fig-jar"></div>
+                        <p class="text-center text-sm text-orange-600 font-cute mt-1"><i class="fa-solid fa-cube"></i> 그림을 누르면 3D 고무막 모형이 열려요</p>
+                    </div>
+                    <div class="lg:col-span-3 bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose">
+                        <p><span class="font-cute text-xl text-rose-700">①</span> 모형에서 각 부분은 사람의 어떤 호흡숨관에 해당하는가? <button class="how-btn ml-1" onclick="openJar('map')">How?</button></p>
+                        <div class="overflow-x-auto mt-2">
+                            <table class="w-full min-w-[460px] border-collapse text-center text-[16px]">
+                                <tr class="font-cute bg-orange-50"><td class="border border-gray-400 p-2 whitespace-nowrap w-[72px]">모형</td><td class="border border-gray-400 p-2">Y자관</td><td class="border border-gray-400 p-2">고무풍선</td><td class="border border-gray-400 p-2">고무 막</td><td class="border border-gray-400 p-2 whitespace-nowrap">유리병 속 공간</td></tr>
+                                <tr><td class="border border-gray-400 p-2 font-cute text-orange-800 whitespace-nowrap">실제 몸</td>
+                                    <td class="border border-gray-400 p-2 whitespace-nowrap">( <span class="concept-blank" onclick="revealBlank(this)">숨관, 숨관가지</span> )</td>
+                                    <td class="border border-gray-400 p-2 whitespace-nowrap">( <span class="concept-blank" onclick="revealBlank(this)">폐</span> )</td>
+                                    <td class="border border-gray-400 p-2 whitespace-nowrap">( <span class="concept-blank" onclick="revealBlank(this)">가로막</span> )</td>
+                                    <td class="border border-gray-400 p-2 whitespace-nowrap">( <span class="concept-blank" onclick="revealBlank(this)">흉강</span> )</td></tr>
+                            </table>
+                        </div>
+                        <p class="mt-4"><span class="font-cute text-xl text-rose-700">②</span> 고무막을 아래로 잡아당겨보자. <button class="how-btn ml-1" onclick="openJar('pull')">How?</button></p>
+                        <p class="pl-4">: 고무풍선의 크기가 ( <select class="nut-select" onchange="checkSelect(this,'커진다')"><option value="">선택하세요</option><option>커진다</option><option>작아진다</option></select> ). 우리 몸의 ( <select class="nut-select" onchange="checkSelect(this,'들숨')"><option value="">선택하세요</option><option>들숨</option><option>날숨</option></select> )</p>
+                        <p class="mt-3"><span class="font-cute text-xl text-rose-700">③</span> 고무막을 위로 올려보자. <button class="how-btn ml-1" onclick="openJar('push')">How?</button></p>
+                        <p class="pl-4">: 고무풍선의 크기가 ( <select class="nut-select" onchange="checkSelect(this,'작아진다')"><option value="">선택하세요</option><option>커진다</option><option>작아진다</option></select> ). 우리 몸의 ( <select class="nut-select" onchange="checkSelect(this,'날숨')"><option value="">선택하세요</option><option>들숨</option><option>날숨</option></select> )</p>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose mt-4">
+                    <p><span class="font-cute text-xl text-rose-700">④</span> 모형과 실제 사람의 호흡운동은 어떤 차이점이 있을까? <button class="how-btn ml-1" onclick="openMotion('in')">How?</button></p>
+                    <p class="pl-4">: 모형에서는 실제 호흡운동의 ( <span class="concept-blank" onclick="revealBlank(this)">갈비뼈</span> ) 움직임이 나타나지 않는다.</p>
+                </div>
+            </div>
+
+            <!-- 심화 -->
+            <div class="deep-box mt-8">
+                <p class="font-cute text-2xl text-violet-700 mb-1">🔬 심화 탐구 : 고무막 모형을 더 깊이</p>
+                <p class="text-gray-700 mb-3">3D 고무막 모형을 직접 당기고 올려 보며 압력이 어떻게 변하는지 숫자로 확인하고, 유리병에 구멍이 나면 어떻게 되는지도 실험해 보세요.</p>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <button class="deep-btn" onclick="openJar('pull')">⬇️ 고무막 당기기 (들숨)</button>
+                    <button class="deep-btn" onclick="openJar('push')">⬆️ 고무막 올리기 (날숨)</button>
+                    <button class="deep-btn" onclick="openJar('map')">🧩 모형과 우리 몸 비교</button>
+                    <button class="deep-btn" onclick="openMotion('auto')">🫁 3D 실제 호흡운동</button>
+                    <button class="deep-btn" onclick="openJar('hole')">🕳️ 유리병에 구멍이 나면? (기흉)</button>
+                    <button class="deep-btn" onclick="openSpiro()">📈 폐활량과 호흡량 그래프</button>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <button onclick="openTab('principle')" class="font-cute bg-orange-400 hover:bg-orange-500 text-white text-xl py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    다음: 호흡운동의 원리 알아보기 <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: 미리 알아둘 것 · 호흡운동의 원리 -->
+        <!-- ========================================== -->
+        <section id="tab-principle" class="tab-content hidden glass-panel p-6 md:p-10 mb-8">
+            <div class="mb-8">
+                <h2 class="font-cute text-3xl text-orange-700 mb-4"><span class="font-cute text-xl bg-teal-500 text-white px-3 py-1 rounded-lg mr-1 align-middle">미리 알아둘 것</span></h2>
+                <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose">
+                    <p>① <strong>부피</strong> : 차지하는 공간 / <strong>압력</strong> : 미는 힘 / <strong>대기압</strong> : 대기에 있는 공기의 압력</p>
+                    <p class="mt-2">② 기체의 <u class="underline-offset-4">부피</u>과 <u class="underline-offset-4">압력</u>은 반비례 : 부피가 커지면 압력은 ( <select class="nut-select" onchange="checkSelect(this,'낮아짐')"><option value="">선택하세요</option><option>높아짐</option><option>낮아짐</option></select> ). 부피가 작아지면 압력은 ( <select class="nut-select" onchange="checkSelect(this,'높아짐')"><option value="">선택하세요</option><option>높아짐</option><option>낮아짐</option></select> ). <button class="how-btn ml-1" onclick="openSyringe('closed')">How?</button></p>
+                    <p class="mt-2">③ 공기는 압력이 ( <select class="nut-select" onchange="checkSelect(this,'높은')"><option value="">선택하세요</option><option>낮은</option><option>높은</option></select> ) 곳 → ( <select class="nut-select" onchange="checkSelect(this,'낮은')"><option value="">선택하세요</option><option>낮은</option><option>높은</option></select> ) 곳으로 이동 <button class="how-btn ml-1" onclick="openSyringe('open')">How?</button></p>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="font-cute text-3xl text-orange-700 mb-4"><i class="fa-solid fa-arrows-up-down"></i> 2. 호흡운동의 원리</h2>
+                <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose mb-4">
+                    <p>: 폐는 근육이 없어 스스로 움직일 수 ( <span class="concept-blank" onclick="revealBlank(this)">없</span> )기 때문에, 가로막과 갈비뼈의 움직임에 의해 호흡운동이 일어난다. <button class="how-btn ml-1" onclick="openMotion('auto')">How?</button></p>
+                </div>
+                <div class="grid lg:grid-cols-9 gap-3 items-center">
+                    <div class="lg:col-span-2 fig-card order-2 lg:order-1" onclick="figClick(event, 'in')"><div id="fig-in"></div><p class="text-center text-sm text-orange-600 font-cute"><i class="fa-solid fa-cube"></i> 3D 들숨 보기</p></div>
+                    <div class="lg:col-span-5 order-1 lg:order-2 overflow-x-auto">
+                        <table class="principle w-full min-w-[440px] whitespace-nowrap border-collapse text-center text-[16px] bg-white rounded-xl">
+                            <tr class="font-cute text-xl"><td class="bg-sky-50 text-sky-700">들숨 <button class="how-btn" onclick="openMotion('in')">How?</button></td><td class="bg-gray-50 w-[110px]"></td><td class="bg-violet-50 text-violet-700">날숨 <button class="how-btn" onclick="openMotion('out')">How?</button></td></tr>
+                            <tr><td>( <select class="nut-select" onchange="checkSelect(this,'내려감')"><option value="">선택</option><option>올라감</option><option>내려감</option></select> )</td><td class="font-cute bg-gray-50 text-orange-800">가로막</td><td>( <select class="nut-select" onchange="checkSelect(this,'올라감')"><option value="">선택</option><option>올라감</option><option>내려감</option></select> )</td></tr>
+                            <tr><td>( <select class="nut-select" onchange="checkSelect(this,'올라감')"><option value="">선택</option><option>올라감</option><option>내려감</option></select> )</td><td class="font-cute bg-gray-50 text-orange-800">갈비뼈</td><td>( <select class="nut-select" onchange="checkSelect(this,'내려감')"><option value="">선택</option><option>올라감</option><option>내려감</option></select> )</td></tr>
+                            <tr class="text-orange-400"><td>⬇</td><td></td><td>⬇</td></tr>
+                            <tr><td>( <select class="nut-select" onchange="checkSelect(this,'커짐')"><option value="">선택</option><option>커짐</option><option>작아짐</option></select> )</td><td class="font-cute bg-gray-50 text-orange-800 leading-tight">흉강과 폐의<br>부피</td><td>( <select class="nut-select" onchange="checkSelect(this,'작아짐')"><option value="">선택</option><option>커짐</option><option>작아짐</option></select> )</td></tr>
+                            <tr class="text-orange-400"><td>⬇</td><td class="text-gray-600 font-cute text-sm">(반비례)</td><td>⬇</td></tr>
+                            <tr><td>대기압보다<br>( <select class="nut-select" onchange="checkSelect(this,'낮아짐')"><option value="">선택</option><option>높아짐</option><option>낮아짐</option></select> )</td><td class="font-cute bg-gray-50 text-orange-800 leading-tight">폐 내부의<br>압력</td><td>대기압보다<br>( <select class="nut-select" onchange="checkSelect(this,'높아짐')"><option value="">선택</option><option>높아짐</option><option>낮아짐</option></select> )</td></tr>
+                            <tr class="text-orange-400"><td>⬇</td><td></td><td>⬇</td></tr>
+                            <tr><td>폐로 ( <select class="nut-select" onchange="checkSelect(this,'들어옴')"><option value="">선택</option><option>들어옴</option><option>나감</option></select> )</td><td class="font-cute bg-gray-50 text-orange-800">공기의 이동</td><td>폐에서 ( <select class="nut-select" onchange="checkSelect(this,'나감')"><option value="">선택</option><option>들어옴</option><option>나감</option></select> )</td></tr>
+                        </table>
+                    </div>
+                    <div class="lg:col-span-2 fig-card order-3" onclick="figClick(event, 'out')"><div id="fig-out"></div><p class="text-center text-sm text-orange-600 font-cute"><i class="fa-solid fa-cube"></i> 3D 날숨 보기</p></div>
+                </div>
+            </div>
+
+            <div class="deep-box mt-8">
+                <p class="font-cute text-2xl text-violet-700 mb-1">🔬 심화 탐구 : 압력과 부피, 그리고 숨쉬기</p>
+                <p class="text-gray-700 mb-3">주사기 속 공기 분자의 움직임으로 보일 법칙을 이해하고, 실제 숨을 쉴 때 폐 속 압력이 얼마나 변하는지 확인해 보세요.</p>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <button class="deep-btn" onclick="openSyringe('closed')">💉 3D 주사기 : 부피와 압력</button>
+                    <button class="deep-btn" onclick="openSyringe('open')">💨 3D 주사기 : 공기의 이동</button>
+                    <button class="deep-btn" onclick="openMotion('auto')">🫁 3D 호흡운동과 폐 속 압력</button>
+                    <button class="deep-btn" onclick="openBoyleGraph()">📉 보일 법칙 그래프 그리기</button>
+                    <button class="deep-btn" onclick="openSpiro()">📈 폐활량과 호흡량 그래프</button>
+                    <button class="deep-btn" onclick="openJar('hole')">🕳️ 흉막과 기흉 : 구멍 난 모형</button>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <button onclick="openTab('quiz')" class="font-cute bg-rose-400 hover:bg-rose-500 text-white text-xl py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    마지막 단계: 확인 문제 풀기 💯
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 문제 풀이 -->
+        <!-- ========================================== -->
+        <section id="tab-quiz" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 md:p-10">
+                <h2 class="font-cute text-3xl text-orange-700 mb-2"><i class="fa-solid fa-pen-clip"></i> 학습지 연습문제</h2>
+                <p class="text-gray-600 mb-8">배운 내용을 바탕으로 정답을 선택해보세요.</p>
+
+                <p class="font-bold text-gray-800 mb-3">[1~2] 그림은 호흡 운동의 원리를 알아보기 위한 모형을 나타낸 것이다.</p>
+                <!-- Question 1 -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 mb-8 shadow-sm">
+                    <div class="grid md:grid-cols-5 gap-4 items-start">
+                        <div class="md:col-span-2 flex justify-center"><div id="fig-q1" class="w-full max-w-[280px]"></div></div>
+                        <div class="md:col-span-3">
+                            <div class="flex gap-3 mb-4">
+                                <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">1</div>
+                                <p class="text-gray-800 font-bold leading-relaxed pt-0.5">모형의 각 부분과 사람의 호흡 숨관을 옳게 짝지은 것은?</p>
+                            </div>
+                            <div class="space-y-2" id="q1-options">
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 1)">① 유리관 - 식도</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 2)">② 유리병 - 허파꽈리</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 3)">③ 고무 막 - 가로막</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 4)">④ 고무풍선 - 모세혈관</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 5)">⑤ 유리병 속의 공간 - 갈비뼈</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="q1-feedback" class="mt-4 hidden p-3 rounded-lg font-bold text-center"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 mb-8 shadow-sm">
+                    <div class="flex gap-3 mb-4">
+                        <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">2</div>
+                        <p class="text-gray-800 font-bold leading-relaxed pt-0.5">위 그림에서 고무 막을 아래로 잡아당겼을 때 우리 몸에서 일어나는 변화를 옳게 짝지은 것은?</p>
+                    </div>
+                    <div class="overflow-x-auto"><div class="min-w-[560px]">
+                        <div class="q2-row font-cute text-orange-800 mb-1 px-3"><span></span><span><u>가로막</u></span><span><u>갈비뼈</u></span><span><u>흉강의 부피</u></span><span><u>폐 내부의 압력</u></span><span><u>공기의 이동</u></span></div>
+                        <div class="space-y-2" id="q2-options">
+                            <div class="quiz-option q2-row p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 1)"><span>①</span><span>내려간다.</span><span>내려간다.</span><span>증가한다.</span><span>감소한다.</span><span>들어옴</span></div>
+                            <div class="quiz-option q2-row p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 2)"><span>②</span><span>내려간다.</span><span>올라간다.</span><span>증가한다.</span><span>감소한다.</span><span>들어옴</span></div>
+                            <div class="quiz-option q2-row p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 3)"><span>③</span><span>내려간다.</span><span>올라간다.</span><span>감소한다.</span><span>증가한다.</span><span>나감</span></div>
+                            <div class="quiz-option q2-row p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 4)"><span>④</span><span>올라간다.</span><span>내려간다.</span><span>감소한다.</span><span>증가한다.</span><span>나감</span></div>
+                            <div class="quiz-option q2-row p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 5)"><span>⑤</span><span>올라간다.</span><span>올라간다.</span><span>증가한다.</span><span>감소한다.</span><span>들어옴</span></div>
+                        </div>
+                    </div></div>
+                    <div id="q2-feedback" class="mt-4 hidden p-3 rounded-lg font-bold text-center"></div>
+                </div>
+
+                <!-- Question 3 (서술형) -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 mb-8 shadow-sm">
+                    <div class="grid md:grid-cols-5 gap-4 items-start">
+                        <div class="md:col-span-3">
+                            <div class="flex gap-3 mb-4">
+                                <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">3</div>
+                                <p class="text-gray-800 font-bold leading-relaxed pt-0.5">그림은 사람의 호흡 숨관을 나타낸 것이다. 숨을 들이마실 때 공기가 폐 속으로 들어오는 원리를 가로막, 갈비뼈, 흉강과 폐의 부피, 폐 내부 압력의 변화를 포함하여 설명하시오.</p>
+                            </div>
+                            <label for="q3-text" class="sr-only">3번 서술형 답안</label>
+                            <textarea id="q3-text" rows="4" class="w-full border-2 border-orange-200 rounded-xl p-3 text-lg focus:outline-none focus:border-orange-400" placeholder="여기에 나의 답을 써 보세요."></textarea>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <button onclick="checkQ3()" class="font-cute bg-orange-400 hover:bg-orange-500 text-white py-2 px-5 rounded-full shadow">✅ 핵심어 점검하기</button>
+                                <button onclick="showQ3()" class="font-cute bg-white border-2 border-orange-300 text-orange-700 py-2 px-5 rounded-full shadow-sm">📖 모범 답안 보기</button>
+                            </div>
+                            <div id="q3-check" class="mt-3 hidden"></div>
+                            <div id="q3-answer" class="mt-3 hidden p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-900"></div>
+                        </div>
+                        <div class="md:col-span-2 flex justify-center"><div id="fig-q3" class="w-full max-w-[250px]"></div></div>
+                    </div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
+                    <div class="flex gap-3 mb-4">
+                        <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">4</div>
+                        <p class="text-gray-800 font-bold leading-relaxed pt-0.5">그림은 허파꽈리, 모세 혈관, 조직 세포 사이에서 일어나는 기체 A와 B의 이동을 나타낸 것이다.</p>
+                    </div>
+                    <div class="flex justify-center mb-4"><div id="fig-q4" class="w-full max-w-[560px]"></div></div>
+                    <p class="text-gray-800 font-bold mb-3">이에 관한 설명으로 옳지 <u class="underline-offset-4">않은</u> 것은?</p>
+                    <div class="space-y-2" id="q4-options">
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(4, 1)">① A는 산소, B는 이산화 탄소이다.</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(4, 2)">② B의 농도는 조직세포가 모세혈관보다 높다.</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(4, 3)">③ (가)에서 A와 B의 이동 원리는 확산이다.</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(4, 4)">④ (가)에서 모세혈관으로 들어온 A는 적혈구에 의해 운반된다.</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(4, 5)">⑤ (나)는 외호흡을 나타낸다.</div>
+                    </div>
+                    <div id="q4-feedback" class="mt-4 hidden p-3 rounded-lg font-bold text-center"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-orange-800/60 font-cute text-sm">
+            <p>제작: 해누리중학교 과학교사 남국현</p>
+            <p class="mt-1">© 2026 Haenuri Middle School Science Dept. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <!-- 공용 모달 (1단계) -->
+    <div id="modal" class="modal-wrap hidden" onclick="if(event.target===this) closeModal()">
+        <div class="modal-box">
+            <div data-mhead class="bg-orange-500 px-5 py-4 flex items-center justify-between gap-3">
+                <h3 data-mtitle class="font-cute text-xl sm:text-2xl text-white"></h3>
+                <button onclick="closeModal()" class="w-9 h-9 rounded-full bg-white/25 hover:bg-white/40 text-white text-xl flex-shrink-0" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div data-mbody class="p-4 sm:p-6"></div>
+        </div>
+    </div>
+    <!-- 팝업 안의 팝업 (2단계) -->
+    <div id="modal2" class="modal-wrap hidden" onclick="if(event.target===this) closeModal2()">
+        <div class="modal-box">
+            <div data-mhead class="bg-rose-600 px-5 py-4 flex items-center justify-between gap-3">
+                <h3 data-mtitle class="font-cute text-xl sm:text-2xl text-white"></h3>
+                <button onclick="closeModal2()" class="w-9 h-9 rounded-full bg-white/25 hover:bg-white/40 text-white text-xl flex-shrink-0" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div data-mbody class="p-4 sm:p-6"></div>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================
+        //  분자 데이터 (RDKit ETKDG + MMFF94 최적화 3D 좌표, 단위 Å)
+        // =====================================================
+        const MOL = {"glucose":{"atoms":[["C",-2.48,0.53,-0.12],["C",-0.96,0.45,-0.35],["C",-0.39,-0.94,-0.03],["C",1.13,-0.94,-0.25],["C",1.76,0.17,0.59],["C",1.09,1.52,0.25],["O",-0.32,1.46,0.46],["O",1.35,1.9,-1.1],["O",3.18,0.21,0.38],["O",1.69,-2.2,0.15],["O",-0.96,-1.97,-0.84],["O",-2.85,-0.07,1.12],["H",-2.8,1.58,-0.1],["H",-3.02,0.01,-0.91],["H",-0.8,0.69,-1.41],["H",-0.57,-1.22,1.02],["H",1.37,-0.82,-1.31],["H",1.6,-0.05,1.65],["H",1.5,2.3,0.9],["H",1.47,2.86,-1.08],["H",3.45,-0.73,0.36],["H",1.13,-2.87,-0.3],["H",-1.85,-2.13,-0.47],["H",-3.73,0.28,1.36]],"bonds":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[5,7,1],[4,8,1],[3,9,1],[2,10,1],[0,11,1],[6,1,1],[0,12,1],[0,13,1],[1,14,1],[2,15,1],[3,16,1],[4,17,1],[5,18,1],[7,19,1],[8,20,1],[9,21,1],[10,22,1],[11,23,1]]},"glycine":{"atoms":[["N",1.3,-0.54,-0.43],["C",0.51,0.59,0.07],["C",-0.99,0.33,-0.06],["O",-1.85,1.17,-0.25],["O",-1.32,-0.97,0.14],["H",2.25,-0.46,-0.08],["H",0.91,-1.4,-0.03],["H",0.73,0.77,1.13],["H",0.76,1.49,-0.51],["H",-2.29,-0.97,0.02]],"bonds":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[0,5,1],[0,6,1],[1,7,1],[1,8,1],[4,9,1]]}};
+        const SMALL = {
+            O2: { atoms: [['O', -0.6, 0, 0], ['O', 0.6, 0, 0]], bonds: [[0, 1, 2]] },
+            CO2: { atoms: [['C', 0, 0, 0], ['O', -1.16, 0, 0], ['O', 1.16, 0, 0]], bonds: [[0, 1, 2], [0, 2, 2]] },
+            H2O: { atoms: [['O', 0, 0, 0], ['H', 0.76, 0.59, 0], ['H', -0.76, 0.59, 0]], bonds: [[0, 1, 1], [0, 2, 1]] },
+            CO: { atoms: [['C', -0.56, 0, 0], ['O', 0.57, 0, 0]], bonds: [[0, 1, 3]] }
+        };
+
+        // --- Audio Logic ---
+        let synth, polySynth, membraneSynth;
+        async function initAudio() {
+            if (synth) return;
+            try {
+                await Tone.start();
+                synth = new Tone.Synth().toDestination();
+                polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                polySynth.volume.value = -5;
+                membraneSynth = new Tone.MembraneSynth().toDestination();
+                membraneSynth.volume.value = -10;
+            } catch (e) { console.log(e); }
+        }
+        function playSound(type) {
+            if (!synth) return;
+            try {
+                if (type === 'click') synth.triggerAttackRelease("C5", "32n");
+                else if (type === 'reveal') synth.triggerAttackRelease("E5", "16n");
+                else if (type === 'correct') polySynth.triggerAttackRelease(["C5", "E5", "G5"], "8n");
+                else if (type === 'wrong') membraneSynth.triggerAttackRelease("C3", "8n");
+                else if (type === 'start') polySynth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "4n");
+                else if (type === 'chomp') membraneSynth.triggerAttackRelease("G2", "16n");
+                else if (type === 'lub') membraneSynth.triggerAttackRelease("D1", "16n");
+                else if (type === 'dub') membraneSynth.triggerAttackRelease("A1", "32n");
+                else if (type === 'beat') membraneSynth.triggerAttackRelease("C2", "32n");
+                else if (type === 'pop') { const now = Tone.now(); synth.triggerAttackRelease("C6", "32n", now); synth.triggerAttackRelease("G6", "32n", now + 0.1); }
+                else if (type === 'drop') {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("G5", "32n", now);
+                    synth.triggerAttackRelease("C6", "32n", now + 0.12);
+                }
+                else if (type === 'magic') {
+                    const now = Tone.now();
+                    ["C5", "E5", "G5", "B5", "D6"].forEach((n, i) => synth.triggerAttackRelease(n, "32n", now + i * 0.08));
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        async function startApp() {
+            await initAudio();
+            playSound('start');
+            document.getElementById('overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('app').classList.remove('hidden');
+                typeset(document.getElementById('app'));
+            }, 500);
+        }
+
+        function typeset(el) {
+            try { if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]).catch(() => {}); } catch (e) {}
+        }
+
+        function openTab(tabName) {
+            playSound('click');
+            const tabs = ['model', 'principle', 'quiz'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const b = document.getElementById(`btn-${t}`);
+                b.classList.remove('active', 'text-white');
+                b.classList.add('bg-white', 'text-orange-800');
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tabName}`);
+            activeBtn.classList.remove('bg-white', 'text-orange-800');
+            activeBtn.classList.add('active', 'text-white');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // =====================================================
+        //  그림 클릭
+        // =====================================================
+        const FIG_OPEN = {
+            jar: () => openJar('map'),
+            in: () => openMotion('in'),
+            out: () => openMotion('out')
+        };
+        function figClick(ev, key) {
+            const b = ev.target.closest('[data-svgblank]');
+            if (b) { if (!b.classList.contains('revealed')) { playSound('reveal'); b.classList.add('revealed'); } return; }
+            FIG_OPEN[key]();
+        }
+
+        // =====================================================
+        //  학습지 그림 : 고무막 호흡 모형 (해보기 · 1번 문제)
+        // =====================================================
+        function jarSVG(variant) {
+            const g = uid('jar'), q1 = variant === 'q1';
+            const lung = q1 ? ['#a3e07a', '#4f9e2c'] : ['#f27a7a', '#b83232'];
+            let s = `<svg viewBox="0 0 360 350" class="w-full h-auto" role="img" aria-label="${q1 ? '유리관, 유리병, 고무풍선, 고무 막으로 만든 호흡 운동 모형' : 'Y자관, 유리병, 고무풍선, 고무 막으로 만든 호흡운동 모형. 손으로 고무 막을 아래로 잡아당기고 있다.'}">`;
+            s += `<defs><linearGradient id="${g}gl" x1="0" x2="1"><stop offset="0" stop-color="#cfe3f5" stop-opacity=".75"/><stop offset=".35" stop-color="#eef6fd" stop-opacity=".35"/><stop offset=".8" stop-color="#d6e7f6" stop-opacity=".45"/><stop offset="1" stop-color="#b7d2ec" stop-opacity=".8"/></linearGradient>
+                <radialGradient id="${g}lu" cx=".4" cy=".35"><stop offset="0" stop-color="${lung[0]}"/><stop offset="1" stop-color="${lung[1]}"/></radialGradient>
+                <linearGradient id="${g}rb" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e2474f"/><stop offset="1" stop-color="#b8202b"/></linearGradient>
+                <linearGradient id="${g}sk" x1="0" x2="1"><stop offset="0" stop-color="#f3c6a5"/><stop offset="1" stop-color="#e5a882"/></linearGradient></defs>`;
+            s += `<g transform="translate(-10,0)">`;
+            // Y자관 / 유리관
+            if (q1) s += `<rect x="134" y="14" width="32" height="26" rx="4" fill="#9ca3af" stroke="#6b7280"/><rect x="146" y="2" width="8" height="14" fill="#e5e7eb" stroke="#9ca3af"/>`;
+            s += `<path d="M150,${q1 ? 6 : 6} L150,128 M150,128 L124,150 M150,128 L176,150" fill="none" stroke="#9fb8cc" stroke-width="9" stroke-linecap="round"/><path d="M150,6 L150,128 M150,128 L124,150 M150,128 L176,150" fill="none" stroke="#f1f7fc" stroke-width="5" stroke-linecap="round"/>`;
+            // 고무풍선 (폐 모양)
+            s += `<path d="M124,146 C104,146 92,170 94,198 C96,224 112,232 126,224 C136,218 136,190 134,170 C133,158 130,148 124,146 Z" fill="url(#${g}lu)" stroke="${lung[1]}" stroke-width="1.5"/>`;
+            s += `<path d="M176,146 C196,146 208,170 206,198 C204,224 188,232 174,224 C164,218 164,190 166,170 C167,158 170,148 176,146 Z" fill="url(#${g}lu)" stroke="${lung[1]}" stroke-width="1.5"/>`;
+            // 유리병
+            s += `<path d="M128,28 L172,28 L172,58 C172,72 246,78 254,122 L254,276 C254,284 248,288 240,288 L60,288 C52,288 46,284 46,276 L46,122 C54,78 128,72 128,58 Z" fill="url(#${g}gl)" stroke="#8fb3d1" stroke-width="2"/>`;
+            s += `<path d="M66,128 C70,104 96,92 118,86" fill="none" stroke="#fff" stroke-width="4" opacity=".7"/><line x1="64" y1="140" x2="64" y2="262" stroke="#fff" stroke-width="5" opacity=".55"/>`;
+            // 고무 막
+            if (q1) {
+                s += `<rect x="40" y="280" width="220" height="16" rx="6" fill="url(#${g}rb)" stroke="#9f1d27"/><line x1="150" y1="296" x2="150" y2="316" stroke="#6b7280" stroke-width="2"/><circle cx="150" cy="318" r="4" fill="#9f1d27"/>`;
+                s += `<path d="M132,322 C130,312 140,306 150,308 C162,306 170,314 168,324 C172,334 164,346 150,346 C136,346 128,336 132,322 Z" fill="url(#${g}sk)" stroke="#c98d6a"/><path d="M140,318 Q150,314 160,318" fill="none" stroke="#c98d6a"/>`;
+            } else {
+                s += `<path d="M42,282 C78,296 118,306 142,328 L158,328 C182,306 222,296 258,282 L258,292 C226,304 188,316 160,336 L140,336 C112,316 74,304 42,292 Z" fill="url(#${g}rb)" stroke="#9f1d27"/>`;
+                s += `<path d="M42,282 L258,282 L258,292 L42,292 Z" fill="#c62a35"/>`;
+                s += `<path d="M126,340 C122,328 134,322 150,324 C166,322 178,328 174,340 C172,348 160,350 150,350 C140,350 128,348 126,340 Z" fill="url(#${g}sk)" stroke="#c98d6a"/><path d="M136,334 Q150,328 164,334" fill="none" stroke="#c98d6a"/>`;
+                // 병을 잡은 손
+                s += `<path d="M112,52 C110,34 122,24 136,26 L170,24 C184,24 194,34 190,52 C186,64 176,66 170,62 L130,62 C122,66 114,62 112,52 Z" fill="url(#${g}sk)" stroke="#c98d6a"/><path d="M130,40 Q150,34 172,40 M128,50 Q150,44 174,50" fill="none" stroke="#c98d6a"/>`;
+            }
+            s += `</g>`;
+            const lab = (y, tx, x2, y2, t) => `<line x1="${x2}" y1="${y2}" x2="268" y2="${y}" stroke="#4b5563" stroke-width="1.2"/><circle cx="${x2}" cy="${y2}" r="2.5" fill="#4b5563"/><text x="274" y="${y + 6}" font-size="17" font-family="Jua" fill="#1f2937">${t}</text>`;
+            if (q1) s += lab(28, 0, 166, 22, '유리관') + lab(90, 0, 236, 100, '유리병') + lab(185, 0, 196, 190, '고무풍선') + lab(288, 0, 248, 288, '고무 막');
+            else s += lab(70, 0, 142, 100, 'Y자관') + lab(110, 0, 236, 112, '유리병') + lab(190, 0, 196, 190, '고무풍선') + lab(300, 0, 222, 302, '고무 막');
+            return s + `</svg>`;
+        }
+
+        // =====================================================
+        //  학습지 그림 : 들숨 · 날숨 옆모습 (원리 · 3번 문제)
+        // =====================================================
+        function bodySideSVG(ph) {
+            const g = uid('bd'), IN = ph !== 'out', q3 = ph === 'q3';
+            let s = `<svg viewBox="0 0 270 350" class="w-full h-auto" role="img" aria-label="${q3 ? '사람의 호흡 기관 옆모습: 들숨, 갈비뼈, 폐, 횡격막' : IN ? '들숨: 갈비뼈가 올라가고 횡격막이 내려가며 공기가 들어온다' : '날숨: 갈비뼈가 내려가고 횡격막이 올라가며 공기가 나간다'}">`;
+            s += `<defs><linearGradient id="${g}sk" x1="0" x2="1"><stop offset="0" stop-color="#f0d6c4"/><stop offset=".6" stop-color="#fae9dd"/><stop offset="1" stop-color="#ecc9b2"/></linearGradient>
+                <radialGradient id="${g}lu" cx=".45" cy=".4"><stop offset="0" stop-color="#ee8f8f"/><stop offset="1" stop-color="#b53b3b"/></radialGradient>
+                <marker id="${g}ag" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5fae4a"/></marker>
+                <marker id="${g}ao" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f08a24"/></marker>
+                <marker id="${g}ab" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2d7fd3"/></marker>
+                <marker id="${g}ak" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#374151"/></marker></defs>`;
+            const fx = IN ? 10 : 0;
+            // 몸
+            s += `<path d="M84,124 C66,160 62,250 68,350 L${180 + fx * 0.4},350 C${186 + fx * 0.5},300 ${190 + fx},240 ${186 + fx},190 C${182 + fx * 0.6},150 166,128 140,122 Z" fill="url(#${g}sk)" stroke="#dcb59c" stroke-width="1.5"/>`;
+            s += `<path d="M98,90 L98,132 L138,132 L136,90 Z" fill="#f0d6c4"/>`;
+            s += `<circle cx="116" cy="58" r="44" fill="url(#${g}sk)" stroke="#dcb59c" stroke-width="1.5"/>`;
+            s += `<path d="M156,50 L170,64 L158,68" fill="#f3dccd" stroke="#dcb59c" stroke-width="1.5" stroke-linejoin="round"/>`;
+            s += `<path d="M150,82 Q158,86 152,90" fill="none" stroke="#c48e72" stroke-width="2"/>`;
+            // 척추
+            for (let y = 96; y < 345; y += 13) s += `<rect x="72" y="${y}" width="16" height="10" rx="3" fill="#e9dcc6" stroke="#c9b597"/>`;
+            // 숨길 (콧속 → 숨관)
+            s += `<path d="M158,64 C146,62 134,62 124,70 C116,80 116,92 120,104 L124,150" fill="none" stroke="#b12b2b" stroke-width="7" stroke-linecap="round"/>`;
+            s += `<path d="M158,64 C146,62 134,62 124,70 C116,80 116,92 120,104 L124,150" fill="none" stroke="#e46a6a" stroke-width="3" stroke-linecap="round"/>`;
+            // 폐
+            const rx = IN ? 40 : 33, ry = IN ? 70 : 58, cy = IN ? 210 : 200;
+            s += `<ellipse cx="${130 + fx * 0.4}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#${g}lu)" stroke="#8f2c2c" stroke-width="1.5"/>`;
+            const rr = srand(IN ? 3 : 4);
+            s += svgTree(126, 152, Math.PI * 0.5, 30, 4, 3, rr, '#7a2020');
+            // 갈비뼈
+            const slope = IN ? 14 : 34;
+            for (let i = 0; i < 9; i++) {
+                const y = 142 + i * 21;
+                s += `<path d="M86,${y} C120,${y - 10 + slope * 0.3} ${160 + fx},${y + slope * 0.6} ${178 + fx * 0.8},${y + slope}" fill="none" stroke="#f7ecdc" stroke-width="6" stroke-linecap="round" opacity=".88"/>`;
+            }
+            s += `<path d="M${176 + fx * 0.8},${142 + slope} L${180 + fx * 0.9},${300}" stroke="#efe2cc" stroke-width="5" stroke-linecap="round" opacity=".8"/>`;
+            // 횡격막 (가로막)
+            const dia = IN ? 'M84,292 C110,280 150,276 186,290' : 'M84,280 C100,236 150,224 182,262';
+            s += `<path d="${dia}" fill="none" stroke="#c7863f" stroke-width="7" stroke-linecap="round"/>`;
+            if (q3) {
+                const ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#374151" stroke-width="1.2"/>`;
+                s += `<path d="M228,40 C206,44 186,52 170,62" fill="none" stroke="#374151" stroke-width="2" marker-end="url(#${g}ak)"/><text x="214" y="34" font-size="16" font-family="Jua" fill="#1f2937">들숨</text>`;
+                s += ln(176, 196, 214, 196) + `<text x="218" y="202" font-size="16" font-family="Jua" fill="#1f2937">갈비뼈</text>`;
+                s += ln(150, 236, 214, 240) + `<text x="218" y="246" font-size="16" font-family="Jua" fill="#1f2937">폐</text>`;
+                s += ln(176, 288, 214, 300) + `<text x="218" y="306" font-size="16" font-family="Jua" fill="#1f2937">횡격막</text>`;
+            } else {
+                const badge = IN ? ['#5fae4a', '들숨'] : ['#3b82f6', '날숨'];
+                s += `<ellipse cx="44" cy="30" rx="36" ry="22" fill="${badge[0]}"/><text x="44" y="37" text-anchor="middle" font-size="20" font-family="Jua" fill="#fff">${badge[1]}</text>`;
+                s += IN ? `<path d="M232,34 C212,40 194,52 172,62" fill="none" stroke="#2d7fd3" stroke-width="3.5" marker-end="url(#${g}ab)"/>` : `<path d="M172,62 C194,52 212,40 232,34" fill="none" stroke="#2d7fd3" stroke-width="3.5" marker-end="url(#${g}ab)"/>`;
+                s += `<text x="${IN ? 196 : 196}" y="${IN ? 22 : 22}" font-size="15" font-family="Jua" fill="#1f2937">공기가</text><text x="196" y="88" font-size="15" font-family="Jua" fill="#1f2937">${IN ? '들어온다.' : '나간다.'}</text>`;
+                s += `<path d="${IN ? 'M208,212 L208,166' : 'M208,166 L208,212'}" stroke="#f08a24" stroke-width="5" marker-end="url(#${g}ao)"/>`;
+                s += `<text x="214" y="182" font-size="14" font-family="Jua" fill="#1f2937">갈비뼈가</text><text x="214" y="200" font-size="14" font-family="Jua" fill="#1f2937">${IN ? '올라간다.' : '내려간다.'}</text>`;
+                s += `<path d="${IN ? 'M108,240 L108,320' : 'M108,320 L108,244'}" stroke="#5fae4a" stroke-width="5" marker-end="url(#${g}ag)"/>`;
+                s += `<text x="8" y="292" font-size="14" font-family="Jua" fill="#1f2937">횡격막이</text><text x="8" y="310" font-size="14" font-family="Jua" fill="#1f2937">${IN ? '내려간다.' : '올라간다.'}</text>`;
+            }
+            return s + `</svg>`;
+        }
+
+        // =====================================================
+        //  4번 문제 그림
+        // =====================================================
+        function figQ4() {
+            const g = uid('q4');
+            let s = `<svg viewBox="0 0 560 210" class="w-full h-auto" role="img" aria-label="폐포와 모세혈관 사이(가), 모세혈관과 조직 세포 사이(나)에서 기체 A는 왼쪽에서 오른쪽으로, 기체 B는 오른쪽에서 왼쪽으로 이동한다. 가운데에 심장이 있고 위쪽 혈관은 빨강, 아래쪽 혈관은 파랑이다.">`;
+            s += `<defs><marker id="${g}a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="3.5" markerHeight="3.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#f0956a"/></marker></defs>`;
+            const ring = (cx, flip) => {
+                let t = `<path d="M${cx - 72},100 A72,62 0 0 1 ${cx + 72},100" fill="none" stroke="#e05555" stroke-width="28"/><path d="M${cx + 72},100 A72,62 0 0 1 ${cx - 72},100" fill="none" stroke="#4b7fd1" stroke-width="28"/>`;
+                for (let k = 0; k < 9; k++) { const a = Math.PI + k / 8 * Math.PI, b = k / 8 * Math.PI; t += `<circle cx="${(cx + 72 * Math.cos(a)).toFixed(1)}" cy="${(100 + 62 * Math.sin(a)).toFixed(1)}" r="3" fill="#ffd7d7"/><circle cx="${(cx + 72 * Math.cos(b)).toFixed(1)}" cy="${(100 + 62 * Math.sin(b)).toFixed(1)}" r="3" fill="#d6e4ff"/>`; }
+                t += `<path d="M${cx - 30},70 Q${cx - 14},60 ${cx + 2},66" fill="none" stroke="#f0956a" stroke-width="5" marker-end="url(#${g}a)"/><path d="M${cx + 30},132 Q${cx + 14},142 ${cx - 2},136" fill="none" stroke="#f0956a" stroke-width="5" marker-end="url(#${g}a)"/>`;
+                return t;
+            };
+            s += ring(210) + ring(350);
+            s += `<circle cx="280" cy="100" r="46" fill="#f2b4b4" stroke="#d47c7c" stroke-width="2"/><text x="280" y="107" text-anchor="middle" font-size="20" font-family="Jua" fill="#374151">심장</text>`;
+            const vbox = (x, w, fill, stroke, t) => `<rect x="${x}" y="40" width="${w}" height="120" rx="${w / 2}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>` + t.split('').map((c, i) => `<text x="${x + w / 2}" y="${82 + i * 22 - (t.length - 2) * 11}" text-anchor="middle" font-size="18" font-family="Jua" fill="#374151">${c}</text>`).join('');
+            s += vbox(20, 36, '#efbd6e', '#c98f3a', '폐포') + vbox(122, 34, '#b99ad8', '#8a6bb0', '모세혈관') + vbox(404, 34, '#b99ad8', '#8a6bb0', '모세혈관') + vbox(506, 36, '#9fd08a', '#5f9b4a', '조직세포');
+            const arr = (x1, x2, y) => `<path d="M${x1},${y} L${x2},${y}" stroke="#f0956a" stroke-width="7" marker-end="url(#${g}a)"/>`;
+            s += arr(62, 112, 80) + arr(112, 62, 124) + arr(444, 496, 80) + arr(496, 444, 124);
+            s += `<text x="86" y="66" text-anchor="middle" font-size="16" font-family="Times New Roman" fill="#374151">A</text><text x="86" y="148" text-anchor="middle" font-size="16" font-family="Times New Roman" fill="#374151">B</text><text x="470" y="66" text-anchor="middle" font-size="16" font-family="Times New Roman" fill="#374151">A</text><text x="470" y="148" text-anchor="middle" font-size="16" font-family="Times New Roman" fill="#374151">B</text>`;
+            s += `<path d="M38,166 L38,184 L139,184 L139,166" fill="none" stroke="#374151" stroke-width="1.2"/><text x="88" y="202" text-anchor="middle" font-size="15" font-family="Jua" fill="#374151">(가)</text>`;
+            s += `<path d="M421,166 L421,184 L524,184 L524,166" fill="none" stroke="#374151" stroke-width="1.2"/><text x="472" y="202" text-anchor="middle" font-size="15" font-family="Jua" fill="#374151">(나)</text>`;
+            return s + `</svg>`;
+        }
+
+        // =====================================================
+        //  문제 풀이
+        // =====================================================
+        const answers = { 1: 3, 2: 2, 4: 5 };
+        const explains = {
+            1: '유리관(Y자관)은 숨관·숨관가지, 유리병 속 공간은 흉강, 고무풍선은 폐, 고무 막은 가로막에 해당해요. ① 식도는 음식물이 지나는 길이고, ② 허파꽈리는 폐를 이루는 작은 주머니, ④ 모세혈관은 허파꽈리를 둘러싼 혈관, ⑤ 유리병 속 공간은 갈비뼈가 아니라 흉강이에요.',
+            2: '고무 막을 아래로 당기는 것은 들숨이에요. 들숨 때 가로막은 내려가고 갈비뼈는 올라가서 흉강의 부피가 증가하고, 폐 내부 압력이 대기압보다 낮아져(감소) 공기가 폐로 들어와요. 모형에는 갈비뼈의 움직임이 없지만, 우리 몸에서는 갈비뼈가 올라간다는 점에 주의해요!',
+            4: '(가)는 허파꽈리(폐포)와 모세혈관 사이, (나)는 모세혈관과 조직세포 사이의 기체교환이에요. A는 산소, B는 이산화탄소이고 두 기체는 농도 차이에 따른 확산으로 이동하며, 폐에서 혈액으로 들어온 산소는 적혈구가 운반해요. (나)는 조직세포와 모세혈관 사이의 기체교환(내호흡)이므로 ⑤가 옳지 않아요.'
+        };
+        function selectQuiz(qNum, selectedOpt) {
+            const options = document.getElementById(`q${qNum}-options`).children;
+            const feedback = document.getElementById(`q${qNum}-feedback`);
+            for (let i = 0; i < options.length; i++) {
+                if (!options[i].dataset.base) options[i].dataset.base = options[i].className;
+                options[i].className = options[i].dataset.base;
+            }
+            const selectedDiv = options[selectedOpt - 1];
+            feedback.className = 'mt-4 p-3 rounded-lg font-bold text-center';
+            if (selectedOpt === answers[qNum]) {
+                playSound('correct');
+                selectedDiv.classList.add('correct');
+                feedback.innerHTML = `🎉 정답입니다! 훌륭해요.<span class="block font-normal text-sm mt-1">${explains[qNum]}</span>`;
+                feedback.classList.add('bg-blue-100', 'text-blue-800', 'border', 'border-blue-300');
+            } else {
+                playSound('wrong');
+                selectedDiv.classList.add('wrong');
+                feedback.innerHTML = "❌ 오답입니다. 다시 한번 생각해보세요!";
+                feedback.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-300');
+            }
+        }
+        // 3번 서술형 : 핵심어 점검
+        const Q3_KEYS = [
+            ['가로막(횡격막)이 내려감', /(가로막|횡격막)[^.,]*내려/],
+            ['갈비뼈가 올라감', /갈비뼈[^.,]*올라/],
+            ['흉강과 폐의 부피가 커짐', /부피[^.,]*(커|증가|늘)/],
+            ['폐 내부 압력이 낮아짐(작아짐)', /압력[^.,]*(낮아|작아|감소|줄)/],
+            ['공기가 폐로 들어옴', /공기[^.]*들어/]
+        ];
+        function checkQ3() {
+            const t = document.getElementById('q3-text').value.replace(/\s+/g, ' ');
+            const box = document.getElementById('q3-check');
+            if (!t.trim()) { box.classList.remove('hidden'); box.innerHTML = '<p class="text-orange-700">먼저 나의 답을 써 보세요!</p>'; playSound('wrong'); return; }
+            const res = Q3_KEYS.map(([n, re]) => [n, re.test(t)]);
+            const ok = res.filter(r => r[1]).length;
+            box.classList.remove('hidden');
+            box.innerHTML = `<div class="bg-orange-50 border border-orange-200 rounded-lg p-3"><p class="font-cute text-orange-800 mb-1">핵심 내용 ${ok} / ${res.length}개 포함</p>` +
+                res.map(([n, k]) => `<p class="${k ? 'kw-ok' : 'kw-no'}">${k ? '✔' : '✘'} ${n}</p>`).join('') +
+                `<p class="text-xs text-gray-500 mt-1">※ 낱말을 찾아 주는 자동 점검이라 표현이 달라도 맞는 답일 수 있어요. 모범 답안과 비교해 보세요.</p></div>`;
+            playSound(ok === res.length ? 'correct' : 'click');
+        }
+        function showQ3() {
+            playSound('reveal');
+            const a = document.getElementById('q3-answer');
+            a.classList.remove('hidden');
+            a.innerHTML = '<p class="font-cute text-lg mb-1">📖 모범 답안</p><p>가로막이 내려가고 갈비뼈가 올라가면, 흉강과 폐의 부피가 커지고 폐 내부의 압력이 작아져 공기가 외부에서 폐로 들어온다.</p>';
+        }
+
+        function revealBlank(element) {
+            playSound('reveal');
+            element.classList.add('revealed');
+            element.removeAttribute('onclick');
+        }
+        function checkSelect(selectElement, correctAnswer) {
+            if (selectElement.value === correctAnswer) {
+                playSound('correct');
+                selectElement.classList.add('correct');
+                selectElement.disabled = true;
+            } else if (selectElement.value !== "") {
+                playSound('wrong');
+                selectElement.classList.add('border-red-400', 'bg-red-50');
+                setTimeout(() => {
+                    selectElement.classList.remove('border-red-400', 'bg-red-50');
+                    selectElement.value = "";
+                }, 800);
+            }
+        }
+        let _uid = 0;
+        const uid = (p) => `${p}${++_uid}`;
+        const NS = 'http://www.w3.org/2000/svg';
+        function hex2rgb(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); }
+        function lerpHex(a, b, t) {
+            const A = hex2rgb(a), B = hex2rgb(b);
+            return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join('');
+        }
+        function srand(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+        const clamp01 = x => Math.max(0, Math.min(1, x));
+
+        function svgBlank(x, y, w, h, ans, hint) {
+            return `<g class="svg-blank" data-svgblank><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="#fff" stroke="#1f2937" stroke-width="2"/><text class="ans" x="${x + w / 2}" y="${y + h / 2 + 6}" text-anchor="middle" font-size="17" fill="#dc2626" font-family="Jua">${ans}</text><text class="hint" x="${x + w / 2}" y="${y + h / 2 + 5}" text-anchor="middle" font-size="13" fill="#f6894a" font-family="Jua">${hint || '클릭!'}</text></g>`;
+        }
+        function svgLabel(x, y, t, size = 22, anchor = 'start', fill = '#1f2937') {
+            return `<text x="${x}" y="${y}" font-size="${size}" font-family="Jua" fill="${fill}" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="${anchor}">${t}</text>`;
+        }
+        function tubeSVG(d, w, col, dark, light) {
+            return `<path d="${d}" fill="none" stroke="${dark}" stroke-width="${w + 4}" stroke-linecap="round" stroke-linejoin="round"/>` +
+                `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>` +
+                `<path d="${d}" fill="none" stroke="${light}" stroke-width="${Math.max(2, w * 0.22)}" stroke-linecap="round" stroke-linejoin="round" opacity=".55" transform="translate(${(-w * 0.2).toFixed(1)},${(-w * 0.08).toFixed(1)})"/>`;
+        }
+        const BL = ['#3f7fd6', '#22508f', '#a9cdf5'], RD = ['#d63a2f', '#8f1f18', '#f6a39b'];
+        function svgTree(x, y, ang, len, w, depth, rnd, col) {
+            const x2 = x + Math.cos(ang) * len, y2 = y + Math.sin(ang) * len;
+            let s = `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}" stroke-width="${w.toFixed(2)}" stroke-linecap="round"/>`;
+            if (depth > 0) {
+                const sp = 0.42 + rnd() * 0.25;
+                s += svgTree(x2, y2, ang - sp, len * (0.68 + rnd() * 0.12), w * 0.66, depth - 1, rnd, col);
+                s += svgTree(x2, y2, ang + sp, len * (0.68 + rnd() * 0.12), w * 0.66, depth - 1, rnd, col);
+            }
+            return s;
+        }
+        // =====================================================
+        //  공용 모달 (팝업 안의 팝업까지 2단계)
+        // =====================================================
+        const MODALS = { 1: { id: 'modal', clean: [] }, 2: { id: 'modal2', clean: [] } };
+        let modalLevel = 1;
+        function onModalClose(fn) { MODALS[modalLevel].clean.push(fn); }
+        function openModalAt(level, title, tplId, headClass) {
+            playSound('click');
+            if (level === 1) closeModal(true); else closeModal2(true);
+            modalLevel = level;
+            const modal = document.getElementById(MODALS[level].id);
+            modal.querySelector('[data-mhead]').className = `${headClass || 'bg-orange-500'} px-5 py-4 flex items-center justify-between gap-3`;
+            modal.querySelector('[data-mtitle]').textContent = title;
+            const body = modal.querySelector('[data-mbody]');
+            body.innerHTML = '';
+            if (tplId) body.appendChild(document.getElementById(tplId).content.cloneNode(true));
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            requestAnimationFrame(() => modal.classList.add('show'));
+            modal.scrollTop = 0;
+            typeset(body);
+            return body;
+        }
+        const openModal = (t, tpl, h) => openModalAt(1, t, tpl, h);
+        const openModal2 = (t, tpl, h) => openModalAt(2, t, tpl, h);
+        function closeLevel(level, silent) {
+            const M = MODALS[level], modal = document.getElementById(M.id);
+            M.clean.forEach(f => { try { f(); } catch (e) { console.log(e); } });
+            M.clean = [];
+            if (modal.classList.contains('hidden')) return;
+            if (!silent) playSound('click');
+            modal.classList.remove('show');
+            if (silent) { modal.classList.add('hidden'); modal.querySelector('[data-mbody]').innerHTML = ''; return; }
+            setTimeout(() => { modal.classList.add('hidden'); modal.querySelector('[data-mbody]').innerHTML = ''; }, 280);
+        }
+        function closeModal2(silent) { closeLevel(2, silent); modalLevel = 1; }
+        function closeModal(silent) {
+            closeModal2(true);
+            const wasOpen = !document.getElementById('modal').classList.contains('hidden');
+            closeLevel(1, silent);
+            if (wasOpen || silent !== true) document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            if (!document.getElementById('modal2').classList.contains('hidden')) closeModal2(); else closeModal();
+        });
+        function animLoop(fn) {
+            let id, alive = true;
+            const f = (t) => { if (!alive) return; if (fn(t) === false) return; id = requestAnimationFrame(f); };
+            id = requestAnimationFrame(f);
+            const stop = () => { alive = false; cancelAnimationFrame(id); };
+            onModalClose(stop);
+            return stop;
+        }
+        function tweenJS(dur, fn) {
+            return new Promise(res => {
+                const t0 = performance.now();
+                animLoop(now => {
+                    const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+                    fn(e, k); if (k >= 1) { res(); return false; }
+                });
+            });
+        }
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        // =====================================================
+        //  3D 분자 뷰어 (nutrients.html / digestion.html 과 동일)
+        //  탄소=검정, 수소=흰색, 산소=빨강, 질소=파랑, 철=주황
+        // =====================================================
+        const ELEM = {
+            H: { c: 0xffffff, r: 0.24, name: '수소(H)', css: '#ffffff' },
+            C: { c: 0x1c1c1c, r: 0.34, name: '탄소(C)', css: '#1c1c1c' },
+            O: { c: 0xe0242b, r: 0.33, name: '산소(O)', css: '#e0242b' },
+            N: { c: 0x2546f0, r: 0.33, name: '질소(N)', css: '#2546f0' },
+            Fe: { c: 0xe06633, r: 0.5, name: '철 이온(Fe²⁺)', css: '#e06633' },
+            Na: { c: 0x9b59d0, r: 0.5, name: '나트륨 이온(Na⁺)', css: '#9b59d0' },
+            Cl: { c: 0x31c840, r: 0.62, name: '염화 이온(Cl⁻)', css: '#31c840' }
+        };
+        const BONDSTYLE = {
+            7: { color: 0x8b5cf6, r: 0.045, dash: true, name: '이온 결합' },
+            8: { color: 0x38bdf8, r: 0.045, dash: true, name: '수소 결합' },
+            9: { color: 0x14b8a6, r: 0.075, dash: false, name: '배위 결합(Fe–리간드)' }
+        };
+        let GEO = null;
+        function geo() {
+            if (!GEO) GEO = { sphere: new THREE.SphereGeometry(1, 28, 20), cyl: new THREE.CylinderGeometry(1, 1, 1, 14, 1) };
+            return GEO;
+        }
+        const _Y = new THREE.Vector3(0, 1, 0);
+        const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+        function cylBetween(a, b, r, mat) {
+            const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
+            const m = new THREE.Mesh(geo().cyl, mat);
+            m.scale.set(r, len, r);
+            m.position.copy(a).addScaledVector(d, 0.5);
+            m.quaternion.setFromUnitVectors(_Y, d.clone().normalize());
+            return m;
+        }
+        function setCyl(m, a, b) {
+            const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
+            m.scale.y = Math.max(1e-3, len);
+            m.position.copy(a).addScaledVector(d, 0.5);
+            if (len > 1e-6) m.quaternion.setFromUnitVectors(_Y, d.normalize());
+        }
+        function dashedBetween(a, b, r, mat, group) {
+            const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
+            const seg = 0.16, gap = 0.13, n = Math.max(1, Math.floor(len / (seg + gap)));
+            const step = len / n, dir = d.clone().normalize(), out = [];
+            for (let i = 0; i < n; i++) {
+                const p0 = a.clone().addScaledVector(dir, i * step + gap / 2);
+                const p1 = p0.clone().addScaledVector(dir, Math.min(seg, step - gap));
+                const m = cylBetween(p0, p1, r, mat); group.add(m); out.push(m);
+            }
+            return out;
+        }
+        function disposeObj(o) {
+            o.traverse(c => {
+                if (c.material) { (Array.isArray(c.material) ? c.material : [c.material]).forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }); }
+                if (c.geometry && c.geometry !== geo().sphere && c.geometry !== geo().cyl) c.geometry.dispose();
+            });
+        }
+        function setGroupOpacity(g, a) {
+            g.traverse(c => {
+                if (c.material && !c.userData.halo) { c.material.transparent = a < 0.999; c.material.opacity = a; c.material.depthWrite = a > 0.5; }
+                if (c.userData.halo) c.userData.haloMul = a;
+            });
+            g.userData.opacity = a;
+        }
+        function radialTexture() {
+            const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+            const ctx = cv.getContext('2d'); const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+            g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.35, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
+            return new THREE.CanvasTexture(cv);
+        }
+        function stdMat(c, extra = {}) { return new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.4 }, extra)); }
+
+        class MolViewer {
+            constructor(el) {
+                this.el = el; el.innerHTML = '';
+                const w = el.clientWidth || 600, h = el.clientHeight || 360;
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 2000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                this.renderer.setSize(w, h);
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+                el.appendChild(this.renderer.domElement);
+                this.layer = document.createElement('div');
+                this.layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden';
+                el.appendChild(this.layer);
+                this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+                this.scene.add(new THREE.HemisphereLight(0xffffff, 0x8a96a8, 0.45));
+                const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(4, 5, 8);
+                this.camera.add(key); this.scene.add(this.camera);
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true; this.controls.dampingFactor = 0.08;
+                this.controls.autoRotate = true; this.controls.autoRotateSpeed = 1.3;
+                this.root = new THREE.Group(); this.scene.add(this.root);
+                this.labels = []; this.tasks = []; this.persistent = [];
+                this.home = null;
+                this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(el);
+                this._loop = this.loop.bind(this);
+                this.raf = requestAnimationFrame(this._loop);
+                this._v = new THREE.Vector3();
+            }
+            resize() {
+                const w = this.el.clientWidth, h = this.el.clientHeight; if (!w || !h) return;
+                this.renderer.setSize(w, h); this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+            }
+            loop(now) {
+                this.raf = requestAnimationFrame(this._loop);
+                const t = now / 1000;
+                this.persistent.forEach(f => f(t));
+                this.tasks = this.tasks.filter(f => f(t) !== false);
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+                this.updateLabels();
+            }
+            tween(dur, fn, done) {
+                const start = performance.now();
+                return new Promise(res => {
+                    this.tasks.push(() => {
+                        const k = Math.min(1, (performance.now() - start) / (dur * 1000));
+                        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+                        fn(e, k);
+                        if (k >= 1) { if (done) done(); res(); return false; }
+                    });
+                });
+            }
+            clear() {
+                this.root.children.slice().forEach(c => { this.root.remove(c); disposeObj(c); });
+                this.labels.forEach(l => l.el.remove()); this.labels = [];
+                this.tasks = []; this.persistent = [];
+            }
+            build(data, opt = {}) {
+                const g = new THREE.Group();
+                const sc = opt.atomScale || 1;
+                const hl = new Set(opt.hl || data.hl || []);
+                const mats = {};
+                const matFor = el => mats[el] || (mats[el] = new THREE.MeshStandardMaterial({
+                    color: (ELEM[el] || ELEM.C).c, roughness: el === 'H' ? 0.5 : 0.3, metalness: 0.05,
+                    emissive: el === 'H' ? 0x2a2a2a : 0x000000
+                }));
+                const bondMat = new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.45 });
+                const hlBondMat = new THREE.MeshStandardMaterial({ color: 0xf5b301, roughness: 0.35, emissive: 0x3a2a00 });
+                const P = data.atoms.map(a => new THREE.Vector3(a[1], a[2], a[3]));
+                const meshes = [], hMeshes = [];
+                data.atoms.forEach((a, i) => {
+                    const el = a[0], e = ELEM[el] || ELEM.C;
+                    const m = new THREE.Mesh(geo().sphere, matFor(el));
+                    m.scale.setScalar(e.r * sc); m.position.copy(P[i]); m.userData.el = el;
+                    g.add(m); meshes.push(m); if (el === 'H') hMeshes.push(m);
+                });
+                const adj = data.atoms.map(() => []);
+                data.bonds.forEach(([i, j, o]) => { if (o <= 3) { adj[i].push(j); adj[j].push(i); } });
+                data.bonds.forEach(([i, j, o]) => {
+                    const a = P[i], b = P[j]; const isH = data.atoms[i][0] === 'H' || data.atoms[j][0] === 'H';
+                    let parts = [];
+                    if (o === 1 || o === 2 || o === 3) {
+                        const mat = (hl.has(i) && hl.has(j)) ? hlBondMat : bondMat;
+                        if (o === 1) { const c = cylBetween(a, b, 0.1 * sc, mat); g.add(c); parts.push(c); }
+                        else {
+                            const d = new THREE.Vector3().subVectors(b, a).normalize();
+                            let k = adj[i].find(x => x !== j); let ref = k !== undefined ? P[k].clone().sub(a) : null;
+                            if (!ref) { k = adj[j].find(x => x !== i); ref = k !== undefined ? P[k].clone().sub(b) : new THREE.Vector3(0, 0, 1); }
+                            let off = ref.clone().sub(d.clone().multiplyScalar(ref.dot(d)));
+                            if (off.lengthSq() < 1e-6) off = new THREE.Vector3(1, 0, 0).cross(d);
+                            if (off.lengthSq() < 1e-6) off = new THREE.Vector3(0, 1, 0).cross(d);
+                            off.normalize().multiplyScalar(0.11 * sc);
+                            const offs = o === 2 ? [off, off.clone().negate()] : [off.clone().multiplyScalar(1.5), new THREE.Vector3(), off.clone().multiplyScalar(-1.5)];
+                            offs.forEach(v => { const c = cylBetween(a.clone().add(v), b.clone().add(v), 0.065 * sc, mat); g.add(c); parts.push(c); });
+                        }
+                    } else if (BONDSTYLE[o]) {
+                        const st = BONDSTYLE[o];
+                        const mat = new THREE.MeshStandardMaterial({ color: st.color, roughness: 0.4, emissive: st.color, emissiveIntensity: 0.15 });
+                        if (st.dash) parts = dashedBetween(a, b, st.r * sc, mat, g);
+                        else { const c = cylBetween(a, b, st.r * sc, mat); g.add(c); parts.push(c); }
+                    }
+                    if (isH) hMeshes.push(...parts);
+                });
+                g.userData = { meshes, hMeshes, halos: [], P, opacity: 1 };
+                if (opt.labels !== false && data.labels) {
+                    Object.entries(data.labels).forEach(([idx, text]) => this.label(text, meshes[+idx], g, opt.labelClass || ''));
+                }
+                return g;
+            }
+            fit(obj, k = 1) {
+                obj.updateWorldMatrix(true, true);
+                const box = new THREE.Box3().setFromObject(obj);
+                const sph = box.getBoundingSphere(new THREE.Sphere());
+                const r = Math.max(sph.radius, 2.2);
+                const fov = this.camera.fov * Math.PI / 180;
+                const aspect = Math.min(1, this.camera.aspect || 1);
+                const d = r / Math.sin(fov / 2) / Math.sqrt(aspect) * 0.95 * k;
+                this.home = { pos: sph.center.clone().add(new THREE.Vector3(0, 0, d)), target: sph.center.clone() };
+                this.camera.near = Math.max(0.05, d / 100); this.camera.far = d * 20; this.camera.updateProjectionMatrix();
+                this.reset();
+            }
+            reset() {
+                if (!this.home) return;
+                this.camera.position.copy(this.home.pos); this.controls.target.copy(this.home.target); this.controls.update();
+            }
+            label(text, obj, group, cls) {
+                const el = document.createElement('div'); el.className = 'mol-label ' + (cls || ''); el.innerHTML = text;
+                this.layer.appendChild(el);
+                const L = { el, obj, group, hidden: false };
+                this.labels.push(L); return L;
+            }
+            unlabel(L) { if (!L) return; L.el.remove(); this.labels = this.labels.filter(x => x !== L); }
+            updateLabels() {
+                const w = this.el.clientWidth, h = this.el.clientHeight;
+                this.labels.forEach(L => {
+                    let shown = true; for (let o = L.obj; o; o = o.parent) { if (o.visible === false) { shown = false; break; } }
+                    const vis = !L.hidden && L.obj && shown && (!L.group || ((L.group.userData.opacity ?? 1) > 0.5 && L.group.visible && L.group.scale.x > 0.5));
+                    if (!vis) { L.el.style.display = 'none'; return; }
+                    L.obj.getWorldPosition(this._v); this._v.project(this.camera);
+                    if (this._v.z > 1) { L.el.style.display = 'none'; return; }
+                    L.el.style.display = 'block';
+                    L.el.style.left = ((this._v.x + 1) / 2 * w) + 'px';
+                    L.el.style.top = ((1 - this._v.y) / 2 * h) + 'px';
+                });
+            }
+            dispose() {
+                cancelAnimationFrame(this.raf); this.ro.disconnect(); this.controls.dispose();
+                this.clear(); this.renderer.dispose();
+                try { this.renderer.forceContextLoss(); } catch (e) {}
+                this.el.innerHTML = '';
+            }
+        }
+
+        function legendHTML(datas) {
+            const els = new Set(), bt = new Set();
+            [].concat(datas).forEach(d => { d.atoms.forEach(a => els.add(a[0])); d.bonds.forEach(b => bt.add(b[2])); });
+            const order = ['C', 'H', 'O', 'N', 'Fe', 'Na', 'Cl'];
+            let s = order.filter(e => els.has(e)).map(e => `<span><span class="legend-dot" style="background:${ELEM[e].css}"></span>${ELEM[e].name}</span>`).join('');
+            [7, 8, 9].forEach(o => { if (bt.has(o)) { const c = '#' + BONDSTYLE[o].color.toString(16).padStart(6, '0'); s += `<span><span style="display:inline-block;width:22px;border-top:3px ${BONDSTYLE[o].dash ? 'dashed' : 'solid'} ${c};vertical-align:4px;margin-right:4px"></span>${BONDSTYLE[o].name}</span>`; } });
+            return s;
+        }
+        const dotLegend = list => list.map(([c, n]) => `<span><span class="legend-dot" style="background:${c}"></span>${n}</span>`).join('');
+
+        function wireCommonButtons(body, v) {
+            const spin = body.querySelector('[data-act="spin"]');
+            if (spin) {
+                spin.classList.toggle('on', v.controls.autoRotate);
+                spin.onclick = () => { v.controls.autoRotate = !v.controls.autoRotate; spin.classList.toggle('on', v.controls.autoRotate); playSound('click'); };
+            }
+            const rs = body.querySelector('[data-act="reset"]');
+            if (rs) rs.onclick = () => { v.reset(); playSound('click'); };
+        }
+
+        // 작은 분자 (공-막대 모형)
+        const MCACHE = {};
+        const molMat = el => MCACHE[el] || (MCACHE[el] = new THREE.MeshStandardMaterial({ color: ELEM[el].c, roughness: el === 'H' ? 0.5 : 0.3, emissive: el === 'H' ? 0x2a2a2a : 0x000000 }));
+        const molBondMat = () => MCACHE._b || (MCACHE._b = new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.45 }));
+        function miniMol(data, sc = 1) {
+            const g = new THREE.Group();
+            const P = data.atoms.map(a => V3(a[1], a[2], a[3]).multiplyScalar(sc));
+            data.atoms.forEach((a, i) => { const m = new THREE.Mesh(geo().sphere, molMat(a[0])); m.scale.setScalar(ELEM[a[0]].r * sc); m.position.copy(P[i]); g.add(m); });
+            data.bonds.forEach(([i, j, o]) => {
+                const a = P[i], b = P[j];
+                if (o === 1) { g.add(cylBetween(a, b, 0.1 * sc, molBondMat())); return; }
+                const d = V3().subVectors(b, a).normalize();
+                let p = V3().crossVectors(d, V3(0, 0, 1)); if (p.lengthSq() < 1e-4) p = V3(1, 0, 0);
+                p.normalize().multiplyScalar(0.1 * sc);
+                const offs = o === 2 ? [p, p.clone().negate()] : [p.clone().multiplyScalar(1.4), V3(), p.clone().multiplyScalar(-1.4)];
+                offs.forEach(q => g.add(cylBetween(a.clone().add(q), b.clone().add(q), 0.055 * sc, molBondMat())));
+            });
+            return g;
+        }
+        // 적혈구 : 가운데가 오목한 원반 (Evans–Fung 식)
+        function rbcGeometry(R = 0.6) {
+            const C0 = 0.207, C1 = 2.003, C2 = -1.123, pts = [], N = 24;
+            const z = r => { const q = (r / R) ** 2; return 1.25 * 0.5 * R * Math.sqrt(Math.max(0, 1 - q)) * (C0 + C1 * q + C2 * q * q); };
+            for (let i = 0; i <= N; i++) { const r = R * Math.sin(i / N * Math.PI / 2); pts.push(new THREE.Vector2(r, z(r))); }
+            for (let i = N - 1; i >= 0; i--) { const r = R * Math.sin(i / N * Math.PI / 2); pts.push(new THREE.Vector2(r, -z(r))); }
+            const g = new THREE.LatheGeometry(pts, 36); g.computeVertexNormals(); return g;
+        }
+        function randUnit() { const v = V3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1); return v.lengthSq() < 1e-4 ? V3(1, 0, 0) : v.normalize(); }
+        function tubeMesh(pts, r, col, extra) {
+            const c = new THREE.CatmullRomCurve3(pts);
+            return { curve: c, mesh: new THREE.Mesh(new THREE.TubeGeometry(c, 64, r, 14, false), stdMat(col, Object.assign({ roughness: 0.45 }, extra || {}))) };
+        }
+
+        // =====================================================
+        //  공용
+        // =====================================================
+        const pinAt = (root, p) => { const o = new THREE.Object3D(); o.position.copy(p); root.add(o); return o; };
+        function angleView(v, dir) { const d = v.home.pos.distanceTo(v.home.target); v.home.pos.copy(v.home.target).addScaledVector(dir.clone().normalize(), d); v.reset(); }
+        const gaugePos = (d, range) => `${Math.max(2, Math.min(98, 50 + d / range * 48))}%`;
+        const tag = (t, c) => `<span class="font-cute" style="color:${c}">${t}</span>`;
+
+        // =====================================================
+        //  모달: 3D 고무막 호흡 모형
+        // =====================================================
+        const JAR_SIDE = {
+            pull: `<div class="step-card"><p class="font-cute text-lg text-sky-700 mb-1">⬇️ 고무막을 아래로 당기면 = 들숨</p><p>① 고무 막(가로막)이 <strong>내려가요.</strong></p><p>② 유리병 속 공간(흉강)의 부피가 <strong>커져요.</strong></p><p>③ 부피가 커지니 병 속 압력이 <strong>낮아져요.</strong></p><p>④ 풍선 바깥의 압력이 대기압보다 낮아져 바깥 공기가 Y자관으로 <strong>들어오고</strong>, 고무풍선(폐)이 <strong>커져요.</strong></p></div>
+                <div class="analogy"><p class="font-cute text-orange-700">💡 표를 보며 확인!</p><p>왼쪽 표에서 병 속 압력이 대기압보다 낮아지는 순간 공기가 들어오기 시작하는 것을 확인해 보세요. 풍선이 다 부풀면 압력 차이가 거의 없어져 공기의 이동이 멈춰요.</p></div>`,
+            push: `<div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">⬆️ 고무막을 위로 올리면 = 날숨</p><p>① 고무 막(가로막)이 <strong>올라가요.</strong></p><p>② 유리병 속 공간(흉강)의 부피가 <strong>작아져요.</strong></p><p>③ 부피가 작아지니 병 속 압력이 <strong>높아져요.</strong></p><p>④ 풍선이 눌려 풍선 속 공기가 Y자관을 통해 밖으로 <strong>나가고</strong>, 고무풍선(폐)이 <strong>작아져요.</strong></p></div>
+                <div class="analogy"><p class="font-cute text-orange-700">💡 공기는 높은 곳 → 낮은 곳</p><p>공기는 항상 압력이 <strong>높은 곳에서 낮은 곳</strong>으로 이동해요. 날숨 때는 폐 속 압력이 대기압보다 높아져 공기가 밖으로 나가요.</p></div>`,
+            map: `<div class="overflow-x-auto"><table class="w-full text-sm text-center border-collapse bg-white">
+                    <tr class="bg-orange-100 font-cute"><td class="p-1 border border-orange-200">모형</td><td class="p-1 border border-orange-200">실제 몸</td></tr>
+                    <tr><td class="p-1 border border-orange-200">Y자관</td><td class="p-1 border border-orange-200 font-cute">숨관, 숨관가지</td></tr>
+                    <tr><td class="p-1 border border-orange-200">고무풍선</td><td class="p-1 border border-orange-200 font-cute">폐</td></tr>
+                    <tr><td class="p-1 border border-orange-200">고무 막</td><td class="p-1 border border-orange-200 font-cute">가로막</td></tr>
+                    <tr><td class="p-1 border border-orange-200">유리병 속 공간</td><td class="p-1 border border-orange-200 font-cute">흉강</td></tr>
+                </table></div>
+                <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🦴 모형에 없는 것 : 갈비뼈의 움직임</p><p>유리병은 딱딱해서 움직이지 않아요. 하지만 실제 우리 몸에서는 들숨 때 <strong>갈비뼈가 위로 올라가며</strong> 가슴이 앞뒤·좌우로 넓어지고, 날숨 때 내려가요. 모형에서는 이 <strong>갈비뼈의 움직임</strong>이 나타나지 않아요.</p><button data-act="motion" class="font-cute bg-orange-500 hover:bg-orange-600 text-white py-1.5 px-4 rounded-full shadow mt-2">🫁 실제 호흡운동 3D로 비교</button></div>`,
+            hole: `<div class="step-card"><p class="font-cute text-lg text-rose-700 mb-1">🕳️ 유리병에 구멍이 나면?</p><p>‘구멍 뚫기’를 누른 뒤 고무막을 당겨 보세요. 병 속 공기의 압력이 낮아지려 해도 <strong>구멍으로 바깥 공기가 들어와</strong> 압력이 대기압과 같아져요. 그래서 풍선(폐)은 부풀지 않아요!</p></div>
+                <div class="step-card"><p class="font-cute text-lg text-rose-700 mb-1">🩺 실제 흉강과 기흉</p><p>실제 흉강에는 공기가 없어요. 폐와 가슴벽은 <strong>흉막(가슴막)</strong>이라는 얇은 막으로 싸여 있고, 그 사이의 아주 얇은 액체층이 둘을 착 붙여 놓아요. 그래서 가슴이 넓어지면 폐도 따라 넓어져요.</p><p class="mt-1">사고 등으로 가슴벽이나 폐에 구멍이 나 흉막 사이에 공기가 들어가면 폐가 쪼그라드는데, 이를 <strong>기흉</strong>이라고 해요. 병원에서는 관을 넣어 들어간 공기를 빼내 치료해요.</p></div>
+                <div class="analogy"><p class="font-cute text-orange-700">💡 폐는 늘어난 고무줄</p><p>폐는 탄성이 있어서 늘 줄어들려 하고, 가슴벽은 바깥으로 벌어지려 해요. 두 힘이 서로 당기고 있어 흉막 사이의 압력은 쉴 때도 대기압보다 약 0.5 kPa 낮아요. 조용히 숨을 내쉴 때는 가로막이 힘을 빼기만 하면, 늘어났던 폐가 고무줄처럼 저절로 줄어들어요.</p></div>`
+        };
+        const JAR_CAP = {
+            pull: '슬라이더를 오른쪽으로 밀거나 ‘⬇ 고무막 당기기’를 눌러 보세요. 고무 막(가로막)을 당기면 고무풍선(폐)이 어떻게 변하나요?',
+            push: '‘⬆ 고무막 올리기’를 눌러 보세요. 고무 막(가로막)을 위로 밀어 올리면 고무풍선(폐)이 어떻게 변하나요?',
+            map: '이름표가 모형의 각 부분이 우리 몸의 어디에 해당하는지 알려 줘요. 노란빛 공간이 흉강에 해당해요. 고무막을 당기고 올려 보며 비교해 보세요.',
+            hole: '유리병 옆에 <strong>구멍</strong>이 있어요. 구멍을 막았을 때와 뚫었을 때 고무막을 당겨 풍선의 변화를 비교해 보세요.'
+        };
+        function openJar(mode, level) {
+            const body = openModalAt(level || 1, '🎈 How? 3D 고무막 호흡 모형', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-3 min-w-0">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button class="view-chip" data-m="pull">⬇️ 당기기 (들숨)</button>
+                        <button class="view-chip" data-m="push">⬆️ 올리기 (날숨)</button>
+                        <button class="view-chip" data-m="map">🧩 모형 ↔ 우리 몸</button>
+                        <button class="view-chip" data-m="hole">🕳️ 구멍 난 병</button>
+                    </div>
+                    <div class="mol-stage" data-stage style="height:440px;background:radial-gradient(circle at 50% 40%, #fffaf6 0%, #fdeadf 70%, #f8d5c4 100%)"></div>
+                    <div class="bg-white border-2 border-orange-200 rounded-xl p-3 mt-3">
+                        <label for="jr-s" class="font-cute text-orange-700 flex justify-between"><span>⬆ 올리기</span><span>고무 막 위치 : <span data-out="s" class="gibbs-num"></span></span><span>당기기 ⬇</span></label>
+                        <input id="jr-s" type="range" min="-0.6" max="1" step="0.01" value="0" class="nut-range">
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <button data-act="down" class="view-chip text-sm">⬇ 고무막 당기기</button>
+                            <button data-act="up" class="view-chip text-sm">⬆ 고무막 올리기</button>
+                            <button data-act="mid" class="view-chip text-sm">⏺ 제자리</button>
+                            <button data-act="auto" class="view-chip text-sm">🔁 자동</button>
+                            <button data-act="hole" class="view-chip text-sm" style="display:none">🕳️ 구멍 뚫기</button>
+                            <button data-act="spin" class="view-chip text-sm"><i class="fa-solid fa-rotate"></i> 회전</button>
+                            <button data-act="reset" class="view-chip text-sm"><i class="fa-solid fa-crosshairs"></i> 처음 위치</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto mt-3"><table class="w-full text-sm border-collapse bg-white">
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute w-[150px]">고무 막 (가로막)</td><td data-out="mem"></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">병 속 공간 (흉강) 부피</td><td><span data-out="vj" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">병 속 압력</td><td><div class="gauge"><i data-g="p"></i></div><div class="flex justify-between text-xs text-gray-500 mt-1"><span>대기압보다 낮음</span><span>대기압</span><span>대기압보다 높음</span></div><span data-out="p" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">고무풍선 (폐)</td><td><div class="prob-bar"><i data-g="b" style="background:linear-gradient(90deg,#fda4af,#e11d48)"></i></div><span data-out="vb" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">공기의 이동</td><td data-out="fl" class="font-cute"></td></tr>
+                    </table></div>
+                    <p data-caption class="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-900"></p>
+                    <p class="mt-2 text-xs text-gray-500">수치는 병 속 공기 1.8 L, 풍선 2개 0.2 L, 고무 막이 최대 0.6 L를 늘린다고 가정하고 보일 법칙과 풍선의 탄성으로 계산한 값이에요.</p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed min-w-0" data-side></div>
+            </div>`;
+            const $ = s => body.querySelector(s); const out = k => $(`[data-out="${k}"]`);
+            const stage = $('[data-stage]'), cap = $('[data-caption]'), side = $('[data-side]');
+            const v = new MolViewer(stage); onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            const root = new THREE.Group(); v.root.add(root);
+            const JR = 1.6, JH = 3.4, YB = -JH / 2;
+            const glass = new THREE.MeshStandardMaterial({ color: 0xdbeafe, transparent: true, opacity: 0.18, roughness: 0.1, side: THREE.DoubleSide, depthWrite: false });
+            root.add(new THREE.Mesh(new THREE.CylinderGeometry(JR, JR, JH, 48, 1, true), glass));
+            const dome = new THREE.Mesh(new THREE.SphereGeometry(JR, 40, 16, 0, Math.PI * 2, 0, Math.PI / 2), glass); dome.position.y = JH / 2; root.add(dome);
+            const stop = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.42, 24), stdMat(0x4b5563)); stop.position.y = JH / 2 + JR - 0.05; root.add(stop);
+            const tubeM = new THREE.MeshStandardMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.6, roughness: 0.1 });
+            const TOPP = V3(0, JH / 2 + JR + 0.9, 0), SPL = V3(0, 1.75, 0), EL = V3(-0.78, 0.9, 0), ER = V3(0.78, 0.9, 0);
+            root.add(cylBetween(TOPP, SPL, 0.11, tubeM)); root.add(cylBetween(SPL, EL, 0.09, tubeM)); root.add(cylBetween(SPL, ER, 0.09, tubeM));
+            const balM = stdMat(0xef5a6a, { roughness: 0.35, transparent: true, opacity: 0.9, emissive: 0x500714, emissiveIntensity: 0.15 });
+            const bals = [EL, ER].map(e => { const m = new THREE.Mesh(geo().sphere, balM); root.add(m); return { m, e, dir: e.clone().sub(SPL).normalize() }; });
+            const memG = new THREE.RingGeometry(0.0001, JR, 48, 14), memBase = memG.attributes.position.array.slice();
+            const mem = new THREE.Mesh(memG, new THREE.MeshStandardMaterial({ color: 0xd8333f, roughness: 0.6, side: THREE.DoubleSide }));
+            mem.rotation.x = Math.PI / 2; mem.position.y = YB; root.add(mem);
+            const knob = new THREE.Mesh(geo().sphere, stdMat(0x7c2d12)); knob.scale.setScalar(0.16); root.add(knob);
+            const glowM = new THREE.MeshStandardMaterial({ color: 0xfde047, transparent: true, opacity: 0.13, emissive: 0xfacc15, emissiveIntensity: 0.25, depthWrite: false });
+            const glow = new THREE.Mesh(new THREE.CylinderGeometry(JR * 0.96, JR * 0.96, JH * 0.96, 40), glowM); root.add(glow);
+            const holeM = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.05, 10, 24), stdMat(0x1f2937)); holeM.position.set(JR * 0.97, 0.3, 0.35); holeM.lookAt(V3(JR * 3, 0.3, 1.05)); root.add(holeM);
+            const airM = stdMat(0x60a5fa, { emissive: 0x1e3a8a, emissiveIntensity: 0.3 });
+            const airs = []; for (let i = 0; i < 10; i++) { const m = new THREE.Mesh(geo().sphere, airM); m.scale.setScalar(0.065); root.add(m); airs.push({ m, u: i / 10 }); }
+            const pathL = new THREE.CatmullRomCurve3([TOPP.clone().add(V3(0, 0.7, 0)), TOPP, SPL, EL]), pathR = new THREE.CatmullRomCurve3([TOPP.clone().add(V3(0, 0.7, 0)), TOPP, SPL, ER]);
+            const holeOut = holeM.position.clone().add(V3(0.9, 0, 0.28)), holeIn = holeM.position.clone().add(V3(-0.6, 0, -0.15));
+            const hAir = []; for (let i = 0; i < 6; i++) { const m = new THREE.Mesh(geo().sphere, airM); m.scale.setScalar(0.06); root.add(m); hAir.push({ m, u: i / 6 }); }
+            const LB = {
+                tube: v.label('Y자관', pinAt(root, V3(0.45, JH / 2 + JR + 0.55, 0)), null, ''),
+                jar: v.label('유리병 속 공간', pinAt(root, V3(-JR - 0.15, 0.2, 0.6)), null, 'b'),
+                bal: v.label('고무풍선', pinAt(root, V3(0, 0.3, 0.95)), null, 'r'),
+                mem: v.label('고무 막', pinAt(root, V3(JR * 0.75, YB - 0.25, 0.6)), null, 'e'),
+                hole: v.label('구멍', holeM, null, 'v')
+            };
+            const NAMES = { tube: ['Y자관', 'Y자관 = 숨관·숨관가지'], jar: ['유리병 속 공간', '유리병 속 공간 = 흉강'], bal: ['고무풍선', '고무풍선 = 폐'], mem: ['고무 막', '고무 막 = 가로막'] };
+            v.fit(root, 1.12); v.home.target.y -= 0.3; v.home.pos.y -= 0.3; v.reset();
+            // 물리
+            const P0 = 101.3, VJ0 = 2000, VB0 = 200, DVMAX = 600, E = 0.001, KAP = 150, KH = 600;
+            let cur = mode, s = 0, sT = 0, x = 0, nJ = 1800, flow = 0, hflow = 0, hole = false, auto = false, aT = 0, last = performance.now(), uiT = 0, sPrev = 0, memV = 0;
+            const sl = $('#jr-s');
+            function setMem(d) {
+                const pa = memG.attributes.position;
+                for (let i = 0; i < pa.count; i++) { const px = memBase[i * 3], py = memBase[i * 3 + 1]; pa.setZ(i, d * (1 - (px * px + py * py) / (JR * JR))); }
+                pa.needsUpdate = true; memG.computeVertexNormals();
+                knob.position.set(0, YB - d - 0.2, 0);
+            }
+            v.persistent.push(() => {
+                const now = performance.now(), dt = Math.min(0.04, (now - last) / 1000); last = now;
+                if (auto) { aT += dt; sT = 0.2 + 0.8 * Math.sin(aT * 2 * Math.PI / 5); sl.value = sT.toFixed(2); }
+                s += (sT - s) * Math.min(1, dt * 2.5);
+                memV = (s - sPrev) / Math.max(dt, 1e-4); sPrev = s;
+                const dVm = DVMAX * s, h = dt / 8;
+                for (let k = 0; k < 8; k++) {
+                    const VJ = VJ0 + dVm - (VB0 + x), Pj = P0 * nJ / VJ;
+                    flow = KAP * (P0 - Pj - E * x);
+                    x = Math.max(-170, x + flow * h);
+                    if (hole) { const VJn = VJ0 + dVm - (VB0 + x), dn = (VJn - nJ) * 0.6; hflow = dn / h; nJ += dn; } else hflow = 0;
+                }
+                setMem(0.9 * s);
+                const vb = (VB0 + x) / 2, r = 0.42 * Math.cbrt(Math.max(vb, 10) / 100);
+                bals.forEach(b => { b.m.scale.setScalar(r); b.m.position.copy(b.e).addScaledVector(b.dir, r * 0.92); });
+                airs.forEach((a, i) => { a.u = (a.u + flow * dt * 0.004 + 1) % 1; a.m.position.copy((i % 2 ? pathL : pathR).getPointAt(a.u)); a.m.visible = Math.abs(flow) > 4; });
+                hAir.forEach(a => { a.u = (a.u + hflow * dt * 0.004 + 1) % 1; a.m.position.lerpVectors(holeOut, holeIn, a.u); a.m.visible = hole && Math.abs(hflow) > 4; });
+                uiT += dt;
+                if (uiT > 0.08) {
+                    uiT = 0;
+                    const VJ = VJ0 + dVm - (VB0 + x), Pj = P0 * nJ / VJ, dP = (Pj - P0) * 1000;
+                    out('s').textContent = s > 0.02 ? `${Math.round(s * 100)} % 당김` : s < -0.02 ? `${Math.round(-s / 0.6 * 100)} % 올림` : '제자리';
+                    out('mem').innerHTML = memV > 0.05 ? tag('⬇ 내려가는 중', '#0369a1') : memV < -0.05 ? tag('⬆ 올라가는 중', '#6d28d9') : tag('멈춤', '#475569');
+                    out('vj').textContent = `${(VJ / 1000).toFixed(3)} L`;
+                    $('[data-g="p"]').style.left = gaugePos(dP, 3000);
+                    out('p').textContent = `${Pj.toFixed(3)} kPa (대기압보다 ${Math.abs(Math.round(dP))} Pa ${dP < -2 ? '낮음' : dP > 2 ? '높음' : '— 같음'})`;
+                    $('[data-g="b"]').style.width = `${Math.min(100, (VB0 + x) / 900 * 100)}%`;
+                    out('vb').textContent = `두 풍선 부피 ${((VB0 + x) / 1000).toFixed(3)} L ${x > 30 ? '— 커짐' : x < -30 ? '— 작아짐' : ''}`;
+                    out('fl').innerHTML = flow > 4 ? tag('⬇ 바깥 공기가 풍선(폐)으로 들어와요 → 들숨', '#0369a1') : flow < -4 ? tag('⬆ 풍선(폐) 속 공기가 밖으로 나가요 → 날숨', '#6d28d9') : tag('멈춤', '#475569') + (hole && Math.abs(hflow) > 4 ? ' · ' + tag(hflow > 0 ? '구멍으로 공기가 병 속에 들어와요!' : '구멍으로 공기가 빠져나가요!', '#be123c') : '');
+                }
+            });
+            const setAuto = on => { auto = on; $('[data-act="auto"]').classList.toggle('on', on); if (on) aT = 0; };
+            sl.oninput = () => { setAuto(false); sT = +sl.value; };
+            $('[data-act="down"]').onclick = () => { playSound('click'); setAuto(false); sT = 1; sl.value = 1; };
+            $('[data-act="up"]').onclick = () => { playSound('click'); setAuto(false); sT = -0.6; sl.value = -0.6; };
+            $('[data-act="mid"]').onclick = () => { playSound('click'); setAuto(false); sT = 0; sl.value = 0; };
+            $('[data-act="auto"]').onclick = () => { playSound('click'); setAuto(!auto); };
+            const hb = $('[data-act="hole"]');
+            function setHole(on) { hole = on; hb.textContent = on ? '🩹 구멍 막기' : '🕳️ 구멍 뚫기'; hb.classList.toggle('on', on); }
+            hb.onclick = () => { playSound('pop'); if (hole) { setHole(false); s = sT = 0; sl.value = 0; x = 0; nJ = 1800; } else setHole(true); };
+            function setMode(m) {
+                cur = m;
+                body.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+                Object.entries(NAMES).forEach(([k, n]) => LB[k].el.textContent = n[m === 'map' ? 1 : 0]);
+                glow.visible = m === 'map'; holeM.visible = m === 'hole'; LB.hole.hidden = m !== 'hole';
+                hb.style.display = m === 'hole' ? '' : 'none';
+                setHole(false); s = sT = 0; x = 0; nJ = 1800; sl.value = 0; setAuto(false);
+                side.innerHTML = JAR_SIDE[m]; typeset(side); cap.innerHTML = JAR_CAP[m];
+                const mb = side.querySelector('[data-act="motion"]'); if (mb) mb.onclick = () => openMotion('in', 2);
+            }
+            body.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { playSound('click'); setMode(b.dataset.m); });
+            wireCommonButtons(body, v);
+            setMem(0); setMode(mode);
+        }
+
+        // =====================================================
+        //  모달: 3D 실제 호흡운동 (갈비뼈 · 가로막)
+        // =====================================================
+        function openMotion(mode, level) {
+            const body = openModalAt(level || 1, '🫁 How? 3D 호흡운동 : 갈비뼈와 가로막', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-3 min-w-0">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button class="view-chip" data-m="in">🌬️ 들숨</button>
+                        <button class="view-chip" data-m="out">😮‍💨 날숨</button>
+                        <button class="view-chip" data-m="auto">🔁 숨쉬기 반복</button>
+                    </div>
+                    <div class="mol-stage" data-stage style="height:460px;background:radial-gradient(circle at 50% 40%, #fffaf6 0%, #fdeadf 70%, #f8d5c4 100%)"></div>
+                    <div class="bg-white border-2 border-orange-200 rounded-xl p-3 mt-3">
+                        <label for="mo-s" class="font-cute text-orange-700 flex justify-between"><span>날숨 끝</span><span>직접 움직이기</span><span>들숨 끝</span></label>
+                        <input id="mo-s" type="range" min="0" max="1" step="0.01" value="0" class="nut-range">
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <button data-act="replay" class="view-chip text-sm">▶ 다시 보기</button>
+                            <button data-act="spin" class="view-chip text-sm"><i class="fa-solid fa-rotate"></i> 회전</button>
+                            <button data-act="reset" class="view-chip text-sm"><i class="fa-solid fa-crosshairs"></i> 처음 위치</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto mt-3"><table class="w-full text-sm border-collapse bg-white">
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute w-[130px]">가로막</td><td data-out="dia"></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">갈비뼈</td><td data-out="rib"></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">흉강과 폐의 부피</td><td><div class="prob-bar"><i data-g="v" style="background:linear-gradient(90deg,#fdba74,#ea580c)"></i></div><span data-out="v" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">폐 내부의 압력</td><td><div class="gauge"><i data-g="p"></i></div><div class="flex justify-between text-xs text-gray-500 mt-1"><span>대기압보다 낮음</span><span>대기압</span><span>대기압보다 높음</span></div><span data-out="p" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">공기의 이동</td><td data-out="fl" class="font-cute"></td></tr>
+                    </table></div>
+                    <p data-caption class="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-900"></p>
+                    <p class="mt-2 text-xs text-gray-500">폐 부피와 압력은 조용히 숨 쉴 때의 대략값(한 번에 약 0.5 L)으로 계산했어요. 움직임은 잘 보이도록 실제보다 크게 나타냈어요. 화면의 왼쪽이 몸의 오른쪽이에요.</p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed min-w-0">
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-center border-collapse bg-white">
+                        <tr class="bg-orange-100 font-cute"><td class="p-1 border border-orange-200"></td><td class="p-1 border border-orange-200 text-sky-700">들숨</td><td class="p-1 border border-orange-200 text-violet-700">날숨</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">가로막</td><td class="p-1 border border-orange-200">내려감</td><td class="p-1 border border-orange-200">올라감</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">갈비뼈</td><td class="p-1 border border-orange-200">올라감</td><td class="p-1 border border-orange-200">내려감</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">흉강·폐 부피</td><td class="p-1 border border-orange-200">커짐</td><td class="p-1 border border-orange-200">작아짐</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">폐 내부 압력</td><td class="p-1 border border-orange-200">대기압보다 낮아짐</td><td class="p-1 border border-orange-200">대기압보다 높아짐</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">공기의 이동</td><td class="p-1 border border-orange-200">폐로 들어옴</td><td class="p-1 border border-orange-200">폐에서 나감</td></tr>
+                    </table></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">💪 폐 대신 움직이는 근육</p><p>폐에는 스스로 움직이는 근육이 없어요. 대신 <strong>가로막</strong>(근육으로 된 막)과 <strong>갈비뼈 사이의 근육</strong>이 움직여 흉강의 크기를 바꿔요. 심장은 심장 근육이 있어 스스로 뛰지만 폐는 그렇지 않아요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🔎 압력은 언제 대기압과 같아질까?</p><p>들숨이 끝나 부피가 더 이상 변하지 않으면 공기가 다 들어와 폐 속 압력은 <strong>다시 대기압과 같아지고</strong> 공기의 이동이 멈춰요. 슬라이더를 움직이다 멈춰 보며 확인해 보세요. 조용히 숨 쉴 때 폐 속 압력은 대기압보다 약 0.1 kPa(약 1 cmH₂O)만 낮아져도 충분해요.</p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700 mb-1">💡 복식 호흡 · 흉식 호흡 · 딸꾹질</p><p>배가 불룩해지는 <strong>복식 호흡</strong>은 주로 가로막을, 가슴이 들리는 <strong>흉식 호흡</strong>은 주로 갈비뼈를 움직여 숨 쉬는 방법이에요. 딸꾹질은 가로막이 갑자기 저절로 수축하고 성대 사이가 닫히면서 ‘딸꾹’ 소리가 나는 현상이에요.</p></div>
+                </div>
+            </div>`;
+            const $ = s => body.querySelector(s); const out = k => $(`[data-out="${k}"]`);
+            const stage = $('[data-stage]'), cap = $('[data-caption]');
+            const v = new MolViewer(stage); onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            const root = new THREE.Group(); v.root.add(root);
+            const rnd = srand(7);
+            const skin = new THREE.MeshStandardMaterial({ color: 0xf6c9a8, roughness: 0.8, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide });
+            const head = new THREE.Mesh(geo().sphere, skin); head.scale.set(1.05, 1.3, 1.15); head.position.set(0, 6.0, 0.05); root.add(head);
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.55, 16), skin); nose.rotation.x = Math.PI / 2; nose.position.set(0, 5.75, 1.25); root.add(nose);
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.62, 1.1, 24, 1, true), skin); neck.position.set(0, 4.45, 0); root.add(neck);
+            const OUT = V3(0, 5.3, 2.4), NASAL = [V3(0, 5.6, 1.18), V3(0, 5.85, 0.78), V3(0, 5.97, 0.25), V3(0, 5.58, -0.35), V3(0, 4.98, -0.35), V3(0, 4.42, -0.08), V3(0, 3.95, 0)];
+            root.add(tubeMesh(NASAL, 0.14, 0xf4a0a6, { transparent: true, opacity: 0.85 }).mesh);
+            const B = V3(0, 2.3, 0), airMat = stdMat(0xf0d5c8, { roughness: 0.5 });
+            root.add(cylBetween(V3(0, 3.95, 0), B, 0.2, airMat));
+            const brMat = stdMat(0xeec2b4, { roughness: 0.5 }), tips = [];
+            function branch(a, dir, len, r, depth, sd) {
+                const b = a.clone().addScaledVector(dir, len); root.add(cylBetween(a, b, r, brMat));
+                if (depth === 0) { tips.push({ p: b, sd }); return; }
+                let perp = V3().crossVectors(dir, depth % 2 ? V3(0, 0, 1) : V3(1, 0, 0)); if (perp.lengthSq() < 1e-4) perp = V3(0, 0, 1); perp.normalize();
+                [-1, 1].forEach(sg => { const c = dir.clone().applyAxisAngle(perp, sg * (0.5 + rnd() * 0.2)); c.y -= 0.12; c.normalize(); branch(b, c, len * 0.75, r * 0.72, depth - 1, sd); });
+            }
+            branch(B, V3(-0.62, -0.78, 0).normalize(), 1.0, 0.15, 3, 'R'); branch(B, V3(0.8, -0.6, 0).normalize(), 1.12, 0.14, 3, 'L');
+            const lungMat = new THREE.MeshStandardMaterial({ color: 0xe9909a, roughness: 0.7, transparent: true, opacity: 0.32, side: THREE.DoubleSide, depthWrite: false });
+            const lungs = ['R', 'L'].map(sd => {
+                const ps = tips.filter(t => t.sd === sd).map(t => t.p);
+                const bb = new THREE.Box3().setFromPoints(ps.concat([B.clone().add(V3(sd === 'R' ? -0.35 : 0.35, -0.2, 0))]));
+                const c = bb.getCenter(V3()), sz = bb.getSize(V3());
+                const m = new THREE.Mesh(geo().sphere, lungMat);
+                m.userData.base = V3(sz.x / 2 + 0.45, sz.y / 2 + 0.55, Math.max(0.95, sz.z / 2 + 0.6)); m.userData.c = c.clone().add(V3(0, 0.15, 0));
+                m.scale.copy(m.userData.base); m.position.copy(m.userData.c); root.add(m); return m;
+            });
+            const lungTop = Math.max(...lungs.map(l => l.userData.c.y + l.userData.base.y)), lungBot = Math.min(...lungs.map(l => l.userData.c.y - l.userData.base.y));
+            const X = Math.max(...lungs.map(l => Math.abs(l.userData.c.x) + l.userData.base.x)) + 0.3, Z = 1.55;
+            const heart = new THREE.Mesh(geo().sphere, stdMat(0xc0392b, { transparent: true, opacity: 0.6, depthWrite: false })); heart.scale.set(0.62, 0.72, 0.55); heart.position.set(0.32, lungBot + 1.15, 0.6); root.add(heart);
+            const ribs = new THREE.Group(); ribs.position.set(0, 0, -Z - 0.1); root.add(ribs);
+            const boneMat = stdMat(0xf3ead8, { roughness: 0.55 });
+            const NR = 9, rTop = lungTop - 0.25, rStep = (lungTop - lungBot - 0.2) / NR;
+            for (let i = 0; i < NR; i++) {
+                const y0 = rTop - i * rStep, w = X * (0.82 + 0.18 * Math.sin((i + 1) / (NR + 1) * Math.PI));
+                [-1, 1].forEach(sx => {
+                    const pts = []; for (let k = 0; k <= 12; k++) { const th = 0.15 + (Math.PI - 0.45) * k / 12; pts.push(V3(sx * w * Math.sin(th), y0 - 0.55 * th / Math.PI, -Z * Math.cos(th) + Z + 0.1)); }
+                    ribs.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.065, 6, false), boneMat));
+                });
+                const vb = new THREE.Mesh(new THREE.BoxGeometry(0.38, rStep * 0.7, 0.38), boneMat); vb.position.set(0, y0 + 0.02, -Z - 0.12); root.add(vb);
+            }
+            const sternum = new THREE.Mesh(new THREE.BoxGeometry(0.34, rStep * (NR - 2.5), 0.12), boneMat);
+            sternum.position.set(0, rTop - 0.55 - rStep * (NR - 2.5) / 2, Z * Math.cos(0.3) + 0.02 + Z + 0.1); ribs.add(sternum);
+            const dia = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 14, 0, Math.PI * 2, 0, Math.PI * 0.45), new THREE.MeshStandardMaterial({ color: 0xd9776b, roughness: 0.55, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
+            const DIA_Y = lungBot - 1.0; dia.scale.set(X * 0.98, 1.0, Z * 0.98); dia.position.set(0, DIA_Y, 0); root.add(dia);
+            // 화살표
+            const arD = new THREE.ArrowHelper(V3(0, -1, 0), V3(X + 0.55, lungBot - 0.1, Z * 0.7), 1.1, 0x5fae4a, 0.35, 0.25); root.add(arD);
+            const arR = new THREE.ArrowHelper(V3(0, 1, 0), V3(X + 0.55, rTop - rStep * 4.5, Z * 0.9), 1.1, 0xf08a24, 0.35, 0.25); root.add(arR);
+            const arA = new THREE.ArrowHelper(V3(0, 0.2, -1).normalize(), OUT.clone().add(V3(0, 0, 0.6)), 1.0, 0x2d7fd3, 0.32, 0.22); root.add(arA);
+            v.label('가로막', pinAt(root, V3(-X * 0.55, DIA_Y + 1.0, 0.9)), null, 'r');
+            v.label('갈비뼈', pinAt(root, V3(-X * 0.9, rTop - rStep * 5, 1.0)), null, 'e');
+            v.label('폐', pinAt(root, lungs[0].userData.c.clone().add(V3(-0.5, 0.8, 0.9))), null, 'r');
+            v.label('흉강', pinAt(root, V3(0.15, (rTop + lungBot) / 2 + 0.6, 1.1)), null, '');
+            const LD = v.label('', pinAt(root, V3(X + 0.55, lungBot - 1.1, Z * 0.7)), null, 'e'), LR2 = v.label('', pinAt(root, V3(X + 0.55, rTop - rStep * 2.6, Z * 0.9)), null, 'e');
+            // 공기 알갱이
+            const inM = stdMat(0x60a5fa, { emissive: 0x1e3a8a, emissiveIntensity: 0.25 });
+            const parts = [];
+            for (let i = 0; i < 48; i++) {
+                const tip = tips[i % tips.length];
+                const curve = new THREE.CatmullRomCurve3([OUT].concat(NASAL, [B, tip.p]));
+                const m = new THREE.Mesh(geo().sphere, inM); m.scale.setScalar(0.07); root.add(m);
+                parts.push({ m, curve, ph: rnd() * 0.3, off: randUnit().multiplyScalar(0.3 + rnd() * 0.3) });
+            }
+            v.fit(root, 0.82); angleView(v, V3(0.55, 0.18, 1));
+            // 움직임
+            let cur = mode, s = 0, sT = 0, clock = 0, last = performance.now(), uiT = 0, flowS = 0, vPrev = 2.4;
+            const sl = $('#mo-s');
+            const ease = k => k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+            v.persistent.push(() => {
+                const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
+                clock += dt;
+                if (cur === 'auto') { const c = clock % 5; s = c < 2.2 ? ease(c / 2.2) : 1 - ease((c - 2.2) / 2.8); }
+                else if (cur === 'in') s = ease(Math.min(1, clock / 2.4));
+                else if (cur === 'out') s = 1 - ease(Math.min(1, clock / 2.8));
+                else s += (sT - s) * Math.min(1, dt * 3);
+                if (cur !== 'manual') sl.value = s.toFixed(2);
+                lungs.forEach(l => { const b = l.userData.base; l.scale.set(b.x * (1 + 0.08 * s), b.y * (1 + 0.1 * s), b.z * (1 + 0.1 * s)); l.position.copy(l.userData.c).add(V3(0, -0.15 * s, 0)); });
+                dia.position.y = DIA_Y - 0.6 * s; dia.scale.y = 1 - 0.38 * s;
+                ribs.rotation.x = -0.1 * s; ribs.scale.x = 1 + 0.05 * s;
+                parts.forEach(p => { const u = clamp01(s * 1.3 - p.ph); p.m.position.copy(p.curve.getPointAt(u)).addScaledVector(p.off, u < 0.12 ? (1 - u / 0.12) * 0.9 : 0.02); });
+                // 폐 부피와 압력 (공기 흐름 = 부피 변화, 압력 차 = 저항 × 흐름)
+                const V = 2.4 + 0.5 * s, flowNow = (V - vPrev) / Math.max(dt, 1e-4); vPrev = V;
+                flowS += (flowNow - flowS) * Math.min(1, dt * 10);
+                const dP = -2 * flowS;
+                const dir = flowS > 0.03 ? 1 : flowS < -0.03 ? -1 : 0;
+                arD.visible = arR.visible = arA.visible = dir !== 0;
+                if (dir) {
+                    arD.setDirection(V3(0, -dir, 0)); arR.setDirection(V3(0, dir, 0));
+                    arA.position.copy(dir > 0 ? OUT.clone().add(V3(0, 0, 0.6)) : NASAL[0].clone().add(V3(0, -0.05, 0.25)));
+                    arA.setDirection(V3(0, dir > 0 ? 0.2 : -0.2, -dir).normalize());
+                }
+                LD.hidden = LR2.hidden = !dir;
+                LD.el.textContent = dir > 0 ? '가로막이 내려가요' : '가로막이 올라가요'; LR2.el.textContent = dir > 0 ? '갈비뼈가 올라가요' : '갈비뼈가 내려가요';
+                uiT += dt;
+                if (uiT > 0.08) {
+                    uiT = 0;
+                    out('dia').innerHTML = dir > 0 ? tag('⬇ 내려감', '#0369a1') : dir < 0 ? tag('⬆ 올라감', '#6d28d9') : tag('멈춤', '#475569');
+                    out('rib').innerHTML = dir > 0 ? tag('⬆ 올라감', '#0369a1') : dir < 0 ? tag('⬇ 내려감', '#6d28d9') : tag('멈춤', '#475569');
+                    $('[data-g="v"]').style.width = `${20 + s * 80}%`; out('v').textContent = `폐 부피 약 ${V.toFixed(2)} L ${dir > 0 ? '— 커지는 중' : dir < 0 ? '— 작아지는 중' : ''}`;
+                    $('[data-g="p"]').style.left = gaugePos(dP, 1.6);
+                    out('p').textContent = Math.abs(dP) < 0.05 ? '대기압과 같음' : `대기압보다 ${Math.abs(dP).toFixed(1)} cmH₂O (약 ${(Math.abs(dP) * 0.098).toFixed(2)} kPa) ${dP < 0 ? '낮음' : '높음'}`;
+                    out('fl').innerHTML = dir > 0 ? tag('폐로 들어옴 (들숨)', '#0369a1') : dir < 0 ? tag('폐에서 나감 (날숨)', '#6d28d9') : tag('멈춤', '#475569');
+                }
+            });
+            const CAPS = {
+                in: '<strong>들숨</strong> : 가로막이 내려가고 갈비뼈가 올라가 흉강과 폐의 부피가 커져요. 폐 내부 압력이 대기압보다 낮아져 공기가 폐로 들어와요.',
+                out: '<strong>날숨</strong> : 가로막이 올라가고 갈비뼈가 내려가 흉강과 폐의 부피가 작아져요. 폐 내부 압력이 대기압보다 높아져 공기가 폐에서 나가요.',
+                auto: '들숨과 날숨이 반복되는 <strong>호흡운동</strong>이에요. 초록 화살표(가로막), 주황 화살표(갈비뼈), 파란 화살표(공기)의 방향과 아래 표를 함께 보세요.',
+                manual: '슬라이더로 직접 숨을 쉬어 보세요. 빠르게 움직일수록 압력 차이가 커지고, 멈추면 압력이 대기압과 같아져요.'
+            };
+            function setMode(m) { cur = m; clock = 0; body.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m)); cap.innerHTML = CAPS[m]; if (m === 'out') { s = 1; vPrev = 2.9; } if (m === 'in') { s = 0; vPrev = 2.4; } }
+            body.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { playSound('click'); setMode(b.dataset.m); });
+            sl.oninput = () => { if (cur !== 'manual') setMode('manual'); sT = +sl.value; };
+            $('[data-act="replay"]').onclick = () => { playSound('click'); setMode(cur === 'manual' ? 'auto' : cur); };
+            wireCommonButtons(body, v);
+            setMode(mode);
+        }
+
+        // =====================================================
+        //  모달: 3D 주사기 (부피와 압력 · 공기의 이동)
+        // =====================================================
+        function openSyringe(mode, level) {
+            const body = openModalAt(level || 1, '💉 How? 3D 주사기 : 부피와 압력, 공기의 이동', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-3 min-w-0">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button class="view-chip" data-m="closed">🔒 끝을 막은 주사기 (부피 ↔ 압력)</button>
+                        <button class="view-chip" data-m="open">💨 끝이 열린 주사기 (공기의 이동)</button>
+                    </div>
+                    <div class="mol-stage" data-stage style="height:360px"></div>
+                    <div class="bg-white border-2 border-orange-200 rounded-xl p-3 mt-3">
+                        <label for="sy-l" class="font-cute text-orange-700 flex justify-between"><span>⬅ 밀기</span><span>주사기 속 부피 : <span data-out="vol" class="gibbs-num"></span></span><span>당기기 ➡</span></label>
+                        <input id="sy-l" type="range" min="1.5" max="5.5" step="0.01" value="3" class="nut-range">
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <button data-act="push" class="view-chip text-sm">⬅ 피스톤 밀기</button>
+                            <button data-act="pull" class="view-chip text-sm">➡ 피스톤 당기기</button>
+                            <button data-act="again" class="view-chip text-sm">↺ 처음으로</button>
+                            <button data-act="spin" class="view-chip text-sm"><i class="fa-solid fa-rotate"></i> 회전</button>
+                            <button data-act="reset" class="view-chip text-sm"><i class="fa-solid fa-crosshairs"></i> 처음 위치</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto mt-3"><table class="w-full text-sm border-collapse bg-white">
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute w-[150px]">공기 분자 수</td><td><span data-out="n" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">피스톤에 부딪히는 횟수</td><td><span data-out="hit" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">주사기 속 압력</td><td><div class="gauge"><i data-g="p"></i></div><div class="flex justify-between text-xs text-gray-500 mt-1"><span>대기압보다 낮음</span><span>대기압</span><span>대기압보다 높음</span></div><span data-out="p" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">압력 × 부피</td><td><span data-out="pv" class="gibbs-num"></span></td></tr>
+                        <tr class="hud-row"><td class="bg-orange-50 font-cute">공기의 이동</td><td data-out="fl" class="font-cute"></td></tr>
+                    </table></div>
+                    <p data-caption class="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-900"></p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed min-w-0">
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🎯 압력은 왜 생길까?</p><p>공기 분자는 쉬지 않고 날아다니며 벽에 부딪혀요. 이 부딪힘이 벽을 <strong>미는 힘</strong>, 즉 <strong>압력</strong>이에요.</p><p class="mt-1">같은 수의 분자가 더 넓은 공간에 퍼지면 벽에 부딪히는 횟수가 줄어 압력이 <strong>낮아지고</strong>, 좁은 공간에 모이면 압력이 <strong>높아져요.</strong> 그래서 기체의 부피와 압력은 <strong>반비례</strong>해요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">💨 공기는 높은 곳 → 낮은 곳</p><p>끝이 열린 주사기의 피스톤을 당기면 주사기 속 압력이 대기압보다 낮아져 바깥 공기가 <strong>들어와요</strong>(들숨과 같아요). 밀면 압력이 높아져 공기가 <strong>나가요</strong>(날숨과 같아요). 안팎의 압력이 같아지면 이동이 멈춰요.</p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700 mb-1">🫁 우리 몸과 연결하기</p><p>주사기 = 폐, 피스톤을 당기는 것 = 가로막이 내려가고 갈비뼈가 올라가 흉강이 넓어지는 것! 그래서 들숨 때 폐 속 압력이 낮아져 공기가 들어와요.</p><button data-act="graph" class="font-cute bg-violet-500 hover:bg-violet-600 text-white py-1.5 px-4 rounded-full shadow mt-2">📉 보일 법칙 그래프 (심화)</button></div>
+                </div>
+            </div>`;
+            const $ = s => body.querySelector(s); const out = k => $(`[data-out="${k}"]`);
+            const stage = $('[data-stage]'), cap = $('[data-caption]');
+            const v = new MolViewer(stage); onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            const root = new THREE.Group(); v.root.add(root);
+            const R = 0.9, BL = 6.2;
+            const glass = new THREE.MeshStandardMaterial({ color: 0xdbeafe, transparent: true, opacity: 0.2, roughness: 0.1, side: THREE.DoubleSide, depthWrite: false });
+            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(R, R, BL, 40, 1, true), glass); barrel.rotation.z = Math.PI / 2; barrel.position.x = BL / 2; root.add(barrel);
+            const endCap = new THREE.Mesh(new THREE.CircleGeometry(R, 40), glass); endCap.rotation.y = Math.PI / 2; root.add(endCap);
+            const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.7, 20, 1, true), glass); nozzle.rotation.z = Math.PI / 2; nozzle.position.x = -0.35; root.add(nozzle);
+            const capM = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.3, 20), stdMat(0xef4444)); capM.rotation.z = Math.PI / 2; capM.position.x = -0.8; root.add(capM);
+            for (let i = 1; i < 6; i++) { const t = new THREE.Mesh(new THREE.TorusGeometry(R + 0.005, 0.012, 4, 40), stdMat(0x64748b)); t.rotation.y = Math.PI / 2; t.position.x = i; root.add(t); }
+            const plunger = new THREE.Group(); root.add(plunger);
+            const disk = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.97, R * 0.97, 0.22, 40), stdMat(0x374151)); disk.rotation.z = Math.PI / 2; plunger.add(disk);
+            const rod = new THREE.Mesh(new THREE.BoxGeometry(BL, 0.18, 0.5), stdMat(0xe5e7eb, { transparent: true, opacity: 0.9 })); rod.position.x = BL / 2 + 0.1; plunger.add(rod);
+            const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 0.14, 32), stdMat(0xe5e7eb)); handle.rotation.z = Math.PI / 2; handle.position.x = BL + 0.2; plunger.add(handle);
+            const NMAX = 200, inst = { N: new THREE.InstancedMesh(geo().sphere, stdMat(0x3b5bdb), NMAX), O: new THREE.InstancedMesh(geo().sphere, stdMat(0xe0242b), NMAX) };
+            Object.values(inst).forEach(m => root.add(m));
+            v.label('주사기 속 공기', pinAt(root, V3(1.2, R + 0.35, 0)), null, 'b');
+            const capLab = v.label('막힘', capM, null, 'r');
+            v.fit(root, 0.85); v.home.target.x = 3.2; v.home.pos.x = 3.2; v.reset(); angleView(v, V3(0.15, 0.45, 1));
+            const P0 = 101.3, N0 = 60, L0 = 3, SP = 2.4;
+            let cur = mode, L = 3, LT = 3, mols = [], leaving = [], acc = 0, hits = 0, hitRate = 0, last = performance.now(), uiT = 0, flux = 0;
+            const sl = $('#sy-l');
+            const newMol = (x, dir) => { const a = Math.random() * 6.283, r = Math.sqrt(Math.random()) * (R - 0.12); return { p: V3(x, r * Math.cos(a), r * Math.sin(a)), v: dir ? V3(Math.abs(dir), (Math.random() - 0.5) * 0.6, (Math.random() - 0.5) * 0.6).normalize() : randUnit(), e: Math.random() < 0.79 ? 'N' : 'O' }; };
+            function init() { L = LT = 3; sl.value = 3; mols = []; leaving = []; for (let i = 0; i < N0; i++) mols.push(newMol(0.15 + Math.random() * (L - 0.3))); }
+            const M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), S3 = V3(0.09, 0.09, 0.09);
+            v.persistent.push(() => {
+                const now = performance.now(), dt = Math.min(0.04, (now - last) / 1000); last = now;
+                L += (LT - L) * Math.min(1, dt * 3);
+                plunger.position.x = L + 0.11;
+                mols.forEach(m => {
+                    m.v.add(randUnit().multiplyScalar(dt * 2)).normalize();
+                    m.p.addScaledVector(m.v, SP * dt);
+                    const rr = Math.hypot(m.p.y, m.p.z);
+                    if (rr > R - 0.1) { const ny = m.p.y / rr, nz = m.p.z / rr, dot = m.v.y * ny + m.v.z * nz; if (dot > 0) { m.v.y -= 2 * dot * ny; m.v.z -= 2 * dot * nz; } m.p.y = ny * (R - 0.1); m.p.z = nz * (R - 0.1); }
+                    if (m.p.x < 0.1) { m.p.x = 0.1; m.v.x = Math.abs(m.v.x); }
+                    if (m.p.x > L - 0.1) { m.p.x = L - 0.1; if (m.v.x > 0) { m.v.x = -m.v.x; hits++; } }
+                });
+                // 열린 주사기 : 압력 차이에 따라 공기가 드나듦
+                const P = P0 * (mols.length / N0) * (L0 / L);
+                flux = 0;
+                if (cur === 'open') {
+                    flux = 1.6 * (P0 - P);
+                    acc += flux * dt;
+                    while (acc >= 1) { acc -= 1; if (mols.length < NMAX) mols.push(newMol(0.12, 1)); }
+                    while (acc <= -1) { acc += 1; if (mols.length > 5) { let k = 0; mols.forEach((m, i) => { if (m.p.x < mols[k].p.x) k = i; }); const m = mols.splice(k, 1)[0]; m.t = 0; leaving.push(m); } }
+                }
+                leaving.forEach(m => { m.t += dt; m.p.x -= dt * 3; m.p.y *= 0.9; m.p.z *= 0.9; });
+                leaving = leaving.filter(m => m.t < 0.8);
+                const cnt = { N: 0, O: 0 };
+                mols.concat(leaving).forEach(m => { M4.compose(m.p, Q, S3); inst[m.e].setMatrixAt(cnt[m.e]++, M4); });
+                Object.entries(inst).forEach(([k, im]) => { im.count = cnt[k]; im.instanceMatrix.needsUpdate = true; });
+                uiT += dt;
+                if (uiT > 0.25) {
+                    hitRate += (hits / uiT - hitRate) * 0.5; hits = 0; uiT = 0;
+                    const vol = L * 20;
+                    out('vol').textContent = `${vol.toFixed(0)} mL`;
+                    out('n').textContent = `${mols.length}개`;
+                    out('hit').textContent = `1초에 약 ${Math.round(hitRate)}번`;
+                    $('[data-g="p"]').style.left = gaugePos(P - P0, 60);
+                    out('p').textContent = `${P.toFixed(1)} kPa (${Math.abs(P - P0) < 1 ? '대기압과 거의 같음' : `대기압보다 ${P < P0 ? '낮음' : '높음'}`})`;
+                    out('pv').textContent = `${P.toFixed(1)} kPa × ${vol.toFixed(0)} mL = ${(P * vol / 1000).toFixed(2)} kPa·L ${cur === 'closed' ? '(일정!)' : ''}`;
+                    out('fl').innerHTML = cur === 'closed' ? tag('끝이 막혀 공기가 드나들 수 없어요', '#475569') : flux > 1.5 ? tag('➡ 바깥 공기가 주사기 안으로 들어와요 (압력: 바깥 > 안)', '#0369a1') : flux < -1.5 ? tag('⬅ 주사기 속 공기가 밖으로 나가요 (압력: 안 > 바깥)', '#6d28d9') : tag('안팎 압력이 같아 이동 멈춤', '#475569');
+                }
+            });
+            const CAPS = {
+                closed: '끝이 막힌 주사기예요. 피스톤을 <strong>당기면</strong> 부피가 커져 분자가 피스톤에 덜 부딪히고 압력이 <strong>낮아져요.</strong> <strong>밀면</strong> 부피가 작아져 압력이 <strong>높아져요.</strong> 압력 × 부피가 일정한지 확인해 보세요.',
+                open: '끝이 열린 주사기예요. 피스톤을 당기면 압력이 낮아져 바깥 공기가 <strong>들어오고</strong>, 밀면 압력이 높아져 공기가 <strong>나가요.</strong> 공기는 압력이 높은 곳에서 낮은 곳으로 이동해요.'
+            };
+            function setMode(m) { cur = m; body.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m)); capM.visible = m === 'closed'; capLab.hidden = m !== 'closed'; init(); cap.innerHTML = CAPS[m]; }
+            body.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { playSound('click'); setMode(b.dataset.m); });
+            sl.oninput = () => { LT = +sl.value; };
+            $('[data-act="push"]').onclick = () => { playSound('click'); LT = 1.5; sl.value = 1.5; };
+            $('[data-act="pull"]').onclick = () => { playSound('click'); LT = 5.5; sl.value = 5.5; };
+            $('[data-act="again"]').onclick = () => { playSound('click'); init(); };
+            $('[data-act="graph"]').onclick = () => openBoyleGraph(2);
+            wireCommonButtons(body, v);
+            setMode(mode);
+        }
+
+        // =====================================================
+        //  심화: 보일 법칙 그래프 그리기
+        // =====================================================
+        function openBoyleGraph(level) {
+            const body = openModalAt(level || 1, '📉 심화 : 보일 법칙 그래프 그리기', null, 'bg-violet-600');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5 text-[15px] leading-relaxed">
+                <div class="lg:col-span-3 min-w-0 space-y-3">
+                    <div class="bg-white border-2 border-violet-200 rounded-2xl p-4">
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <button class="view-chip text-sm" data-gm="pv">P – V 그래프</button>
+                            <button class="view-chip text-sm" data-gm="pinv">P – 1/V 그래프</button>
+                        </div>
+                        <div data-svg></div>
+                        <label for="bg-v" class="font-cute text-violet-700">주사기 속 공기의 부피 \\(V\\) = <span data-out="v" class="gibbs-num"></span> → 압력 \\(P\\) = <span data-out="p" class="gibbs-num text-rose-700"></span></label>
+                        <input id="bg-v" type="range" min="20" max="120" step="1" value="60" class="nut-range">
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <button data-act="rec" class="font-cute bg-violet-500 hover:bg-violet-600 text-white py-1.5 px-4 rounded-full shadow">📍 측정값 기록하기</button>
+                            <button data-act="clear" class="view-chip text-sm">↺ 기록 지우기</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-center border-collapse bg-white" data-table></table></div>
+                </div>
+                <div class="lg:col-span-2 space-y-3 min-w-0">
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">📘 보일 법칙</p><p>온도가 일정할 때, 일정한 양의 기체의 압력과 부피는 <strong>반비례</strong>해요.</p><div class="text-center">\\[P \\times V = k\\ (\\text{일정}),\\qquad P = \\frac{k}{V}\\]</div><p>P–V 그래프는 <strong>쌍곡선</strong> 모양이고, P–1/V 그래프는 원점을 지나는 <strong>직선</strong>이 돼요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">🧮 계산해 보기</p><p>60 mL, 101 kPa의 공기를 30 mL로 압축하면</p><div class="text-center">\\[P_2 = \\frac{101\\ \\mathrm{kPa} \\times 60\\ \\mathrm{mL}}{30\\ \\mathrm{mL}} = 202\\ \\mathrm{kPa}\\]</div><p>부피가 \\(\\frac{1}{2}\\)이 되면 압력은 2배가 돼요.</p></div>
+                    <div class="analogy"><p class="font-cute text-violet-700 mb-1">💡 생활 속 보일 법칙</p><p>높은 산에 오르면 과자 봉지가 빵빵해지고, 물속 깊이 들어가면 귀가 먹먹해져요. 바깥 압력이 변하면 봉지나 귓속 공기의 부피가 따라 변하기 때문이에요. 숨쉬기도 마찬가지로 흉강의 부피가 변하며 폐 속 압력이 변해요.</p><button data-act="syr" class="font-cute bg-orange-500 hover:bg-orange-600 text-white py-1.5 px-4 rounded-full shadow mt-2">💉 3D 주사기로 확인</button></div>
+                </div>
+            </div>`;
+            const $ = s => body.querySelector(s); const out = k => $(`[data-out="${k}"]`);
+            const K = 101.3 * 60; let gm = 'pv', recs = [];
+            const sl = $('#bg-v');
+            function draw() {
+                const V = +sl.value, P = K / V;
+                out('v').textContent = `${V} mL`; out('p').textContent = `${P.toFixed(1)} kPa`;
+                const W = 460, H = 280, x0 = 54, y0 = 240, xw = 390, yh = 220;
+                const inv = gm === 'pinv';
+                const xmax = inv ? 0.05 : 130, ymax = 320;
+                const X = t => x0 + t / xmax * xw, Y = p => y0 - p / ymax * yh;
+                let s = `<svg viewBox="0 0 ${W} ${H}" class="w-full h-auto" role="img" aria-label="${inv ? '압력과 부피의 역수 그래프: 원점을 지나는 직선' : '압력과 부피 그래프: 반비례 곡선'}">`;
+                for (let p = 0; p <= 300; p += 50) s += `<line x1="${x0}" y1="${Y(p)}" x2="${x0 + xw}" y2="${Y(p)}" stroke="#ede9fe"/><text x="${x0 - 6}" y="${Y(p) + 4}" text-anchor="end" font-size="10" fill="#64748b">${p}</text>`;
+                const ticks = inv ? [0, 0.01, 0.02, 0.03, 0.04, 0.05] : [0, 20, 40, 60, 80, 100, 120];
+                ticks.forEach(t => s += `<line x1="${X(t)}" y1="${y0}" x2="${X(t)}" y2="${y0 - yh}" stroke="#f5f3ff"/><text x="${X(t)}" y="${y0 + 15}" text-anchor="middle" font-size="10" fill="#64748b">${t}</text>`);
+                s += `<line x1="${x0}" y1="${y0}" x2="${x0 + xw}" y2="${y0}" stroke="#475569"/><line x1="${x0}" y1="${y0}" x2="${x0}" y2="${y0 - yh}" stroke="#475569"/>`;
+                s += `<text x="${x0 + xw}" y="${y0 + 32}" text-anchor="end" font-size="12" font-family="Jua" fill="#334155">${inv ? '1/V (1/mL)' : '부피 V (mL)'}</text><text x="${x0 - 40}" y="${y0 - yh - 8}" font-size="12" font-family="Jua" fill="#334155">압력 P (kPa)</text>`;
+                let d = '';
+                for (let i = 0; i <= 120; i++) {
+                    let vx, py;
+                    if (inv) { vx = i / 120 * 0.05; py = K * vx; } else { vx = 18 + i / 120 * 110; py = K / vx; }
+                    if (py > ymax) continue;
+                    d += (d ? 'L' : 'M') + `${X(vx).toFixed(1)},${Y(py).toFixed(1)} `;
+                }
+                s += `<path d="${d}" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+                recs.forEach(r => s += `<circle cx="${X(inv ? 1 / r[0] : r[0])}" cy="${Y(r[1])}" r="5" fill="#7c3aed" stroke="#fff" stroke-width="1.5"/>`);
+                s += `<circle cx="${X(inv ? 1 / V : V)}" cy="${Y(P)}" r="7" fill="#e11d48" stroke="#fff" stroke-width="2"/>`;
+                s += `<rect x="${X(inv ? 1 / V : V) + (V > 90 && !inv ? -100 : 10)}" y="${Y(P) - 30}" width="90" height="22" rx="6" fill="#fff" stroke="#fda4af"/><text x="${X(inv ? 1 / V : V) + (V > 90 && !inv ? -55 : 55)}" y="${Y(P) - 15}" text-anchor="middle" font-size="11" font-family="Jua" fill="#be123c">${V} mL, ${P.toFixed(0)} kPa</text>`;
+                $('[data-svg]').innerHTML = s + `</svg>`;
+                body.querySelectorAll('[data-gm]').forEach(b => b.classList.toggle('on', b.dataset.gm === gm));
+                $('[data-table]').innerHTML = `<tr class="bg-violet-100 font-cute"><td class="p-1 border border-violet-200">번호</td><td class="p-1 border border-violet-200">부피 V (mL)</td><td class="p-1 border border-violet-200">압력 P (kPa)</td><td class="p-1 border border-violet-200">P × V</td></tr>` +
+                    (recs.length ? recs.map((r, i) => `<tr><td class="p-1 border border-violet-200">${i + 1}</td><td class="p-1 border border-violet-200">${r[0]}</td><td class="p-1 border border-violet-200">${r[1].toFixed(1)}</td><td class="p-1 border border-violet-200 font-cute text-violet-700">${(r[0] * r[1]).toFixed(0)}</td></tr>`).join('') : `<tr><td colspan="4" class="p-2 border border-violet-200 text-gray-500">슬라이더로 부피를 바꾸고 ‘측정값 기록하기’를 눌러 보세요. P × V 값을 비교해 보세요!</td></tr>`);
+            }
+            sl.oninput = draw;
+            $('[data-act="rec"]').onclick = () => { playSound('pop'); const V = +sl.value; if (!recs.some(r => r[0] === V)) recs.push([V, K / V]); recs.sort((a, b) => a[0] - b[0]); draw(); };
+            $('[data-act="clear"]').onclick = () => { playSound('click'); recs = []; draw(); };
+            body.querySelectorAll('[data-gm]').forEach(b => b.onclick = () => { playSound('click'); gm = b.dataset.gm; draw(); });
+            $('[data-act="syr"]').onclick = () => openSyringe('closed', 2);
+            draw(); typeset(body);
+        }
+
+        // =====================================================
+        //  심화: 폐활량과 호흡량 그래프
+        // =====================================================
+        function openSpiro(level) {
+            const body = openModalAt(level || 1, '📈 심화 : 폐활량과 호흡량 그래프', null, 'bg-violet-600');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5 text-[15px] leading-relaxed">
+                <div class="lg:col-span-3 min-w-0 space-y-3">
+                    <div class="bg-white border-2 border-violet-200 rounded-2xl p-4">
+                        <p class="font-cute text-violet-700 mb-1">폐 속 공기의 부피 변화 (폐활량계 그래프)</p>
+                        <div class="overflow-x-auto"><div data-svg class="min-w-[460px]"></div></div>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <button data-act="deep" class="font-cute bg-sky-500 hover:bg-sky-600 text-white py-1.5 px-4 rounded-full shadow">😮 최대한 깊게 들이마시기</button>
+                            <button data-act="force" class="font-cute bg-violet-500 hover:bg-violet-600 text-white py-1.5 px-4 rounded-full shadow">😤 최대한 힘껏 내쉬기</button>
+                            <button data-act="ex" class="view-chip text-sm">🏃 운동하기</button>
+                            <button data-act="lab" class="view-chip text-sm">🏷️ 이름 보이기</button>
+                        </div>
+                    </div>
+                    <p data-caption class="bg-violet-50 border border-violet-200 rounded-lg p-3 text-sm text-violet-900">평소처럼 조용히 숨 쉬고 있어요. 버튼을 눌러 깊게 들이마시거나 힘껏 내쉬어 보세요.</p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 min-w-0">
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-center border-collapse bg-white">
+                        <tr class="bg-violet-100 font-cute"><td class="p-1 border border-violet-200">이름</td><td class="p-1 border border-violet-200">뜻</td><td class="p-1 border border-violet-200">대략값</td></tr>
+                        <tr><td class="p-1 border border-violet-200 font-cute">1회 호흡량</td><td class="p-1 border border-violet-200">조용히 한 번 숨 쉴 때 드나드는 양</td><td class="p-1 border border-violet-200">0.5 L</td></tr>
+                        <tr><td class="p-1 border border-violet-200 font-cute">들숨 예비량</td><td class="p-1 border border-violet-200">평소 들숨 뒤 더 들이마실 수 있는 양</td><td class="p-1 border border-violet-200">3.0 L</td></tr>
+                        <tr><td class="p-1 border border-violet-200 font-cute">날숨 예비량</td><td class="p-1 border border-violet-200">평소 날숨 뒤 더 내쉴 수 있는 양</td><td class="p-1 border border-violet-200">1.1 L</td></tr>
+                        <tr><td class="p-1 border border-violet-200 font-cute">잔기량</td><td class="p-1 border border-violet-200">힘껏 내쉬어도 남는 양</td><td class="p-1 border border-violet-200">1.2 L</td></tr>
+                        <tr class="bg-rose-50"><td class="p-1 border border-violet-200 font-cute text-rose-700">폐활량</td><td class="p-1 border border-violet-200">최대로 들이마신 뒤 최대로 내쉰 양</td><td class="p-1 border border-violet-200">4.6 L</td></tr>
+                    </table></div>
+                    <p class="text-xs text-gray-500">※ 건강한 성인 남자의 교과서 대략값이에요. 키·성별·나이·운동량에 따라 달라요.</p>
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">🧮 폐활량 계산</p><div class="text-center">\\[\\text{폐활량} = 3.0 + 0.5 + 1.1 = 4.6\\ \\mathrm{L}\\]</div><p>잔기량은 폐활량에 들어가지 않아요. 폐는 흉막으로 가슴벽에 붙어 있어 힘껏 내쉬어도 완전히 쪼그라들지 않기 때문이에요.</p></div>
+                    <div class="analogy"><p class="font-cute text-violet-700 mb-1">🏃 1분 동안 숨 쉬는 양</p><div class="text-center">\\[0.5\\ \\mathrm{L} \\times 12\\ \\text{회/분} = 6\\ \\mathrm{L/분}\\]</div><p>운동을 하면 가로막과 갈비뼈가 더 크게, 더 빠르게 움직여 1분에 100 L 넘게 숨 쉴 수도 있어요.</p></div>
+                </div>
+            </div>`;
+            const $ = s => body.querySelector(s);
+            const host = $('[data-svg]'), cap = $('[data-caption]');
+            const FRC = 2.3, TV = 0.5, TLC = 5.8, RV = 1.2;
+            let V = FRC, from = FRC, to = FRC + TV, dur = 1.6, el = 0, queue = [], hist = [], t = 0, ex = false, showLab = false;
+            const normal = () => ex ? [[FRC + 1.8, 0.9], [FRC - 0.4, 0.9]] : [[FRC + TV, 1.6], [FRC, 2.4]];
+            function next() { if (!queue.length) queue = normal(); const [tg, d] = queue.shift(); from = V; to = tg; dur = d; el = 0; }
+            function draw() {
+                const W = 560, H = 260, x0 = 44, y0 = 230, xw = 360, yh = 210, span = 24;
+                const Y = v => y0 - v / 6.2 * yh, X = tt => x0 + (tt - (t - span)) / span * xw;
+                let s = `<svg viewBox="0 0 ${W} ${H}" class="w-full h-auto" role="img" aria-label="시간에 따른 폐 속 공기 부피 그래프">`;
+                for (let l = 0; l <= 6; l++) s += `<line x1="${x0}" y1="${Y(l)}" x2="${x0 + xw}" y2="${Y(l)}" stroke="#ede9fe"/><text x="${x0 - 6}" y="${Y(l) + 4}" text-anchor="end" font-size="10" fill="#64748b">${l}</text>`;
+                s += `<text x="${x0 - 36}" y="14" font-size="11" font-family="Jua" fill="#334155">부피 (L)</text><text x="${x0 + xw}" y="${y0 + 18}" text-anchor="end" font-size="11" font-family="Jua" fill="#334155">시간 →</text>`;
+                s += `<line x1="${x0}" y1="${Y(RV)}" x2="${x0 + xw}" y2="${Y(RV)}" stroke="#fda4af" stroke-dasharray="4 3"/><line x1="${x0}" y1="${Y(TLC)}" x2="${x0 + xw}" y2="${Y(TLC)}" stroke="#fda4af" stroke-dasharray="4 3"/>`;
+                const pts = hist.filter(h => h[0] >= t - span).map(h => `${X(h[0]).toFixed(1)},${Y(h[1]).toFixed(1)}`);
+                if (pts.length > 1) s += `<polyline points="${pts.join(' ')}" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linejoin="round"/>`;
+                s += `<circle cx="${X(t)}" cy="${Y(V)}" r="5" fill="#e11d48"/>`;
+                if (showLab) {
+                    const br = (x, a, b, txt, col) => `<path d="M${x},${Y(a)} L${x + 6},${Y(a)} L${x + 6},${Y(b)} L${x},${Y(b)}" fill="none" stroke="${col}" stroke-width="1.5"/><text x="${x + 10}" y="${(Y(a) + Y(b)) / 2 + 4}" font-size="11" font-family="Jua" fill="${col}">${txt}</text>`;
+                    s += br(x0 + xw + 4, 0, RV, '잔기량', '#64748b') + br(x0 + xw + 4, RV, FRC, '날숨 예비량', '#2563eb') + br(x0 + xw + 4, FRC, FRC + TV, '1회 호흡량', '#ea580c') + br(x0 + xw + 4, FRC + TV, TLC, '들숨 예비량', '#0891b2');
+                    s += `<path d="M${x0 + xw + 82},${Y(RV)} L${x0 + xw + 88},${Y(RV)} L${x0 + xw + 88},${Y(TLC)} L${x0 + xw + 82},${Y(TLC)}" fill="none" stroke="#e11d48" stroke-width="2"/><text x="${x0 + xw + 92}" y="${(Y(RV) + Y(TLC)) / 2}" font-size="12" font-family="Jua" fill="#e11d48">폐활량</text><text x="${x0 + xw + 92}" y="${(Y(RV) + Y(TLC)) / 2 + 15}" font-size="11" font-family="Jua" fill="#e11d48">4.6 L</text>`;
+                }
+                host.innerHTML = s + `</svg>`;
+            }
+            let lastT = null;
+            animLoop(ts => {
+                const dt = lastT === null ? 0 : Math.min(0.05, (ts - lastT) / 1000); lastT = ts;
+                t += dt; el += dt;
+                const k = Math.min(1, el / dur); V = from + (to - from) * (0.5 - 0.5 * Math.cos(Math.PI * k));
+                if (k >= 1) next();
+                hist.push([t, V]); if (hist.length > 3000) hist.shift();
+                draw();
+            });
+            $('[data-act="deep"]').onclick = () => { playSound('click'); ex = false; queue = [[TLC, 2.6], [FRC, 3.0]]; next(); cap.innerHTML = '가로막을 최대한 내리고 갈비뼈를 최대한 올려 <strong>들숨 예비량</strong>까지 들이마셨어요. 그래프가 약 5.8 L(총폐용량)까지 올라가요.'; };
+            $('[data-act="force"]').onclick = () => { playSound('click'); ex = false; queue = [[RV, 2.6], [FRC, 2.2]]; next(); cap.innerHTML = '배와 갈비뼈 사이의 근육에 힘을 주어 <strong>날숨 예비량</strong>까지 내쉬었어요. 그래도 약 1.2 L(<strong>잔기량</strong>)는 폐에 남아요.'; };
+            $('[data-act="ex"]').onclick = e => { playSound('click'); ex = !ex; queue = []; e.currentTarget.classList.toggle('on', ex); e.currentTarget.textContent = ex ? '🧘 쉬기' : '🏃 운동하기'; cap.innerHTML = ex ? '운동할 때는 숨을 <strong>더 깊고 빠르게</strong> 쉬어 1회 호흡량이 커져요.' : '다시 조용히 숨 쉬고 있어요.'; };
+            $('[data-act="lab"]').onclick = e => { playSound('click'); showLab = !showLab; e.currentTarget.classList.toggle('on', showLab); };
+            draw(); typeset(body);
+        }
+
+        // =====================================================
+        //  초기화
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fig-jar').innerHTML = jarSVG('ws');
+            document.getElementById('fig-in').innerHTML = bodySideSVG('in');
+            document.getElementById('fig-out').innerHTML = bodySideSVG('out');
+            document.getElementById('fig-q1').innerHTML = jarSVG('q1');
+            document.getElementById('fig-q3').innerHTML = bodySideSVG('q3');
+            document.getElementById('fig-q4').innerHTML = figQ4();
+        });
+    </script>
+</body>
+</html>
