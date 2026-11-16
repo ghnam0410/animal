@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>6. 2. 2. 노폐물을 내보내는 배설계 🫘</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts: 주아체 (Title), 고운돋움 (Body) -->
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+    <!-- FontAwesome (SVG/JS 버전) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <!-- Tone.js for Audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- three.js (3D 모형) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- MathJax (화학식은 \mathrm 로마체) -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+            svg: { fontCache: 'global' },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'select', 'option'] }
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+
+    <style>
+        :root {
+            --bg-pastel-apricot: #fff4ec;   /* 파스텔 살구 */
+            --bg-peach: #ffe6d5;
+            --panel-bg: rgba(255, 255, 255, 0.86);
+            --text-main: #7a2e12;           /* 짙은 살구 갈색 */
+            --accent-apricot: #f6894a;      /* 살구 주황 */
+            --accent-deep: #c2410c;
+            --accent-yellow: #f59e0b;
+        }
+
+        body {
+            font-family: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-pastel-apricot);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(246, 137, 74, 0.08), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(244, 114, 182, 0.06), transparent 40%);
+            background-attachment: fixed;
+            margin: 0; overflow-x: hidden; touch-action: manipulation;
+            color: var(--text-main); line-height: 1.7;
+        }
+
+        .font-cute { font-family: 'Jua', 'Gowun Dodum', sans-serif; letter-spacing: 0.5px; }
+
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px; border: 2px solid rgba(246, 137, 74, 0.22);
+            box-shadow: 0 10px 30px -10px rgba(194, 65, 12, 0.18);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+
+        .concept-blank {
+            display: inline-block; background: rgba(246, 137, 74, 0.12);
+            color: transparent; border-bottom: 3px dashed var(--accent-apricot);
+            padding: 0 12px; margin: 0 4px; border-radius: 8px;
+            cursor: pointer; transition: all 0.3s; position: relative; font-weight: 700;
+        }
+        .concept-blank::after {
+            content: '클릭!'; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            color: var(--accent-apricot); font-size: 0.85rem; font-family: 'Jua';
+            opacity: 0.8; animation: pulse-glow 1.5s infinite alternate; white-space: nowrap;
+        }
+        @keyframes pulse-glow { 0% { opacity: 0.5; } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } }
+
+        .concept-blank.revealed {
+            background: rgba(246, 137, 74, 0.22); color: var(--accent-deep);
+            border-bottom: 3px solid var(--accent-apricot); transform: scale(1.05);
+        }
+        .concept-blank.revealed::after { display: none; }
+
+        /* Navigation Buttons */
+        .nav-btn { position: relative; overflow: hidden; transition: all 0.3s; border: 2px solid transparent; }
+        .nav-btn.active {
+            background: linear-gradient(135deg, #fb9a5b, #f2703a);
+            border-color: rgba(255,255,255,0.5); box-shadow: 0 5px 15px rgba(246, 137, 74, 0.4);
+            color: white; transform: translateY(-2px);
+        }
+
+        /* Quiz Box */
+        .quiz-option { transition: all 0.2s; border: 2px solid #e2e8f0; }
+        .quiz-option:hover { border-color: #f6894a; background-color: #fff3ea; }
+        .quiz-option.correct { border-color: #3b82f6; background-color: #dbeafe; color: #1e3a8a; }
+        .quiz-option.wrong { border-color: #ef4444; background-color: #fee2e2; color: #991b1b; }
+
+        /* Select (선택지) */
+        .nut-select {
+            appearance: none; -webkit-appearance: none; background-color: rgba(246, 137, 74, 0.12);
+            border: 2px dashed var(--accent-apricot); color: var(--text-main);
+            padding: 2px 26px 2px 10px; border-radius: 8px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; font-family: 'Gowun Dodum', sans-serif;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23f6894a%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right 8px top 50%; background-size: 10px auto;
+        }
+        .nut-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(246, 137, 74, 0.3); }
+        .nut-select.correct { border-style: solid; background-color: rgba(246, 137, 74, 0.22); color: var(--accent-deep); background-image: none; padding-right: 10px; opacity: 1; }
+
+        /* How? / 실험하기 / 원리? 버튼 */
+        .how-btn {
+            font-family: 'Jua', sans-serif; font-size: 0.9rem; line-height: 1;
+            padding: 6px 12px; border-radius: 999px; color: #fff;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed); box-shadow: 0 3px 8px rgba(124, 58, 237, 0.3);
+            transition: transform 0.2s;
+        }
+        .how-btn:hover { transform: scale(1.07); }
+        .lab-btn { font-family: 'Jua', sans-serif; font-size: 0.95rem; line-height: 1; padding: 8px 12px; border-radius: 12px; transition: transform 0.2s; white-space: nowrap; }
+        .lab-btn:hover { transform: scale(1.05); }
+
+        /* 3D 뷰어 */
+        .mol-stage {
+            position: relative; width: 100%; height: 360px; border-radius: 16px; overflow: hidden;
+            background: radial-gradient(circle at 50% 40%, #eef2f7 0%, #d5dde8 70%, #c6d0dd 100%);
+            border: 2px solid #e2e8f0; transition: background 1.2s;
+        }
+        .mol-stage canvas { display: block; width: 100% !important; height: 100% !important; cursor: grab; }
+        .mol-label {
+            position: absolute; transform: translate(-50%, -140%); white-space: nowrap; pointer-events: none;
+            font-family: 'Jua', sans-serif; font-size: 0.8rem; padding: 1px 8px; border-radius: 999px;
+            background: rgba(255,255,255,0.92); color: #7a2e12; border: 1.5px solid #f6894a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+        .mol-label.e { background: #fde047; border-color: #ca8a04; color: #713f12; }
+        .mol-label.v { background: #ede9fe; border-color: #7c3aed; color: #4c1d95; }
+        .mol-label.b { background: #e0f2fe; border-color: #0284c7; color: #075985; }
+        .mol-label.r { background: #ffedd5; border-color: #c2410c; color: #7c2d12; }
+        .view-chip { font-family: 'Jua', sans-serif; padding: 6px 14px; border-radius: 999px; border: 2px solid #fdba74; background: #fff; color: #9a3412; transition: all 0.2s; }
+        .view-chip.on { background: linear-gradient(135deg, #fb9a5b, #f2703a); color: #fff; border-color: transparent; }
+        .legend-dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #94a3b8; vertical-align: -2px; margin-right: 4px; }
+
+        /* 모달 */
+        .modal-wrap { position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-start; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); padding: 24px 12px; overflow-y: auto; opacity: 0; transition: opacity 0.3s; }
+        .modal-wrap.show { opacity: 1; }
+        .modal-wrap.hidden { display: none !important; }
+        .modal-box { background: #fff; border-radius: 20px; width: 100%; max-width: 1040px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); transform: scale(0.96); transition: transform 0.3s; overflow: hidden; margin: auto 0; }
+        .modal-wrap.show .modal-box { transform: scale(1); }
+        #modal2 { z-index: 120; background: rgba(0,0,0,0.45); }
+        .step-card { background: #fff8f2; border: 2px solid #fed7aa; border-radius: 14px; padding: 14px 16px; }
+        .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #f6894a; color: #fff; font-family: 'Jua'; flex-shrink: 0; }
+        .analogy { background: #fefce8; border: 2px dashed #facc15; border-radius: 14px; padding: 12px 14px; }
+
+        input[type=range].nut-range { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; border-radius: 999px; background: linear-gradient(90deg, #fdba74, #a78bfa); outline: none; }
+        input[type=range].nut-range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 3px solid #f2703a; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        input[type=range].nut-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid #f2703a; cursor: pointer; }
+
+        mjx-container { font-size: 105% !important; }
+        mjx-container[jax="SVG"] > svg { display: inline-block !important; }
+        mjx-container[jax="SVG"][display="true"] > svg { display: inline-block !important; }
+        mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding: 4px 0; }
+        table { font-variant-numeric: tabular-nums; }
+        @media (prefers-reduced-motion: reduce) { .animate-float, .concept-blank::after { animation: none; } }
+    </style>
+    <style>
+        /* ---- 소화계 단원과 동일한 요소 ---- */
+        .start-badge { display: inline-flex; align-items: center; gap: 4px; font-family: 'Jua', sans-serif; font-size: 0.95rem; color: #fff; background: linear-gradient(135deg, #7cc35a, #4c9a2a); padding: 3px 14px; border-radius: 999px 999px 999px 4px; box-shadow: 0 3px 8px rgba(76, 154, 42, 0.3); vertical-align: middle; }
+        .fig-card { background: #fff; border: 2px solid #fed7aa; border-radius: 16px; padding: 12px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .fig-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -8px rgba(194, 65, 12, 0.3); }
+        .bogi { border: 2px solid #374151; background: #fff; border-radius: 4px; padding: 10px 14px; }
+        textarea.kiwi-input { width: 100%; min-height: 72px; border: 2px dashed #f6894a; border-radius: 14px; padding: 10px 14px; background: rgba(246, 137, 74, 0.06); font-family: 'Gowun Dodum', sans-serif; color: #7a2e12; resize: vertical; }
+        textarea.kiwi-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(246, 137, 74, 0.3); }
+        .svg-blank { cursor: pointer; }
+        .svg-blank .ans { opacity: 0; transition: opacity .3s; }
+        .svg-blank .hint { opacity: .85; }
+        .svg-blank.revealed .ans { opacity: 1; }
+        .svg-blank.revealed .hint { display: none; }
+        .svg-blank:hover rect { fill: #fff7ed; }
+        .anim-btn { font-family: 'Jua', sans-serif; padding: 7px 14px; border-radius: 12px; border: 2px solid #fdba74; background: #fff; color: #9a3412; transition: transform .2s; }
+        .anim-btn:hover { transform: scale(1.05); }
+        .anim-btn.on { background: #fff1e4; }
+    </style>
+    <style>
+        /* ---- 순환계 단원 추가 요소 (기존 디자인 체계 유지) ---- */
+        .phase-pill { font-family: 'Jua', sans-serif; font-size: 0.9rem; padding: 3px 12px; border-radius: 999px; border: 2px solid #fecaca; background: #fff; color: #9f1239; transition: all .25s; }
+        .phase-pill.on { background: linear-gradient(135deg, #fb7185, #e11d48); color: #fff; border-color: transparent; transform: scale(1.06); }
+        .cyc-arrow { opacity: 0; transition: opacity .6s; }
+        .show-arrows .cyc-arrow { opacity: 1; }
+        .cyc-text { display: none; }
+        .show-arrows .cyc-text { display: block; }
+        .row-head { font-family: 'Jua', sans-serif; }
+        .flow-arrow { display: inline-block; width: 60px; height: 24px; vertical-align: middle; margin-right: 8px; background: linear-gradient(90deg, #fde047, #facc15); clip-path: polygon(0 30%, 70% 30%, 70% 0, 100% 50%, 70% 100%, 70% 70%, 0 70%); }
+        .deep-box { background: linear-gradient(135deg, #f5f3ff, #fff1f2); border: 2px solid #ddd6fe; border-radius: 18px; padding: 18px; }
+        .deep-btn { font-family: 'Jua', sans-serif; padding: 10px 12px; border-radius: 12px; border: 2px solid #c4b5fd; background: #fff; color: #5b21b6; transition: transform .2s; text-align: left; }
+        .deep-btn:hover { transform: scale(1.03); background: #faf5ff; }
+        .prob-bar { height: 22px; border-radius: 999px; background: #f1f5f9; overflow: hidden; }
+        .prob-bar > i { display: block; height: 100%; border-radius: 999px; transition: width .3s; }
+        .gibbs-num { font-variant-numeric: tabular-nums; font-weight: 700; }
+        @keyframes beat { 0% { transform: scale(1); } 30% { transform: scale(1.35); } 100% { transform: scale(1); } }
+        .beating { animation: beat .5s ease-out; transform-box: fill-box; transform-origin: center; }
+        @keyframes press { 0% { transform: translateY(0); } 30% { transform: translateY(7px); } 100% { transform: translateY(0); } }
+        .pressing { animation: press .5s ease-out; }
+    </style>
+    <style>
+        /* ---- 혈액 순환 경로 단원 추가 요소 (기존 디자인 체계 유지) ---- */
+        #flow-wrap .flow-dot { opacity: 0; transition: opacity .4s; }
+        #flow-wrap.run-flow .flow-dot { opacity: 1; }
+        .phase-pill[data-sp] { font-size: 0.82rem; padding: 2px 10px; }
+    </style>
+    <style>
+        /* ---- 배설계 단원 추가 요소 (기존 디자인 체계 유지) ---- */
+        .waste-table td { border: 1px solid #fed7aa; padding: 5px 8px; }
+        .tox-bar { height: 16px; border-radius: 999px; background: #f1f5f9; overflow: hidden; }
+        .tox-bar > i { display: block; height: 100%; border-radius: 999px; transition: width .3s; }
+    </style>
+
+</head>
+<body>
+
+    <div id="overlay" class="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white/95 px-4 backdrop-blur-sm transition-opacity duration-500 overflow-y-auto">
+        <div class="text-center animate-float max-w-2xl py-8">
+            <div class="mb-6 flex justify-center gap-6 text-6xl">
+                <i class="fa-solid fa-flask text-amber-400 drop-shadow-md"></i>
+                <i class="fa-solid fa-vial text-rose-400 drop-shadow-md"></i>
+                <i class="fa-solid fa-droplet text-yellow-400 drop-shadow-md"></i>
+            </div>
+            <h1 class="text-center font-cute text-4xl sm:text-5xl md:text-6xl text-orange-700 mb-4 drop-shadow-sm">6. 2. 2. 노폐물을 내보내는 배설계</h1>
+            <p class="text-xl md:text-2xl text-orange-600 mb-8 font-light">세포가 에너지를 얻고 남은 찌꺼기는 어디로 갈까요? 🫘</p>
+
+            <div class="space-y-3 mb-8 text-left max-w-md mx-auto bg-orange-50 p-6 rounded-2xl border border-orange-200 shadow-lg">
+                <h3 class="font-cute text-2xl text-orange-800 mb-3 text-center">💡 오늘 배울 내용</h3>
+                <ul class="text-orange-900 space-y-2.5 text-base">
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-flask text-amber-400"></i> 1단계: 노폐물의 생성 (3D 분자 분해 · 노폐물의 길)</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-droplet text-rose-400"></i> 2단계: 배설계 (3D 콩팥 · 네프론)</li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-pencil text-sky-400"></i> 3단계: 실전 문제 풀이</li>
+                </ul>
+            </div>
+
+            <button onclick="startApp()" class="font-cute bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-white text-2xl sm:text-3xl py-4 px-10 rounded-full shadow-xl transition-transform hover:scale-105 active:scale-95">
+                배설계 탐구 시작하기 🚀
+            </button>
+        </div>
+    </div>
+
+    <div id="app" class="max-w-5xl mx-auto p-4 md:p-8 hidden">
+
+        <header class="text-center mb-8 pt-4">
+            <h1 class="font-cute text-4xl md:text-5xl text-orange-800 drop-shadow-sm">🫘 노폐물을 내보내는 배설계</h1>
+            <p class="text-orange-600 mt-2 font-cute text-lg">중학교 2학년 과학 Ⅵ. 동물과 에너지</p>
+        </header>
+
+        <!-- Navigation Bar -->
+        <nav class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 glass-panel p-3">
+            <button onclick="openTab('waste')" id="btn-waste" class="nav-btn active font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">1. 노폐물의 생성</button>
+            <button onclick="openTab('excr')" id="btn-excr" class="nav-btn font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">2. 배설계</button>
+            <button onclick="openTab('quiz')" id="btn-quiz" class="nav-btn font-cute text-sm sm:text-lg py-3 px-2 rounded-xl text-orange-800 font-bold bg-white">3. 문제 풀이</button>
+        </nav>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: 노폐물의 생성 -->
+        <!-- ========================================== -->
+        <section id="tab-waste" class="tab-content glass-panel p-6 md:p-10 mb-8">
+            <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-xl mb-6 flex items-start gap-3 shadow-sm">
+                <i class="fa-solid fa-circle-info text-yellow-500 text-2xl mt-1"></i>
+                <p class="text-gray-700">본문의 <strong class="text-orange-600">점선 빈칸</strong>을 클릭해 학습지의 정답을 확인하세요. 스스로 먼저 생각해본 후 클릭하면 학습 효과가 좋습니다!</p>
+            </div>
+
+            <div class="bg-white rounded-xl border-2 border-orange-100 shadow-sm mb-8 overflow-hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-5 border-b border-orange-100">
+                    <div class="bg-orange-50 p-3 font-cute text-lg text-orange-800 flex items-center justify-center">Ⅵ. 동물과 에너지</div>
+                    <div class="p-3 sm:col-span-4 text-gray-700">2. 세포호흡과 에너지 &nbsp;›&nbsp; ⑵ 노폐물을 내보내는 배설계 ⓰</div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-5">
+                    <div class="bg-orange-50 p-3 font-cute text-lg text-orange-800 flex items-center justify-center">학습 목표</div>
+                    <div class="p-3 sm:col-span-4 text-gray-700">✿ 배설계의 구조와 기능을 이해할 수 있다.</div>
+                </div>
+            </div>
+
+            <h2 class="font-cute text-3xl text-orange-700 mb-4"><i class="fa-solid fa-flask"></i> 1. 노폐물의 생성</h2>
+            <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose mb-4">
+                <p><span class="font-cute text-xl text-rose-700">(1)</span> ( <span class="concept-blank" onclick="revealBlank(this)">노폐물</span> )의 생성 : 세포가 에너지를 얻기 위해 영양소를 분해하는 ( <span class="concept-blank" onclick="revealBlank(this)">세포호흡</span> )을 하면 여러가지 노폐물이 만들어진다. <button class="how-btn ml-1" onclick="openWaste('carb')">How?</button></p>
+                <p class="mt-2"><span class="font-cute text-xl text-rose-700">(2)</span> 세포호흡 결과 생성된 노폐물이 몸 밖으로 나가는 과정 <button class="how-btn ml-1" onclick="openRoute('all')">How?</button></p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-4 items-start">
+                <div class="fig-card" onclick="figClick(event, 'waste')">
+                    <div id="fig-waste"></div>
+                    <p class="text-center text-sm text-orange-600 font-cute mt-1"><i class="fa-solid fa-cube"></i> 네모칸과 괄호를 눌러 확인하고, 그림을 누르면 3D 노폐물의 길이 열려요</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose">
+                    <p>① 탄수화물, 지방, 단백질이 분해될 때 공통적으로 만들어지는 노폐물 : ( <span class="concept-blank" onclick="revealBlank(this)">물</span> ), ( <span class="concept-blank" onclick="revealBlank(this)">이산화탄소</span> ) <button class="how-btn ml-1" onclick="openWaste('carb')">How?</button></p>
+                    <p class="mt-2">② ( <span class="concept-blank" onclick="revealBlank(this)">단백질</span> )이 분해될 때는 노폐물로 물, 이산화탄소뿐 아니라 ( <span class="concept-blank" onclick="revealBlank(this)">암모니아</span> )가 만들어진다. <button class="how-btn ml-1" onclick="openWaste('protein')">How?</button></p>
+                    <p class="mt-2">③ 각 노폐물이 몸 밖으로 나가는 과정</p>
+                    <div class="border-2 border-dashed border-gray-400 rounded-lg p-3 mt-1 text-[17px]">
+                        <p>• <strong>이산화탄소</strong> : ( <span class="concept-blank" onclick="revealBlank(this)">폐</span> )로 이동해 ( <span class="concept-blank" onclick="revealBlank(this)">날숨</span> )에 포함되어 나감 <button class="how-btn ml-1" onclick="openRoute('co2')">How?</button></p>
+                        <p class="mt-1">• <strong>물</strong> : 주로 콩팥으로 이동해 ( <span class="concept-blank" onclick="revealBlank(this)">오줌</span> )에 포함되어 나감. 일부는 폐로 이동해 ( <span class="concept-blank" onclick="revealBlank(this)">날숨</span> )에 포함되어 나감 <button class="how-btn ml-1" onclick="openRoute('h2o')">How?</button></p>
+                        <p class="mt-1">• <strong>암모니아</strong> : ( <span class="concept-blank" onclick="revealBlank(this)">독성</span> )이 강하므로 ( <span class="concept-blank" onclick="revealBlank(this)">간</span> )에서 독성이 약한 ( <span class="concept-blank" onclick="revealBlank(this)">요소</span> )로 바뀐 후 콩팥으로 이동해 오줌에 포함되어 나감 <button class="how-btn ml-1" onclick="openWaste('urea')">How?</button></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="deep-box mt-8">
+                <p class="font-cute text-2xl text-violet-700 mb-1">🔬 심화 탐구 : 노폐물을 분자로 보기</p>
+                <p class="text-gray-700 mb-3">영양소 분자가 쪼개져 이산화탄소·물·암모니아가 되는 과정을 3D 분자 모형으로 보고, 암모니아가 왜 위험한지 화학으로 알아보세요.</p>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <button class="deep-btn" onclick="openWaste('carb')">🍚 포도당의 분해 (탄수화물)</button>
+                    <button class="deep-btn" onclick="openWaste('protein')">🥩 아미노산의 분해 (단백질)</button>
+                    <button class="deep-btn" onclick="openWaste('urea')">🧪 간에서 암모니아 → 요소</button>
+                    <button class="deep-btn" onclick="openRoute('all')">🚚 3D 노폐물이 나가는 길</button>
+                    <button class="deep-btn" onclick="openUrea()">⚗️ 암모니아의 독성과 pH (심화)</button>
+                    <button class="deep-btn" onclick="openUrea('animal')">🐟 물고기·사람·새의 질소 노폐물 (심화)</button>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <button onclick="openTab('excr')" class="font-cute bg-orange-400 hover:bg-orange-500 text-white text-xl py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    다음: 배설계 알아보기 <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: 배설계 -->
+        <!-- ========================================== -->
+        <section id="tab-excr" class="tab-content hidden glass-panel p-6 md:p-10 mb-8">
+            <h2 class="font-cute text-3xl text-orange-700 mb-4"><i class="fa-solid fa-droplet"></i> 2. 배설계</h2>
+            <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose mb-4">
+                <p><span class="font-cute text-xl text-rose-700">(1)</span> ( <span class="concept-blank" onclick="revealBlank(this)">배설</span> ) : ( <span class="concept-blank" onclick="revealBlank(this)">오줌</span> )을 만들어 요소와 같은 노폐물을 몸 밖으로 내보내는 과정</p>
+                <p class="mt-2"><span class="font-cute text-xl text-rose-700">(2)</span> 배설계 : 오줌의 생성과 배설을 담당하는 기관계. 콩팥, ( <span class="concept-blank" onclick="revealBlank(this)">오줌관</span> ), ( <span class="concept-blank" onclick="revealBlank(this)">방광</span> ) 요도 로 구성됨 <button class="how-btn ml-1" onclick="openKidney('system')">How?</button></p>
+            </div>
+            <div class="fig-card mb-4" onclick="figClick(event, 'kidney')">
+                <div class="overflow-x-auto"><div id="fig-kidney" class="min-w-[780px]"></div></div>
+                <p class="text-center text-sm text-orange-600 font-cute mt-1"><i class="fa-solid fa-cube"></i> 괄호를 눌러 확인하고, 그림을 누르면 3D 콩팥 모형이 열려요</p>
+            </div>
+            <div class="bg-white p-5 rounded-xl border-2 border-orange-100 shadow-sm text-lg leading-loose">
+                <p>① <strong>콩팥의 구조</strong> : 바깥부분인 ( <select class="nut-select" onchange="checkSelect(this,'겉질')"><option value="">선택하세요</option><option>속질</option><option>콩팥 깔때기</option><option>겉질</option></select> ), 중간부분인 ( <select class="nut-select" onchange="checkSelect(this,'속질')"><option value="">선택하세요</option><option>겉질</option><option>속질</option><option>콩팥 깔때기</option></select> ), 가장 안쪽 빈 공간인 ( <select class="nut-select" onchange="checkSelect(this,'콩팥 깔때기')"><option value="">선택하세요</option><option>콩팥 깔때기</option><option>겉질</option><option>속질</option></select> ) <button class="how-btn ml-1" onclick="openKidney('kidney')">How?</button></p>
+                <p class="mt-2">② ( <span class="concept-blank" onclick="revealBlank(this)">네프론</span> ) : 콩팥의 겉질과 속질에 있는 오줌 생성의 기본 단위. 콩팥 하나 당 네프론 약 100만 개 <button class="how-btn ml-1" onclick="openNephron()">How?</button></p>
+                <p class="mt-2">③ <strong>오줌의 배설경로</strong> : 네프론에서 생성 → ( <select class="nut-select" onchange="checkSelect(this,'콩팥 깔때기')"><option value="">선택하세요</option><option>방광</option><option>콩팥 깔때기</option><option>오줌관</option><option>요도</option></select> ) → ( <select class="nut-select" onchange="checkSelect(this,'오줌관')"><option value="">선택하세요</option><option>오줌관</option><option>요도</option><option>방광</option><option>콩팥 깔때기</option></select> ) → ( <select class="nut-select" onchange="checkSelect(this,'방광')"><option value="">선택하세요</option><option>요도</option><option>콩팥 깔때기</option><option>방광</option><option>오줌관</option></select> ) → 요도 → 몸 밖 <button class="how-btn ml-1" onclick="openKidney('path')">How?</button></p>
+            </div>
+
+            <div class="deep-box mt-8">
+                <p class="font-cute text-2xl text-violet-700 mb-1">🔬 심화 탐구 : 콩팥은 어떻게 피를 거를까?</p>
+                <p class="text-gray-700 mb-3">콩팥과 네프론을 3D로 살펴보고, 혈압으로 피를 거르는 물리와 인공 콩팥(혈액 투석)의 원리를 알아보세요.</p>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <button class="deep-btn" onclick="openKidney('system')">🫘 3D 배설계 전체</button>
+                    <button class="deep-btn" onclick="openKidney('kidney')">🔪 3D 콩팥 단면 (겉질·속질·깔때기)</button>
+                    <button class="deep-btn" onclick="openKidney('path')">💧 오줌의 배설 경로 따라가기</button>
+                    <button class="deep-btn" onclick="openNephron()">🌀 3D 네프론 (사구체·보먼주머니·세뇨관)</button>
+                    <button class="deep-btn" onclick="openFiltration()">⚖️ 압력으로 거르기 : 사구체 여과의 물리 (심화)</button>
+                    <button class="deep-btn" onclick="openDialysis()">🏥 인공 콩팥 : 혈액 투석의 원리 (심화)</button>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <button onclick="openTab('quiz')" class="font-cute bg-rose-400 hover:bg-rose-500 text-white text-xl py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105">
+                    마지막 단계: 확인 문제 풀기 💯
+                </button>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 문제 풀이 -->
+        <!-- ========================================== -->
+        <section id="tab-quiz" class="tab-content hidden space-y-6">
+            <div class="glass-panel p-6 md:p-10">
+                <h2 class="font-cute text-3xl text-orange-700 mb-2"><i class="fa-solid fa-pen-clip"></i> 학습지 연습문제</h2>
+                <p class="text-gray-600 mb-8">배운 내용을 바탕으로 정답을 선택해보세요.</p>
+
+                <!-- Question 1 -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 mb-8 shadow-sm">
+                    <div class="flex gap-3 mb-4">
+                        <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">1</div>
+                        <p class="text-gray-800 font-bold leading-relaxed pt-0.5">그림은 노폐물의 생성과 배설 과정을 나타낸 것이다.</p>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4 items-center">
+                        <div class="flex justify-center"><div id="fig-q1" class="w-full max-w-[420px]"></div></div>
+                        <div>
+                            <p class="text-gray-800 font-bold mb-3">이에 관한 설명으로 옳지 <u class="underline-offset-4">않은</u> 것은?</p>
+                            <div class="space-y-2" id="q1-options">
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 1)">① A는 단백질이다.</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 2)">② B는 요소이다.</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 3)">③ 기관 (가)는 간이다.</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 4)">④ 물의 일부는 날숨으로 배설된다.</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(1, 5)">⑤ 콩팥은 A에서 생성된 노폐물만 걸러서 오줌으로 배설한다.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="q1-feedback" class="mt-4 hidden p-3 rounded-lg font-bold text-center"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 mb-8 shadow-sm">
+                    <div class="flex gap-3 mb-4">
+                        <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">2</div>
+                        <p class="text-gray-800 font-bold leading-relaxed pt-0.5">그림은 사람의 배설 기관을 나타낸 것이다.</p>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4 items-center">
+                        <div class="flex justify-center"><div id="fig-q2" class="w-full max-w-[300px]"></div></div>
+                        <div>
+                            <p class="text-gray-800 font-bold mb-3">이에 관한 설명으로 옳지 <u class="underline-offset-4">않은</u> 것은?</p>
+                            <div class="space-y-2" id="q2-options">
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 1)">① 혈액의 요소 농도는 A에서보다 B에서 높다.</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 2)">② B는 콩팥 동맥이다.</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 3)">③ C에는 네프론이 있어 오줌이 생성된다.</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 4)">④ D는 오줌이 이동하는 세뇨관이다.</div>
+                                <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(2, 5)">⑤ 오줌은 E에 저장되었다가 F를 통해 몸 밖으로 나간다.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="q2-feedback" class="mt-4 hidden p-3 rounded-lg font-bold text-center"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="bg-white rounded-xl border-2 border-gray-200 p-6 shadow-sm">
+                    <div class="flex gap-3 mb-4">
+                        <div class="font-cute text-xl text-white bg-blue-500 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0">3</div>
+                        <p class="text-gray-800 font-bold leading-relaxed pt-0.5">그림은 건강한 사람의 배설 기관 A∼D와 A의 내부 구조를 나타낸 것이다. E∼H는 각각 사구체, 세뇨관, 모세 혈관, 보먼주머니 중 하나이다.</p>
+                    </div>
+                    <div class="flex justify-center mb-4"><div id="fig-q3" class="w-full max-w-[600px]"></div></div>
+                    <p class="text-gray-800 font-bold mb-3">이를 설명한 것으로 옳지 <u class="underline-offset-4">않은</u> 것은?</p>
+                    <div class="space-y-2" id="q3-options">
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(3, 1)">① A는 오줌이 만들어지는 곳이다.</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(3, 2)">② B는 오줌이 방광으로 이동하는 통로이다.</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(3, 3)">③ 오줌은 C에 모였다가 D를 통해 몸 밖으로 나간다.</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(3, 4)">④ 오줌이 생성되어 이동하는 경로는 A → B → C → D이다.</div>
+                        <div class="quiz-option p-3 rounded-lg cursor-pointer" onclick="selectQuiz(3, 5)">⑤ 네프론은 E, F, H로 이루어져 있다.</div>
+                    </div>
+                    <div id="q3-feedback" class="mt-4 hidden p-3 rounded-lg font-bold text-center"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-orange-800/60 font-cute text-sm">
+            <p>제작: 해누리중학교 과학교사 남국현</p>
+            <p class="mt-1">© 2026 Haenuri Middle School Science Dept. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <!-- 공용 모달 (1단계) -->
+    <div id="modal" class="modal-wrap hidden" onclick="if(event.target===this) closeModal()">
+        <div class="modal-box">
+            <div data-mhead class="bg-orange-500 px-5 py-4 flex items-center justify-between gap-3">
+                <h3 data-mtitle class="font-cute text-xl sm:text-2xl text-white"></h3>
+                <button onclick="closeModal()" class="w-9 h-9 rounded-full bg-white/25 hover:bg-white/40 text-white text-xl flex-shrink-0" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div data-mbody class="p-4 sm:p-6"></div>
+        </div>
+    </div>
+    <!-- 팝업 안의 팝업 (2단계) -->
+    <div id="modal2" class="modal-wrap hidden" onclick="if(event.target===this) closeModal2()">
+        <div class="modal-box">
+            <div data-mhead class="bg-rose-600 px-5 py-4 flex items-center justify-between gap-3">
+                <h3 data-mtitle class="font-cute text-xl sm:text-2xl text-white"></h3>
+                <button onclick="closeModal2()" class="w-9 h-9 rounded-full bg-white/25 hover:bg-white/40 text-white text-xl flex-shrink-0" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div data-mbody class="p-4 sm:p-6"></div>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================
+        //  분자 데이터 (RDKit ETKDG + MMFF94 최적화 3D 좌표, 단위 Å)
+        // =====================================================
+        const MOL = {"glucose":{"atoms":[["C",-2.48,0.53,-0.12],["C",-0.96,0.45,-0.35],["C",-0.39,-0.94,-0.03],["C",1.13,-0.94,-0.25],["C",1.76,0.17,0.59],["C",1.09,1.52,0.25],["O",-0.32,1.46,0.46],["O",1.35,1.9,-1.1],["O",3.18,0.21,0.38],["O",1.69,-2.2,0.15],["O",-0.96,-1.97,-0.84],["O",-2.85,-0.07,1.12],["H",-2.8,1.58,-0.1],["H",-3.02,0.01,-0.91],["H",-0.8,0.69,-1.41],["H",-0.57,-1.22,1.02],["H",1.37,-0.82,-1.31],["H",1.6,-0.05,1.65],["H",1.5,2.3,0.9],["H",1.47,2.86,-1.08],["H",3.45,-0.73,0.36],["H",1.13,-2.87,-0.3],["H",-1.85,-2.13,-0.47],["H",-3.73,0.28,1.36]],"bonds":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[5,7,1],[4,8,1],[3,9,1],[2,10,1],[0,11,1],[6,1,1],[0,12,1],[0,13,1],[1,14,1],[2,15,1],[3,16,1],[4,17,1],[5,18,1],[7,19,1],[8,20,1],[9,21,1],[10,22,1],[11,23,1]]},"glycine":{"atoms":[["N",1.3,-0.54,-0.43],["C",0.51,0.59,0.07],["C",-0.99,0.33,-0.06],["O",-1.85,1.17,-0.25],["O",-1.32,-0.97,0.14],["H",2.25,-0.46,-0.08],["H",0.91,-1.4,-0.03],["H",0.73,0.77,1.13],["H",0.76,1.49,-0.51],["H",-2.29,-0.97,0.02]],"bonds":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[0,5,1],[0,6,1],[1,7,1],[1,8,1],[4,9,1]]}};
+        const SMALL = {
+            O2: { atoms: [['O', -0.6, 0, 0], ['O', 0.6, 0, 0]], bonds: [[0, 1, 2]] },
+            CO2: { atoms: [['C', 0, 0, 0], ['O', -1.16, 0, 0], ['O', 1.16, 0, 0]], bonds: [[0, 1, 2], [0, 2, 2]] },
+            H2O: { atoms: [['O', 0, 0, 0], ['H', 0.76, 0.59, 0], ['H', -0.76, 0.59, 0]], bonds: [[0, 1, 1], [0, 2, 1]] },
+            CO: { atoms: [['C', -0.56, 0, 0], ['O', 0.57, 0, 0]], bonds: [[0, 1, 3]] }
+        };
+
+        // --- Audio Logic ---
+        let synth, polySynth, membraneSynth;
+        async function initAudio() {
+            if (synth) return;
+            try {
+                await Tone.start();
+                synth = new Tone.Synth().toDestination();
+                polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                polySynth.volume.value = -5;
+                membraneSynth = new Tone.MembraneSynth().toDestination();
+                membraneSynth.volume.value = -10;
+            } catch (e) { console.log(e); }
+        }
+        function playSound(type) {
+            if (!synth) return;
+            try {
+                if (type === 'click') synth.triggerAttackRelease("C5", "32n");
+                else if (type === 'reveal') synth.triggerAttackRelease("E5", "16n");
+                else if (type === 'correct') polySynth.triggerAttackRelease(["C5", "E5", "G5"], "8n");
+                else if (type === 'wrong') membraneSynth.triggerAttackRelease("C3", "8n");
+                else if (type === 'start') polySynth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "4n");
+                else if (type === 'chomp') membraneSynth.triggerAttackRelease("G2", "16n");
+                else if (type === 'lub') membraneSynth.triggerAttackRelease("D1", "16n");
+                else if (type === 'dub') membraneSynth.triggerAttackRelease("A1", "32n");
+                else if (type === 'beat') membraneSynth.triggerAttackRelease("C2", "32n");
+                else if (type === 'pop') { const now = Tone.now(); synth.triggerAttackRelease("C6", "32n", now); synth.triggerAttackRelease("G6", "32n", now + 0.1); }
+                else if (type === 'drop') {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("G5", "32n", now);
+                    synth.triggerAttackRelease("C6", "32n", now + 0.12);
+                }
+                else if (type === 'magic') {
+                    const now = Tone.now();
+                    ["C5", "E5", "G5", "B5", "D6"].forEach((n, i) => synth.triggerAttackRelease(n, "32n", now + i * 0.08));
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        async function startApp() {
+            await initAudio();
+            playSound('start');
+            document.getElementById('overlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('app').classList.remove('hidden');
+                typeset(document.getElementById('app'));
+            }, 500);
+        }
+
+        function typeset(el) {
+            try { if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]).catch(() => {}); } catch (e) {}
+        }
+
+        function openTab(tabName) {
+            playSound('click');
+            const tabs = ['waste', 'excr', 'quiz'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const b = document.getElementById(`btn-${t}`);
+                b.classList.remove('active', 'text-white');
+                b.classList.add('bg-white', 'text-orange-800');
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tabName}`);
+            activeBtn.classList.remove('bg-white', 'text-orange-800');
+            activeBtn.classList.add('active', 'text-white');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // =====================================================
+        //  그림 클릭
+        // =====================================================
+        const FIG_OPEN = { waste: () => openRoute('all'), kidney: () => openKidney('kidney') };
+        function figClick(ev, key) {
+            const b = ev.target.closest('[data-svgblank]');
+            if (b) { if (!b.classList.contains('revealed')) { playSound('reveal'); b.classList.add('revealed'); } return; }
+            FIG_OPEN[key]();
+        }
+        function svgBlankC(x, y, w, h, ans, stroke, fill, fs) {
+            const f = fs || 17;
+            return `<g class="svg-blank" data-svgblank><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="${fill || '#fff'}" stroke="${stroke}" stroke-width="2.5"/>` +
+                `<text class="ans" x="${x + w / 2}" y="${y + h / 2 + f * 0.36}" text-anchor="middle" font-size="${f}" fill="#dc2626" font-family="Jua">${ans}</text>` +
+                `<text class="hint" x="${x + w / 2}" y="${y + h / 2 + 5}" text-anchor="middle" font-size="13" fill="#f6894a" font-family="Jua">클릭!</text></g>`;
+        }
+        const arrowDefs = (g, list) => list.map(([id, c]) => `<marker id="${g}${id}" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`).join('');
+        // 콩팥(강낭콩) 모양 : dir = 오목한 쪽(콩팥문) 방향 (+1 오른쪽, -1 왼쪽)
+        function beanPath(cx, cy, rx, ry, dir, k) {
+            let d = '';
+            for (let i = 0; i <= 64; i++) {
+                const t = i / 64 * Math.PI * 2; let x = rx * Math.cos(t); const y = ry * Math.sin(t);
+                if (x * dir > 0) x *= 1 - (k || 0.42) * Math.exp(-Math.pow(y / (0.42 * ry), 2));
+                d += (i ? 'L' : 'M') + (cx + x).toFixed(1) + ',' + (cy + y).toFixed(1);
+            }
+            return d + 'Z';
+        }
+        function lungsSVG(x, y, s, col) {
+            return `<g transform="translate(${x},${y}) scale(${s})"><rect x="27" y="0" width="6" height="22" fill="#d9c7c7" stroke="#a88"/>` +
+                `<path d="M27,20 C10,20 2,40 2,62 C2,80 14,84 26,78 C30,60 30,40 27,20 Z" fill="${col || '#e8a0a8'}" stroke="#a5525c"/>` +
+                `<path d="M33,20 C50,20 58,40 58,62 C58,80 46,84 34,78 C30,60 30,40 33,20 Z" fill="${col || '#e8a0a8'}" stroke="#a5525c"/>` +
+                `<path d="M30,20 L22,34 M30,20 L38,34 M22,34 L16,50 M38,34 L44,50" stroke="#a5525c" stroke-width="1.6" fill="none"/></g>`;
+        }
+        function kidneysSVG(x, y, s, col) {
+            return `<g transform="translate(${x},${y}) scale(${s})"><path d="${beanPath(14, 22, 12, 19, 1)}" fill="${col || '#b65a4a'}" stroke="#7a3227"/><path d="${beanPath(52, 22, 12, 19, -1)}" fill="${col || '#b65a4a'}" stroke="#7a3227"/>` +
+                `<path d="M22,26 C26,36 28,44 30,50 M44,26 C40,36 38,44 36,50" stroke="#e8c27a" stroke-width="2.5" fill="none"/></g>`;
+        }
+        function liverSVG(x, y, s, col) {
+            return `<g transform="translate(${x},${y}) scale(${s})"><path d="M2,14 C10,0 50,-2 78,4 C92,8 92,18 80,22 C64,30 46,42 26,40 C10,38 -2,28 2,14 Z" fill="${col || '#b5432f'}" stroke="#7c2a1c"/><path d="M40,4 C42,16 40,28 36,40" stroke="#7c2a1c" fill="none" opacity=".6"/></g>`;
+        }
+
+        // =====================================================
+        //  학습지 그림 1 : 노폐물의 생성과 배설
+        // =====================================================
+        function figWasteSVG() {
+            const g = uid('wa');
+            let s = `<svg viewBox="0 0 500 410" class="w-full h-auto" role="img" aria-label="세포에서 탄수화물·지방과 단백질이 산소와 세포호흡을 하면 이산화탄소와 물이 생기고, 단백질에서는 암모니아도 생긴다. 이산화탄소는 폐에서 날숨으로, 물은 콩팥에서 오줌으로 나가고, 암모니아는 간에서 요소로 바뀌어 콩팥에서 오줌으로 나간다.">`;
+            s += `<defs>${arrowDefs(g, [['k', '#6b7280']])}</defs>`;
+            const box = (x, y, w, h, t, fill, st) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="${fill}" stroke="${st}"/><text x="${x + w / 2}" y="${y + h / 2 + 5}" text-anchor="middle" font-size="14" font-family="Jua" fill="#1f2937">${t}</text>`;
+            s += `<rect x="10" y="20" width="140" height="250" rx="14" fill="#f8dcd8" stroke="#eab3ab"/>`;
+            s += box(20, 48, 62, 24, '탄수화물', '#bfe0f5', '#7fb3d6') + box(86, 48, 44, 24, '지방', '#bfe0f5', '#7fb3d6');
+            s += `<text x="76" y="88" text-anchor="middle" font-size="16" fill="#374151">+</text>` + box(54, 94, 44, 22, '산소', '#f7b7c6', '#d77c93');
+            s += `<text x="78" y="140" text-anchor="middle" font-size="14" font-family="Jua" fill="#374151">&lt;세포호흡&gt;</text>`;
+            s += box(46, 156, 60, 24, '단백질', '#bfe8de', '#6fb9a6') + `<text x="76" y="196" text-anchor="middle" font-size="16" fill="#374151">+</text>` + box(54, 202, 44, 22, '산소', '#f7b7c6', '#d77c93');
+            s += `<text x="50" y="296" text-anchor="middle" font-size="18" font-family="Jua" fill="#1f2937">세포</text>`;
+            s += `<text x="255" y="32" text-anchor="middle" font-size="15" font-family="Jua" fill="#1f2937">&lt;노폐물&gt;</text>`;
+            const ar = (d) => `<path d="${d}" fill="none" stroke="#9ca3af" stroke-width="2.5" marker-end="url(#${g}k)"/>`;
+            s += ar('M150,62 L200,58') + ar('M150,62 L210,150') + ar('M150,168 L200,66') + ar('M150,168 L210,156');
+            s += ar('M120,224 L120,250 L150,262');
+            s += ar('M183,312 L183,330') + ar('M228,336 L262,286');
+            s += ar('M305,57 C320,60 330,72 338,92') + ar('M295,150 C312,140 326,128 340,118') + ar('M295,160 C312,170 326,184 338,196') + ar('M305,260 C326,250 340,236 348,222');
+            s += lungsSVG(332, 62, 0.95) + kidneysSVG(334, 182, 1);
+            s += `<path d="M392,108 L410,108" stroke="#1f2937" stroke-width="5" marker-end="url(#${g}k)"/><path d="M402,206 L410,206" stroke="#1f2937" stroke-width="5"/>`;
+            s += liverSVG(138, 324, 1.05);
+            s += svgBlankC(200, 42, 108, 30, '이산화탄소', '#9ca3af', '#f3f4f6') + svgBlankC(212, 140, 84, 30, '물', '#60a5fa', '#e0f2fe');
+            s += svgBlankC(150, 266, 92, 30, '암모니아', '#e5b100', '#fef9c3') + svgBlankC(232, 250, 76, 30, '요소', '#e5b100', '#fef9c3');
+            s += svgBlankC(416, 92, 66, 30, '날숨', '#1f2937') + svgBlankC(416, 191, 66, 30, '오줌', '#1f2937');
+            s += svgLabel(164, 396, '(', 20) + svgBlank(176, 374, 56, 30, '간') + svgLabel(236, 396, ')', 20);
+            return s + `</svg>`;
+        }
+
+        // =====================================================
+        //  사람의 배설 기관 (몸통) : 그림 2 · 2번 · 3번 문제 공용
+        // =====================================================
+        function uroSVG(x, y, s, gray) {
+            const C = gray ? { skin: '#ededed', skinS: '#b9b9b9', art: '#8a8a8a', artL: '#d4d4d4', vein: '#6b6b6b', veinL: '#bdbdbd', kid: '#9a9a9a', kidS: '#555', ur: '#f2f2f2', urS: '#777', bl: '#cfcfcf' }
+                : { skin: '#f6dccb', skinS: '#e3b89e', art: '#d63a2f', artL: '#f19a8f', vein: '#3f7fd6', veinL: '#a9cdf5', kid: '#b65a4a', kidS: '#7a3227', ur: '#f3dfa0', urS: '#b99643', bl: '#e9b48a' };
+            let t = `<g transform="translate(${x},${y}) scale(${s})">`;
+            t += `<path d="M28,0 C20,40 16,90 22,140 C26,170 40,186 44,214 L54,262 L146,262 L156,214 C160,186 174,170 178,140 C184,90 180,40 172,0 Z" fill="${C.skin}" stroke="${C.skinS}"/>`;
+            // 대정맥 · 대동맥
+            t += `<path d="M90,0 L90,178 L72,262 M90,178 L104,262" fill="none" stroke="${C.vein}" stroke-width="10" stroke-linejoin="round"/><path d="M90,0 L90,178 L72,262 M90,178 L104,262" fill="none" stroke="${C.veinL}" stroke-width="3" opacity=".6"/>`;
+            t += `<path d="M110,0 L110,172 L96,262 M110,172 L128,262" fill="none" stroke="${C.art}" stroke-width="9" stroke-linejoin="round"/><path d="M110,0 L110,172 L96,262 M110,172 L128,262" fill="none" stroke="${C.artL}" stroke-width="3" opacity=".6"/>`;
+            // 콩팥
+            t += `<path d="${beanPath(46, 92, 19, 30, 1)}" fill="${C.kid}" stroke="${C.kidS}"/><path d="${beanPath(154, 92, 19, 30, -1)}" fill="${C.kid}" stroke="${C.kidS}"/>`;
+            // 콩팥정맥 · 콩팥동맥
+            t += `<path d="M90,86 L58,88 M90,84 L142,86" stroke="${C.vein}" stroke-width="5" fill="none"/><path d="M110,96 L58,97 M110,96 L142,97" stroke="${C.art}" stroke-width="4.5" fill="none"/>`;
+            // 오줌관 · 방광 · 요도
+            t += `<path d="M58,104 C64,140 74,178 88,208 M142,104 C136,140 126,178 112,208" fill="none" stroke="${C.urS}" stroke-width="5"/><path d="M58,104 C64,140 74,178 88,208 M142,104 C136,140 126,178 112,208" fill="none" stroke="${C.ur}" stroke-width="2.5"/>`;
+            t += `<ellipse cx="100" cy="218" rx="22" ry="15" fill="${C.bl}" stroke="${C.urS}" stroke-width="1.5"/><rect x="96" y="231" width="8" height="30" fill="${C.ur}" stroke="${C.urS}"/>`;
+            return t + `</g>`;
+        }
+        // 콩팥 단면
+        function kidneyCutSVG(cx, cy, a, b) {
+            let s = `<path d="${beanPath(cx, cy, a, b, -1, 0.3)}" fill="#d47a52" stroke="#8c3b22" stroke-width="2"/>`;
+            s += `<path d="${beanPath(cx + 6, cy, a * 0.8, b * 0.84, -1, 0.34)}" fill="#e39b70" opacity=".55"/>`;
+            const hx = cx - a * 0.55, hy = cy;
+            for (let i = 0; i < 7; i++) {
+                const ang = -1.15 + i * 0.38, bx = cx + Math.cos(ang) * a * 0.72 + 8, by = cy + Math.sin(ang) * b * 0.74;
+                const px = hx + 28 + Math.cos(ang) * 30, py = hy + Math.sin(ang) * 46;
+                const nx = -Math.sin(ang) * 20, ny = Math.cos(ang) * 28;
+                s += `<path d="M${(bx + nx).toFixed(1)},${(by + ny).toFixed(1)} L${(bx - nx).toFixed(1)},${(by - ny).toFixed(1)} L${px.toFixed(1)},${py.toFixed(1)} Z" fill="#a8432e" stroke="#7a2a1c"/>`;
+                for (let k = -1; k <= 1; k++) s += `<line x1="${(bx + nx * k * 0.6).toFixed(1)}" y1="${(by + ny * k * 0.6).toFixed(1)}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" stroke="#d7745c" stroke-width="1"/>`;
+                s += `<ellipse cx="${(px - Math.cos(ang) * 6).toFixed(1)}" cy="${(py - Math.sin(ang) * 8).toFixed(1)}" rx="9" ry="7" fill="#f3e3b5" stroke="#c9a85c"/>`;
+            }
+            s += `<path d="M${hx - 10},${hy - 40} C${hx + 30},${hy - 46} ${hx + 36},${hy + 46} ${hx - 6},${hy + 44} C${hx - 20},${hy + 60} ${hx - 26},${hy + 90} ${hx - 34},${hy + 140}" fill="#f3e3b5" stroke="#c9a85c" stroke-width="2"/>`;
+            s += `<path d="M${hx - 26},${hy + 60} C${hx - 34},${hy + 100} ${hx - 44},${hy + 150} ${hx - 52},${hy + 190}" fill="none" stroke="#c9a85c" stroke-width="16" stroke-linecap="round"/><path d="M${hx - 26},${hy + 60} C${hx - 34},${hy + 100} ${hx - 44},${hy + 150} ${hx - 52},${hy + 190}" fill="none" stroke="#f3e3b5" stroke-width="12" stroke-linecap="round"/>`;
+            s += tubeSVG(`M${hx - 100},${hy - 20} L${hx - 40},${hy - 22} C${hx - 10},${hy - 22} ${hx + 10},${hy - 50} ${hx + 30},${hy - 70} M${hx - 30},${hy - 22} C${hx},${hy - 10} ${hx + 20},${hy} ${hx + 36},${hy + 6}`, 12, ...BL);
+            s += tubeSVG(`M${hx - 100},${hy + 26} L${hx - 40},${hy + 24} C${hx - 10},${hy + 24} ${hx + 10},${hy + 50} ${hx + 30},${hy + 70} M${hx - 30},${hy + 24} C${hx},${hy + 34} ${hx + 20},${hy + 40} ${hx + 36},${hy + 30}`, 11, ...RD);
+            return s;
+        }
+        // 네프론
+        function nephronSVG(x, y, s, gray, sy) {
+            const R = gray ? '#7a7a7a' : '#d63a2f', B = gray ? '#5a5a5a' : '#3f7fd6', T = gray ? '#d9d9d9' : '#f3d58a', TS = gray ? '#8a8a8a' : '#c9a24a';
+            let t = `<g transform="translate(${x},${y}) scale(${s},${sy || s})">`;
+            t += `<path d="M8,0 L8,200 M22,0 L22,200" stroke="${R}" stroke-width="7" fill="none"/><path d="M8,0 L8,200" stroke="${B}" stroke-width="7"/>`;
+            const net = srand(5);
+            for (let i = 0; i < 16; i++) { const yy = 60 + i * 9; t += `<path d="M${90 + net() * 10},${yy} C${110 + net() * 20},${yy - 8} ${130 + net() * 20},${yy + 8} ${160},${yy + net() * 6}" stroke="${i % 2 ? R : B}" stroke-width="1.6" fill="none" opacity=".75"/>`; }
+            t += `<path d="M22,46 C34,46 40,42 48,40" stroke="${R}" stroke-width="5" fill="none"/><path d="M22,110 C60,110 80,104 96,96" stroke="${R}" stroke-width="4" fill="none"/>`;
+            const tub = 'M68,42 C82,26 100,26 104,40 C108,54 86,58 92,70 C98,82 120,74 122,86 L122,186 C122,194 136,194 136,186 L136,96 C136,80 154,84 156,70 C158,56 140,52 146,40 C152,28 168,30 172,40';
+            t += `<path d="${tub}" fill="none" stroke="${TS}" stroke-width="9" stroke-linecap="round"/><path d="${tub}" fill="none" stroke="${T}" stroke-width="6" stroke-linecap="round"/>`;
+            t += `<path d="M172,10 L172,200" stroke="${TS}" stroke-width="12"/><path d="M172,10 L172,200" stroke="${T}" stroke-width="8"/>`;
+            t += `<path d="M64,26 C44,22 36,40 40,50 C44,62 62,64 70,52" fill="${T}" stroke="${TS}" stroke-width="2.5"/>`;
+            [[52, 38], [58, 44], [50, 46], [56, 36], [60, 40], [54, 50]].forEach(([a, b]) => t += `<circle cx="${a}" cy="${b}" r="4" fill="${gray ? '#fff' : '#f07a6e'}" stroke="${R}" stroke-width="1.4"/>`);
+            return t + `</g>`;
+        }
+
+        // =====================================================
+        //  학습지 그림 2 : 배설계와 콩팥의 구조
+        // =====================================================
+        function figKidneySVG() {
+            const g = uid('kd');
+            let s = `<svg viewBox="0 0 960 520" class="w-full h-auto" role="img" aria-label="오줌의 배설 경로: 콩팥, 오줌관, 방광, 요도를 거쳐 몸 밖으로. 콩팥 단면은 바깥의 겉질, 중간의 속질, 안쪽 빈 공간인 콩팥 깔때기로 되어 있고 콩팥동맥으로 혈액이 들어가 콩팥정맥으로 나간다. 겉질과 속질에는 오줌 생성의 기본 단위인 네프론이 있다.">`;
+            s += `<defs>${arrowDefs(g, [['k', '#1f2937'], ['g', '#86c79a']])}</defs>`;
+            s += `<text x="12" y="24" font-size="18" font-family="Jua" fill="#1f2937">&lt;오줌의 배설 경로&gt;</text>`;
+            const fb = (yy, ans, d1, d2) => `<rect x="10" y="${yy}" width="182" height="${d2 ? 82 : 64}" fill="#fff" stroke="#1f2937" stroke-width="1.6"/>` + svgLabel(22, yy + 28, '(', 20) + svgBlank(34, yy + 8, 112, 28, ans) + svgLabel(150, yy + 28, ')', 20) +
+                `<text x="18" y="${yy + 56}" font-size="14" font-family="Gowun Dodum" fill="#1f2937">${d1}</text>` + (d2 ? `<text x="18" y="${yy + 74}" font-size="14" font-family="Gowun Dodum" fill="#1f2937">${d2}</text>` : '');
+            const dn = (y1, y2) => `<path d="M100,${y1} L100,${y2}" stroke="#1f2937" stroke-width="4" marker-end="url(#${g}k)"/>`;
+            s += fb(36, '콩팥', '오줌이 만들어지는 곳') + dn(102, 128);
+            s += fb(134, '오줌관', '콩팥과 방광을 연결', '하는 긴 관') + dn(218, 244);
+            s += fb(250, '방광', '콩팥에서 만들어진', '오줌을 모아 두는 곳') + dn(334, 360);
+            s += fb(366, '요도', '방광에 모인 오줌이', '몸 밖으로 나가는 통로') + dn(450, 476);
+            s += `<text x="100" y="502" text-anchor="middle" font-size="17" font-family="Jua" fill="#1f2937">몸 밖</text>`;
+            s += uroSVG(212, 40, 1.0);
+            const ln = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1f2937" stroke-width="1.4"/>`;
+            s += ln(192, 66, 248, 126) + ln(192, 168, 276, 196) + ln(192, 290, 296, 258) + ln(192, 410, 312, 290);
+            s += `<path d="M386,108 L420,108 L420,96 L446,122 L420,148 L420,136 L386,136 Z" fill="#fff" stroke="#1f2937" stroke-width="2.5"/>`;
+            // 콩팥 단면
+            s += kidneyCutSVG(648, 270, 116, 205);
+            s += svgLabel(470, 62, '(', 20) + svgBlank(482, 40, 64, 30, '겉질') + svgLabel(550, 62, ')', 20) + `<path d="M560,48 L572,48 L572,76 L560,76 M572,62 L610,74" fill="none" stroke="#1f2937" stroke-width="1.6"/>`;
+            s += svgLabel(470, 108, '(', 20) + svgBlank(482, 86, 64, 30, '속질') + svgLabel(550, 108, ')', 20) + `<path d="M560,94 L572,94 L572,122 L560,122 M572,108 L612,126" fill="none" stroke="#1f2937" stroke-width="1.6"/>`;
+            s += svgLabel(470, 156, '(', 20) + svgBlank(482, 134, 102, 30, '콩팥 깔때기') + svgLabel(588, 156, ')', 20) + ln(596, 152, 628, 228);
+            s += svgLabel(400, 206, '(', 20) + svgBlank(412, 184, 92, 30, '콩팥정맥') + svgLabel(508, 206, ')', 20) + ln(470, 214, 500, 244);
+            s += `<text x="404" y="238" font-size="13" font-family="Gowun Dodum" fill="#1f2937">콩팥에서</text><text x="404" y="254" font-size="13" font-family="Gowun Dodum" fill="#1f2937">나가는 혈액 ←</text>`;
+            s += `<text x="404" y="318" font-size="13" font-family="Gowun Dodum" fill="#1f2937">콩팥으로 →</text><text x="404" y="334" font-size="13" font-family="Gowun Dodum" fill="#1f2937">들어가는 혈액</text>`;
+            s += svgLabel(400, 372, '(', 20) + svgBlank(412, 350, 92, 30, '콩팥동맥') + svgLabel(508, 372, ')', 20) + ln(470, 350, 500, 304);
+            s += svgLabel(626, 476, '(', 20) + svgBlank(638, 454, 64, 30, '콩팥') + svgLabel(706, 476, ')', 20);
+            // 네프론
+            s += `<rect x="700" y="78" width="26" height="22" fill="none" stroke="#86c79a" stroke-width="3"/>`;
+            s += `<path d="M728,84 C750,70 760,64 772,64" fill="none" stroke="#86c79a" stroke-width="7" marker-end="url(#${g}g)"/>`;
+            s += `<rect x="778" y="30" width="176" height="410" rx="6" fill="#fbf3ec" stroke="#e5cbb3"/>` + nephronSVG(782, 40, 0.94, false, 1.98);
+            s += svgLabel(786, 476, '(', 20) + svgBlank(798, 454, 78, 30, '네프론') + svgLabel(880, 476, ')', 20);
+            return s + `</svg>`;
+        }
+
+        // =====================================================
+        //  연습문제 그림
+        // =====================================================
+        function figQ1() {
+            const g = uid('q1');
+            let s = `<svg viewBox="0 0 420 290" class="w-full h-auto" role="img" aria-label="A가 분해되어 암모니아가 생기고 기관 (가)를 거쳐 B가 되어 콩팥으로 간다. A와 탄수화물·지방이 분해되면 물과 이산화탄소가 생기고, 물은 콩팥과 폐로, 이산화탄소는 폐로 간다.">`;
+            s += `<defs>${arrowDefs(g, [['g', '#3f9a6a'], ['b', '#4a5fb5'], ['r', '#a0522d'], ['d', '#dc2626']])}</defs>`;
+            const box = (x, y, w, t, f, st) => `<rect x="${x}" y="${y}" width="${w}" height="24" rx="4" fill="${f}" stroke="${st}"/><text x="${x + w / 2}" y="${y + 17}" text-anchor="middle" font-size="14" font-family="Gowun Dodum" fill="#1f2937">${t}</text>`;
+            s += box(20, 10, 110, 'A', '#e8c09a', '#c69565') + box(270, 10, 110, '탄수화물, 지방', '#e8c09a', '#c69565');
+            s += box(32, 60, 86, '암모니아', '#d9eeb8', '#9bc06a') + box(32, 156, 86, 'B', '#d9eeb8', '#9bc06a') + box(160, 156, 86, '물', '#c6dcf2', '#86aede') + box(286, 156, 96, '이산화 탄소', '#c6dcf2', '#86aede');
+            s += liverSVG(40, 98, 0.62, '#c0503a') + `<text x="98" y="128" font-size="13" font-family="Gowun Dodum" fill="#1f2937">(가)</text>`;
+            s += kidneysSVG(48, 206, 0.9, '#c46a5a') + `<text x="92" y="262" font-size="13" font-family="Gowun Dodum" fill="#1f2937">콩팥</text>`;
+            s += lungsSVG(304, 200, 0.75, '#e2a6b8');
+            const ar = (d, c) => `<path d="${d}" fill="none" stroke="${c === 'g' ? '#3f9a6a' : c === 'b' ? '#4a5fb5' : c === 'd' ? '#dc2626' : '#a0522d'}" stroke-width="2" marker-end="url(#${g}${c})"/>`;
+            s += ar('M75,34 L75,56', 'g') + ar('M75,84 L75,96', 'g') + ar('M75,128 L75,152', 'g') + ar('M75,180 L75,202', 'g');
+            s += ar('M130,22 C180,26 200,80 200,150', 'b') + ar('M130,18 C230,20 300,80 330,152', 'r');
+            s += ar('M300,34 C260,60 220,100 210,150', 'b') + ar('M340,34 L340,152', 'r');
+            s += ar('M190,180 C180,220 140,232 104,228', 'b') + ar('M216,180 C240,230 290,240 312,232', 'b') + ar('M334,180 L334,196', 'd');
+            return s + `</svg>`;
+        }
+        function figQ2() {
+            const g = uid('q2');
+            let s = `<svg viewBox="0 0 300 300" class="w-full h-auto" role="img" aria-label="사람의 배설 기관: A 콩팥 쪽에서 나오는 혈관, B 콩팥으로 들어가는 혈관, C 콩팥, D 오줌관, E 방광, F 요도">`;
+            s += `<defs>${arrowDefs(g, [['k', '#1f2937']])}</defs>`;
+            s += uroSVG(30, 30, 1.0, true);
+            s += `<path d="M120,26 L120,8" stroke="#1f2937" stroke-width="3" marker-end="url(#${g}k)"/><path d="M140,8 L140,26" stroke="#1f2937" stroke-width="3" marker-end="url(#${g}k)"/>`;
+            const L = (t, x, y, x2, y2) => `<line x1="${x}" y1="${y}" x2="${x2}" y2="${y2}" stroke="#1f2937" stroke-width="1.2"/><text x="${x + (x < x2 ? -14 : 4)}" y="${y + 5}" font-size="16" font-family="Times New Roman" fill="#1f2937">${t}</text>`;
+            s += L('A', 70, 12, 104, 114) + L('B', 196, 12, 150, 126);
+            s += L('C', 262, 120, 200, 122) + L('D', 262, 176, 162, 176) + L('E', 262, 248, 140, 248) + L('F', 262, 280, 134, 280);
+            return s + `</svg>`;
+        }
+        function figQ3() {
+            const g = uid('q3');
+            let s = `<svg viewBox="0 -10 600 300" class="w-full h-auto" role="img" aria-label="배설 기관 A 콩팥, B 오줌관, C 방광, D 요도와 A의 내부 구조인 네프론. E, F, G, H는 사구체, 보먼주머니, 세뇨관, 모세혈관 중 하나이다.">`;
+            s += `<defs>${arrowDefs(g, [['k', '#374151']])}</defs>`;
+            s += uroSVG(70, 0, 1.0, true);
+            s += `<rect x="198" y="58" width="50" height="70" fill="none" stroke="#1f2937" stroke-width="1.6" stroke-dasharray="4 3"/>`;
+            s += `<path d="M252,80 C280,60 300,56 324,60" fill="none" stroke="#374151" stroke-width="4" marker-end="url(#${g}k)"/>`;
+            const L = (t, x, y, x2, y2) => `<line x1="${x}" y1="${y}" x2="${x2}" y2="${y2}" stroke="#1f2937" stroke-width="1.2"/><text x="${x - 18}" y="${y + 6}" font-size="17" font-family="Times New Roman" fill="#1f2937">${t}</text>`;
+            s += L('A', 40, 92, 104, 92) + L('B', 40, 150, 126, 150) + L('C', 40, 218, 150, 218) + L('D', 40, 250, 166, 250);
+            s += nephronSVG(340, 40, 1.18, true);
+            const T = (t, x, y, x2, y2) => `<line x1="${x}" y1="${y}" x2="${x2}" y2="${y2}" stroke="#1f2937" stroke-width="1.2"/><text x="${x - 6}" y="${y - 4}" font-size="17" font-family="Times New Roman" fill="#1f2937">${t}</text>`;
+            s += T('E', 380, 20, 401, 88) + T('F', 430, 20, 418, 72) + T('G', 552, 20, 528, 86) + `<line x1="476" y1="250" x2="500" y2="212" stroke="#1f2937" stroke-width="1.2"/><text x="460" y="258" font-size="17" font-family="Times New Roman" fill="#1f2937">H</text>`;
+            return s + `</svg>`;
+        }
+
+        // =====================================================
+        //  문제 풀이
+        // =====================================================
+        const answers = { 1: 5, 2: 4, 3: 5 };
+        const explains = {
+            1: 'A는 단백질, B는 요소, (가)는 간이에요. 물은 콩팥(오줌)과 폐(날숨) 두 곳으로 나가요. 콩팥은 단백질에서 생긴 요소뿐 아니라 탄수화물·지방·단백질이 분해될 때 생긴 물도 오줌으로 내보내므로 ⑤가 옳지 않아요.',
+            2: 'A는 콩팥에서 나가는 혈액이 흐르는 콩팥정맥, B는 콩팥으로 들어가는 혈액이 흐르는 콩팥동맥이에요. 콩팥에서 요소가 걸러지므로 요소 농도는 B(동맥)가 A(정맥)보다 높아요. C는 콩팥, E는 방광, F는 요도예요. D는 콩팥과 방광을 잇는 오줌관이므로 ④가 옳지 않아요. (세뇨관은 콩팥 속 네프론의 일부예요.)',
+            3: 'A는 콩팥, B는 오줌관, C는 방광, D는 요도이고, 오줌은 A → B → C → D로 이동해요. E는 사구체, F는 보먼주머니, G는 세뇨관, H는 세뇨관을 둘러싼 모세혈관이에요. 네프론은 사구체(E)·보먼주머니(F)·세뇨관(G)으로 이루어지므로 ⑤가 옳지 않아요.'
+        };
+        function selectQuiz(qNum, selectedOpt) {
+            const options = document.getElementById(`q${qNum}-options`).children;
+            const feedback = document.getElementById(`q${qNum}-feedback`);
+            for (let i = 0; i < options.length; i++) {
+                if (!options[i].dataset.base) options[i].dataset.base = options[i].className;
+                options[i].className = options[i].dataset.base;
+            }
+            const selectedDiv = options[selectedOpt - 1];
+            feedback.className = 'mt-4 p-3 rounded-lg font-bold text-center';
+            if (selectedOpt === answers[qNum]) {
+                playSound('correct');
+                selectedDiv.classList.add('correct');
+                feedback.innerHTML = `🎉 정답입니다! 훌륭해요.<span class="block font-normal text-sm mt-1">${explains[qNum]}</span>`;
+                feedback.classList.add('bg-blue-100', 'text-blue-800', 'border', 'border-blue-300');
+            } else {
+                playSound('wrong');
+                selectedDiv.classList.add('wrong');
+                feedback.innerHTML = "❌ 오답입니다. 다시 한번 생각해보세요!";
+                feedback.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-300');
+            }
+        }
+
+        function revealBlank(element) {
+            playSound('reveal');
+            element.classList.add('revealed');
+            element.removeAttribute('onclick');
+        }
+        function checkSelect(selectElement, correctAnswer) {
+            if (selectElement.value === correctAnswer) {
+                playSound('correct');
+                selectElement.classList.add('correct');
+                selectElement.disabled = true;
+            } else if (selectElement.value !== "") {
+                playSound('wrong');
+                selectElement.classList.add('border-red-400', 'bg-red-50');
+                setTimeout(() => {
+                    selectElement.classList.remove('border-red-400', 'bg-red-50');
+                    selectElement.value = "";
+                }, 800);
+            }
+        }
+        let _uid = 0;
+        const uid = (p) => `${p}${++_uid}`;
+        const NS = 'http://www.w3.org/2000/svg';
+        function hex2rgb(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); }
+        function lerpHex(a, b, t) {
+            const A = hex2rgb(a), B = hex2rgb(b);
+            return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join('');
+        }
+        function srand(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+        const clamp01 = x => Math.max(0, Math.min(1, x));
+
+        function svgBlank(x, y, w, h, ans, hint) {
+            return `<g class="svg-blank" data-svgblank><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="7" fill="#fff" stroke="#1f2937" stroke-width="2"/><text class="ans" x="${x + w / 2}" y="${y + h / 2 + 6}" text-anchor="middle" font-size="17" fill="#dc2626" font-family="Jua">${ans}</text><text class="hint" x="${x + w / 2}" y="${y + h / 2 + 5}" text-anchor="middle" font-size="13" fill="#f6894a" font-family="Jua">${hint || '클릭!'}</text></g>`;
+        }
+        function svgLabel(x, y, t, size = 22, anchor = 'start', fill = '#1f2937') {
+            return `<text x="${x}" y="${y}" font-size="${size}" font-family="Jua" fill="${fill}" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="${anchor}">${t}</text>`;
+        }
+        function tubeSVG(d, w, col, dark, light) {
+            return `<path d="${d}" fill="none" stroke="${dark}" stroke-width="${w + 4}" stroke-linecap="round" stroke-linejoin="round"/>` +
+                `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>` +
+                `<path d="${d}" fill="none" stroke="${light}" stroke-width="${Math.max(2, w * 0.22)}" stroke-linecap="round" stroke-linejoin="round" opacity=".55" transform="translate(${(-w * 0.2).toFixed(1)},${(-w * 0.08).toFixed(1)})"/>`;
+        }
+        const BL = ['#3f7fd6', '#22508f', '#a9cdf5'], RD = ['#d63a2f', '#8f1f18', '#f6a39b'];
+        // =====================================================
+        //  공용 모달 (팝업 안의 팝업까지 2단계)
+        // =====================================================
+        const MODALS = { 1: { id: 'modal', clean: [] }, 2: { id: 'modal2', clean: [] } };
+        let modalLevel = 1;
+        function onModalClose(fn) { MODALS[modalLevel].clean.push(fn); }
+        function openModalAt(level, title, tplId, headClass) {
+            playSound('click');
+            if (level === 1) closeModal(true); else closeModal2(true);
+            modalLevel = level;
+            const modal = document.getElementById(MODALS[level].id);
+            modal.querySelector('[data-mhead]').className = `${headClass || 'bg-orange-500'} px-5 py-4 flex items-center justify-between gap-3`;
+            modal.querySelector('[data-mtitle]').textContent = title;
+            const body = modal.querySelector('[data-mbody]');
+            body.innerHTML = '';
+            if (tplId) body.appendChild(document.getElementById(tplId).content.cloneNode(true));
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            requestAnimationFrame(() => modal.classList.add('show'));
+            modal.scrollTop = 0;
+            typeset(body);
+            return body;
+        }
+        const openModal = (t, tpl, h) => openModalAt(1, t, tpl, h);
+        const openModal2 = (t, tpl, h) => openModalAt(2, t, tpl, h);
+        function closeLevel(level, silent) {
+            const M = MODALS[level], modal = document.getElementById(M.id);
+            M.clean.forEach(f => { try { f(); } catch (e) { console.log(e); } });
+            M.clean = [];
+            if (modal.classList.contains('hidden')) return;
+            if (!silent) playSound('click');
+            modal.classList.remove('show');
+            if (silent) { modal.classList.add('hidden'); modal.querySelector('[data-mbody]').innerHTML = ''; return; }
+            setTimeout(() => { modal.classList.add('hidden'); modal.querySelector('[data-mbody]').innerHTML = ''; }, 280);
+        }
+        function closeModal2(silent) { closeLevel(2, silent); modalLevel = 1; }
+        function closeModal(silent) {
+            closeModal2(true);
+            const wasOpen = !document.getElementById('modal').classList.contains('hidden');
+            closeLevel(1, silent);
+            if (wasOpen || silent !== true) document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            if (!document.getElementById('modal2').classList.contains('hidden')) closeModal2(); else closeModal();
+        });
+        function animLoop(fn) {
+            let id, alive = true;
+            const f = (t) => { if (!alive) return; if (fn(t) === false) return; id = requestAnimationFrame(f); };
+            id = requestAnimationFrame(f);
+            const stop = () => { alive = false; cancelAnimationFrame(id); };
+            onModalClose(stop);
+            return stop;
+        }
+        function tweenJS(dur, fn) {
+            return new Promise(res => {
+                const t0 = performance.now();
+                animLoop(now => {
+                    const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+                    fn(e, k); if (k >= 1) { res(); return false; }
+                });
+            });
+        }
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        // =====================================================
+        //  3D 분자 뷰어 (nutrients.html / digestion.html 과 동일)
+        //  탄소=검정, 수소=흰색, 산소=빨강, 질소=파랑, 철=주황
+        // =====================================================
+        const ELEM = {
+            H: { c: 0xffffff, r: 0.24, name: '수소(H)', css: '#ffffff' },
+            C: { c: 0x1c1c1c, r: 0.34, name: '탄소(C)', css: '#1c1c1c' },
+            O: { c: 0xe0242b, r: 0.33, name: '산소(O)', css: '#e0242b' },
+            N: { c: 0x2546f0, r: 0.33, name: '질소(N)', css: '#2546f0' },
+            Fe: { c: 0xe06633, r: 0.5, name: '철 이온(Fe²⁺)', css: '#e06633' },
+            Na: { c: 0x9b59d0, r: 0.5, name: '나트륨 이온(Na⁺)', css: '#9b59d0' },
+            Cl: { c: 0x31c840, r: 0.62, name: '염화 이온(Cl⁻)', css: '#31c840' }
+        };
+        const BONDSTYLE = {
+            7: { color: 0x8b5cf6, r: 0.045, dash: true, name: '이온 결합' },
+            8: { color: 0x38bdf8, r: 0.045, dash: true, name: '수소 결합' },
+            9: { color: 0x14b8a6, r: 0.075, dash: false, name: '배위 결합(Fe–리간드)' }
+        };
+        let GEO = null;
+        function geo() {
+            if (!GEO) GEO = { sphere: new THREE.SphereGeometry(1, 28, 20), cyl: new THREE.CylinderGeometry(1, 1, 1, 14, 1) };
+            return GEO;
+        }
+        const _Y = new THREE.Vector3(0, 1, 0);
+        const V3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+        function cylBetween(a, b, r, mat) {
+            const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
+            const m = new THREE.Mesh(geo().cyl, mat);
+            m.scale.set(r, len, r);
+            m.position.copy(a).addScaledVector(d, 0.5);
+            m.quaternion.setFromUnitVectors(_Y, d.clone().normalize());
+            return m;
+        }
+        function setCyl(m, a, b) {
+            const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
+            m.scale.y = Math.max(1e-3, len);
+            m.position.copy(a).addScaledVector(d, 0.5);
+            if (len > 1e-6) m.quaternion.setFromUnitVectors(_Y, d.normalize());
+        }
+        function dashedBetween(a, b, r, mat, group) {
+            const d = new THREE.Vector3().subVectors(b, a); const len = d.length();
+            const seg = 0.16, gap = 0.13, n = Math.max(1, Math.floor(len / (seg + gap)));
+            const step = len / n, dir = d.clone().normalize(), out = [];
+            for (let i = 0; i < n; i++) {
+                const p0 = a.clone().addScaledVector(dir, i * step + gap / 2);
+                const p1 = p0.clone().addScaledVector(dir, Math.min(seg, step - gap));
+                const m = cylBetween(p0, p1, r, mat); group.add(m); out.push(m);
+            }
+            return out;
+        }
+        function disposeObj(o) {
+            o.traverse(c => {
+                if (c.material) { (Array.isArray(c.material) ? c.material : [c.material]).forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }); }
+                if (c.geometry && c.geometry !== geo().sphere && c.geometry !== geo().cyl) c.geometry.dispose();
+            });
+        }
+        function setGroupOpacity(g, a) {
+            g.traverse(c => {
+                if (c.material && !c.userData.halo) { c.material.transparent = a < 0.999; c.material.opacity = a; c.material.depthWrite = a > 0.5; }
+                if (c.userData.halo) c.userData.haloMul = a;
+            });
+            g.userData.opacity = a;
+        }
+        function radialTexture() {
+            const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+            const ctx = cv.getContext('2d'); const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+            g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.35, 'rgba(255,255,255,0.55)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
+            return new THREE.CanvasTexture(cv);
+        }
+        function stdMat(c, extra = {}) { return new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.4 }, extra)); }
+
+        class MolViewer {
+            constructor(el) {
+                this.el = el; el.innerHTML = '';
+                const w = el.clientWidth || 600, h = el.clientHeight || 360;
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 2000);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                this.renderer.setSize(w, h);
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+                el.appendChild(this.renderer.domElement);
+                this.layer = document.createElement('div');
+                this.layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden';
+                el.appendChild(this.layer);
+                this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+                this.scene.add(new THREE.HemisphereLight(0xffffff, 0x8a96a8, 0.45));
+                const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(4, 5, 8);
+                this.camera.add(key); this.scene.add(this.camera);
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true; this.controls.dampingFactor = 0.08;
+                this.controls.autoRotate = true; this.controls.autoRotateSpeed = 1.3;
+                this.root = new THREE.Group(); this.scene.add(this.root);
+                this.labels = []; this.tasks = []; this.persistent = [];
+                this.home = null;
+                this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(el);
+                this._loop = this.loop.bind(this);
+                this.raf = requestAnimationFrame(this._loop);
+                this._v = new THREE.Vector3();
+            }
+            resize() {
+                const w = this.el.clientWidth, h = this.el.clientHeight; if (!w || !h) return;
+                this.renderer.setSize(w, h); this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+            }
+            loop(now) {
+                this.raf = requestAnimationFrame(this._loop);
+                const t = now / 1000;
+                this.persistent.forEach(f => f(t));
+                this.tasks = this.tasks.filter(f => f(t) !== false);
+                this.controls.update();
+                this.renderer.render(this.scene, this.camera);
+                this.updateLabels();
+            }
+            tween(dur, fn, done) {
+                const start = performance.now();
+                return new Promise(res => {
+                    this.tasks.push(() => {
+                        const k = Math.min(1, (performance.now() - start) / (dur * 1000));
+                        const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+                        fn(e, k);
+                        if (k >= 1) { if (done) done(); res(); return false; }
+                    });
+                });
+            }
+            clear() {
+                this.root.children.slice().forEach(c => { this.root.remove(c); disposeObj(c); });
+                this.labels.forEach(l => l.el.remove()); this.labels = [];
+                this.tasks = []; this.persistent = [];
+            }
+            build(data, opt = {}) {
+                const g = new THREE.Group();
+                const sc = opt.atomScale || 1;
+                const hl = new Set(opt.hl || data.hl || []);
+                const mats = {};
+                const matFor = el => mats[el] || (mats[el] = new THREE.MeshStandardMaterial({
+                    color: (ELEM[el] || ELEM.C).c, roughness: el === 'H' ? 0.5 : 0.3, metalness: 0.05,
+                    emissive: el === 'H' ? 0x2a2a2a : 0x000000
+                }));
+                const bondMat = new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.45 });
+                const hlBondMat = new THREE.MeshStandardMaterial({ color: 0xf5b301, roughness: 0.35, emissive: 0x3a2a00 });
+                const P = data.atoms.map(a => new THREE.Vector3(a[1], a[2], a[3]));
+                const meshes = [], hMeshes = [];
+                data.atoms.forEach((a, i) => {
+                    const el = a[0], e = ELEM[el] || ELEM.C;
+                    const m = new THREE.Mesh(geo().sphere, matFor(el));
+                    m.scale.setScalar(e.r * sc); m.position.copy(P[i]); m.userData.el = el;
+                    g.add(m); meshes.push(m); if (el === 'H') hMeshes.push(m);
+                });
+                const adj = data.atoms.map(() => []);
+                data.bonds.forEach(([i, j, o]) => { if (o <= 3) { adj[i].push(j); adj[j].push(i); } });
+                data.bonds.forEach(([i, j, o]) => {
+                    const a = P[i], b = P[j]; const isH = data.atoms[i][0] === 'H' || data.atoms[j][0] === 'H';
+                    let parts = [];
+                    if (o === 1 || o === 2 || o === 3) {
+                        const mat = (hl.has(i) && hl.has(j)) ? hlBondMat : bondMat;
+                        if (o === 1) { const c = cylBetween(a, b, 0.1 * sc, mat); g.add(c); parts.push(c); }
+                        else {
+                            const d = new THREE.Vector3().subVectors(b, a).normalize();
+                            let k = adj[i].find(x => x !== j); let ref = k !== undefined ? P[k].clone().sub(a) : null;
+                            if (!ref) { k = adj[j].find(x => x !== i); ref = k !== undefined ? P[k].clone().sub(b) : new THREE.Vector3(0, 0, 1); }
+                            let off = ref.clone().sub(d.clone().multiplyScalar(ref.dot(d)));
+                            if (off.lengthSq() < 1e-6) off = new THREE.Vector3(1, 0, 0).cross(d);
+                            if (off.lengthSq() < 1e-6) off = new THREE.Vector3(0, 1, 0).cross(d);
+                            off.normalize().multiplyScalar(0.11 * sc);
+                            const offs = o === 2 ? [off, off.clone().negate()] : [off.clone().multiplyScalar(1.5), new THREE.Vector3(), off.clone().multiplyScalar(-1.5)];
+                            offs.forEach(v => { const c = cylBetween(a.clone().add(v), b.clone().add(v), 0.065 * sc, mat); g.add(c); parts.push(c); });
+                        }
+                    } else if (BONDSTYLE[o]) {
+                        const st = BONDSTYLE[o];
+                        const mat = new THREE.MeshStandardMaterial({ color: st.color, roughness: 0.4, emissive: st.color, emissiveIntensity: 0.15 });
+                        if (st.dash) parts = dashedBetween(a, b, st.r * sc, mat, g);
+                        else { const c = cylBetween(a, b, st.r * sc, mat); g.add(c); parts.push(c); }
+                    }
+                    if (isH) hMeshes.push(...parts);
+                });
+                g.userData = { meshes, hMeshes, halos: [], P, opacity: 1 };
+                if (opt.labels !== false && data.labels) {
+                    Object.entries(data.labels).forEach(([idx, text]) => this.label(text, meshes[+idx], g, opt.labelClass || ''));
+                }
+                return g;
+            }
+            fit(obj, k = 1) {
+                obj.updateWorldMatrix(true, true);
+                const box = new THREE.Box3().setFromObject(obj);
+                const sph = box.getBoundingSphere(new THREE.Sphere());
+                const r = Math.max(sph.radius, 2.2);
+                const fov = this.camera.fov * Math.PI / 180;
+                const aspect = Math.min(1, this.camera.aspect || 1);
+                const d = r / Math.sin(fov / 2) / Math.sqrt(aspect) * 0.95 * k;
+                this.home = { pos: sph.center.clone().add(new THREE.Vector3(0, 0, d)), target: sph.center.clone() };
+                this.camera.near = Math.max(0.05, d / 100); this.camera.far = d * 20; this.camera.updateProjectionMatrix();
+                this.reset();
+            }
+            reset() {
+                if (!this.home) return;
+                this.camera.position.copy(this.home.pos); this.controls.target.copy(this.home.target); this.controls.update();
+            }
+            label(text, obj, group, cls) {
+                const el = document.createElement('div'); el.className = 'mol-label ' + (cls || ''); el.innerHTML = text;
+                this.layer.appendChild(el);
+                const L = { el, obj, group, hidden: false };
+                this.labels.push(L); return L;
+            }
+            unlabel(L) { if (!L) return; L.el.remove(); this.labels = this.labels.filter(x => x !== L); }
+            updateLabels() {
+                const w = this.el.clientWidth, h = this.el.clientHeight;
+                this.labels.forEach(L => {
+                    let shown = true; for (let o = L.obj; o; o = o.parent) { if (o.visible === false) { shown = false; break; } }
+                    const vis = !L.hidden && L.obj && shown && (!L.group || ((L.group.userData.opacity ?? 1) > 0.5 && L.group.visible && L.group.scale.x > 0.5));
+                    if (!vis) { L.el.style.display = 'none'; return; }
+                    L.obj.getWorldPosition(this._v); this._v.project(this.camera);
+                    if (this._v.z > 1) { L.el.style.display = 'none'; return; }
+                    L.el.style.display = 'block';
+                    L.el.style.left = ((this._v.x + 1) / 2 * w) + 'px';
+                    L.el.style.top = ((1 - this._v.y) / 2 * h) + 'px';
+                });
+            }
+            dispose() {
+                cancelAnimationFrame(this.raf); this.ro.disconnect(); this.controls.dispose();
+                this.clear(); this.renderer.dispose();
+                try { this.renderer.forceContextLoss(); } catch (e) {}
+                this.el.innerHTML = '';
+            }
+        }
+
+        function legendHTML(datas) {
+            const els = new Set(), bt = new Set();
+            [].concat(datas).forEach(d => { d.atoms.forEach(a => els.add(a[0])); d.bonds.forEach(b => bt.add(b[2])); });
+            const order = ['C', 'H', 'O', 'N', 'Fe', 'Na', 'Cl'];
+            let s = order.filter(e => els.has(e)).map(e => `<span><span class="legend-dot" style="background:${ELEM[e].css}"></span>${ELEM[e].name}</span>`).join('');
+            [7, 8, 9].forEach(o => { if (bt.has(o)) { const c = '#' + BONDSTYLE[o].color.toString(16).padStart(6, '0'); s += `<span><span style="display:inline-block;width:22px;border-top:3px ${BONDSTYLE[o].dash ? 'dashed' : 'solid'} ${c};vertical-align:4px;margin-right:4px"></span>${BONDSTYLE[o].name}</span>`; } });
+            return s;
+        }
+        const dotLegend = list => list.map(([c, n]) => `<span><span class="legend-dot" style="background:${c}"></span>${n}</span>`).join('');
+
+        function wireCommonButtons(body, v) {
+            const spin = body.querySelector('[data-act="spin"]');
+            if (spin) {
+                spin.classList.toggle('on', v.controls.autoRotate);
+                spin.onclick = () => { v.controls.autoRotate = !v.controls.autoRotate; spin.classList.toggle('on', v.controls.autoRotate); playSound('click'); };
+            }
+            const rs = body.querySelector('[data-act="reset"]');
+            if (rs) rs.onclick = () => { v.reset(); playSound('click'); };
+        }
+
+        // 작은 분자 (공-막대 모형)
+        const MCACHE = {};
+        const molMat = el => MCACHE[el] || (MCACHE[el] = new THREE.MeshStandardMaterial({ color: ELEM[el].c, roughness: el === 'H' ? 0.5 : 0.3, emissive: el === 'H' ? 0x2a2a2a : 0x000000 }));
+        const molBondMat = () => MCACHE._b || (MCACHE._b = new THREE.MeshStandardMaterial({ color: 0x9aa3ad, roughness: 0.45 }));
+        function miniMol(data, sc = 1) {
+            const g = new THREE.Group();
+            const P = data.atoms.map(a => V3(a[1], a[2], a[3]).multiplyScalar(sc));
+            data.atoms.forEach((a, i) => { const m = new THREE.Mesh(geo().sphere, molMat(a[0])); m.scale.setScalar(ELEM[a[0]].r * sc); m.position.copy(P[i]); g.add(m); });
+            data.bonds.forEach(([i, j, o]) => {
+                const a = P[i], b = P[j];
+                if (o === 1) { g.add(cylBetween(a, b, 0.1 * sc, molBondMat())); return; }
+                const d = V3().subVectors(b, a).normalize();
+                let p = V3().crossVectors(d, V3(0, 0, 1)); if (p.lengthSq() < 1e-4) p = V3(1, 0, 0);
+                p.normalize().multiplyScalar(0.1 * sc);
+                const offs = o === 2 ? [p, p.clone().negate()] : [p.clone().multiplyScalar(1.4), V3(), p.clone().multiplyScalar(-1.4)];
+                offs.forEach(q => g.add(cylBetween(a.clone().add(q), b.clone().add(q), 0.055 * sc, molBondMat())));
+            });
+            return g;
+        }
+        // 적혈구 : 가운데가 오목한 원반 (Evans–Fung 식)
+        function rbcGeometry(R = 0.6) {
+            const C0 = 0.207, C1 = 2.003, C2 = -1.123, pts = [], N = 24;
+            const z = r => { const q = (r / R) ** 2; return 1.25 * 0.5 * R * Math.sqrt(Math.max(0, 1 - q)) * (C0 + C1 * q + C2 * q * q); };
+            for (let i = 0; i <= N; i++) { const r = R * Math.sin(i / N * Math.PI / 2); pts.push(new THREE.Vector2(r, z(r))); }
+            for (let i = N - 1; i >= 0; i--) { const r = R * Math.sin(i / N * Math.PI / 2); pts.push(new THREE.Vector2(r, -z(r))); }
+            const g = new THREE.LatheGeometry(pts, 36); g.computeVertexNormals(); return g;
+        }
+        function randUnit() { const v = V3(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1); return v.lengthSq() < 1e-4 ? V3(1, 0, 0) : v.normalize(); }
+        function tubeMesh(pts, r, col, extra) {
+            const c = new THREE.CatmullRomCurve3(pts);
+            return { curve: c, mesh: new THREE.Mesh(new THREE.TubeGeometry(c, 64, r, 14, false), stdMat(col, Object.assign({ roughness: 0.45 }, extra || {}))) };
+        }
+
+        // =====================================================
+        //  배설계 단원 공용
+        // =====================================================
+        const pinAt = (root, p) => { const o = new THREE.Object3D(); o.position.copy(p); root.add(o); return o; };
+        function angleView(v, dir) { const d = v.home.pos.distanceTo(v.home.target); v.home.pos.copy(v.home.target).addScaledVector(dir.clone().normalize(), d); v.reset(); }
+        const BLUE = 0x3f6fd6, RED = 0xd93636, PURPLE = 0x8e44ad;
+        SMALL.NH3 = { atoms: [['N', 0, 0, 0], ['H', 0.94, -0.33, 0], ['H', -0.47, -0.33, 0.81], ['H', -0.47, -0.33, -0.81]], bonds: [[0, 1, 1], [0, 2, 1], [0, 3, 1]] };
+        SMALL.NH4 = { atoms: [['N', 0, 0, 0], ['H', 0.59, 0.59, 0.59], ['H', -0.59, -0.59, 0.59], ['H', -0.59, 0.59, -0.59], ['H', 0.59, -0.59, -0.59]], bonds: [[0, 1, 1], [0, 2, 1], [0, 3, 1], [0, 4, 1]] };
+        SMALL.UREA = { atoms: [['C', 0, 0.15, 0], ['O', 0, 1.38, 0], ['N', 1.16, -0.55, 0], ['N', -1.16, -0.55, 0], ['H', 2.03, -0.05, 0], ['H', 1.16, -1.56, 0], ['H', -2.03, -0.05, 0], ['H', -1.16, -1.56, 0]], bonds: [[0, 1, 2], [0, 2, 1], [0, 3, 1], [2, 4, 1], [2, 5, 1], [3, 6, 1], [3, 7, 1]] };
+        // 콩팥(강낭콩) 단면 모양 : 오목한 콩팥문이 -x 쪽
+        function beanShape(a, b, k) {
+            const sh = new THREE.Shape();
+            for (let i = 0; i <= 72; i++) {
+                const t = i / 72 * Math.PI * 2; let x = a * Math.cos(t); const y = b * Math.sin(t);
+                if (x < 0) x *= 1 - (k || 0.35) * Math.exp(-Math.pow(y / (0.42 * b), 2));
+                if (i === 0) sh.moveTo(x, y); else sh.lineTo(x, y);
+            }
+            return sh;
+        }
+        function kidneyMesh(a, b, th, mat) {
+            const g = new THREE.ExtrudeGeometry(beanShape(a, b), { depth: th, bevelEnabled: true, bevelThickness: th * 0.9, bevelSize: Math.min(a, b) * 0.22, bevelSegments: 8, curveSegments: 64 });
+            g.translate(0, 0, -th / 2); g.computeVertexNormals();
+            return new THREE.Mesh(g, mat);
+        }
+
+        // =====================================================
+        //  모달: 3D 영양소의 분해와 노폐물 (분자 모형)
+        // =====================================================
+        const WASTE = {
+            carb: {
+                react: [['glucose', 1, '포도당 (C₆H₁₂O₆)'], ['O2', 6, '산소 (O₂) × 6']],
+                prod: [['CO2', 6, '이산화탄소 (CO₂) × 6', 'v'], ['H2O', 6, '물 (H₂O) × 6', 'b']],
+                eq: '\\[\\mathrm{C_6H_{12}O_6 + 6\\,O_2 \\longrightarrow 6\\,CO_2 + 6\\,H_2O} + \\text{에너지}\\]',
+                cap: '<strong>포도당(탄수화물)</strong>이 산소와 만나 분해되면 <strong>이산화탄소</strong>와 <strong>물</strong>이 생기고 에너지가 나와요. ‘▶ 세포호흡 시작’을 눌러 보세요.',
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🍚 탄수화물 · 지방의 분해</p><p>탄수화물과 지방은 <strong>탄소(C), 수소(H), 산소(O)</strong>로만 이루어져 있어요. 그래서 분해되면 <strong>이산화탄소와 물</strong>만 생겨요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🧮 원자 수 세어 보기</p><table class="w-full text-sm text-center border-collapse bg-white"><tr class="bg-orange-100 font-cute"><td class="p-1 border border-orange-200">원자</td><td class="p-1 border border-orange-200">반응 전</td><td class="p-1 border border-orange-200">반응 후</td></tr><tr><td class="p-1 border border-orange-200">C</td><td class="p-1 border border-orange-200">6</td><td class="p-1 border border-orange-200">6 × 1 = 6</td></tr><tr><td class="p-1 border border-orange-200">H</td><td class="p-1 border border-orange-200">12</td><td class="p-1 border border-orange-200">6 × 2 = 12</td></tr><tr><td class="p-1 border border-orange-200">O</td><td class="p-1 border border-orange-200">6 + 12 = 18</td><td class="p-1 border border-orange-200">12 + 6 = 18</td></tr></table><p class="mt-1">원자는 사라지지 않고 다시 짝을 지을 뿐이에요(질량 보존).</p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700 mb-1">⚡ 얼마나 많은 에너지?</p><p>포도당 1몰(180 g)이 완전히 분해되면 약 2870 kJ의 에너지가 나와요. 세포는 이 에너지를 조금씩 나누어 생명 활동에 써요.</p></div>`
+            },
+            protein: {
+                react: [['glycine', 2, '아미노산 (글리신) × 2'], ['O2', 3, '산소 (O₂) × 3']],
+                prod: [['CO2', 4, '이산화탄소 × 4', 'v'], ['H2O', 2, '물 × 2', 'b'], ['NH3', 2, '암모니아 (NH₃) × 2 ⚠️', 'e']],
+                eq: '\\[\\mathrm{2\\,C_2H_5NO_2 + 3\\,O_2 \\longrightarrow 4\\,CO_2 + 2\\,H_2O + 2\\,NH_3}\\]',
+                cap: '단백질을 이루는 <strong>아미노산</strong>에는 <strong>질소(N, 파랑)</strong>가 있어요. 분해되면 이산화탄소와 물뿐 아니라 질소가 들어 있는 <strong>암모니아</strong>가 생겨요.',
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🥩 단백질의 분해</p><p>단백질은 아미노산이 길게 이어진 물질이에요. 아미노산에는 C, H, O 말고도 <strong>질소(N)</strong>가 들어 있는 <strong>아미노기(–NH₂)</strong>가 있어요.</p><p class="mt-1">그래서 단백질이 분해되면 물·이산화탄소와 함께 <strong>암모니아(NH₃)</strong>가 생겨요. 모형은 가장 간단한 아미노산인 <strong>글리신</strong>으로 나타냈어요.</p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700 mb-1">⚠️ 암모니아는 위험해요</p><p>암모니아는 <strong>독성이 강해서</strong> 몸에 쌓이면 특히 뇌에 해로워요. 그래서 간이 재빨리 독성이 약한 <strong>요소</strong>로 바꿔요.</p><button data-act="urea" class="font-cute bg-orange-500 hover:bg-orange-600 text-white py-1.5 px-4 rounded-full shadow mt-2">🧪 간에서 요소로 바꾸기</button></div>`
+            },
+            urea: {
+                react: [['NH3', 2, '암모니아 (NH₃) × 2'], ['CO2', 1, '이산화탄소 (CO₂)']],
+                prod: [['UREA', 1, '요소 (CO(NH₂)₂)', 'r'], ['H2O', 1, '물 (H₂O)', 'b']],
+                eq: '\\[\\mathrm{2\\,NH_3 + CO_2 \\longrightarrow CO(NH_2)_2 + H_2O}\\]',
+                cap: '<strong>간</strong>(갈색)에서 암모니아 2분자와 이산화탄소 1분자가 합쳐져 독성이 약한 <strong>요소</strong>가 만들어져요. 요소는 혈액을 따라 콩팥으로 가서 오줌으로 나가요.',
+                side: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🧪 간의 해독 작용</p><p>독성이 강한 <strong>암모니아</strong>는 <strong>간</strong>에서 독성이 약한 <strong>요소</strong>로 바뀌어요. 요소는 물에 아주 잘 녹아서 혈액을 따라 <strong>콩팥</strong>으로 운반되고, 콩팥에서 걸러져 <strong>오줌</strong>으로 나가요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🔁 실제로는 여러 단계</p><p>위 식은 전체 반응을 간단히 나타낸 거예요. 간세포 속에서는 ‘오르니틴 회로(요소 회로)’라는 여러 단계를 거치며, 요소 1분자를 만들 때 ATP 3분자의 에너지를 써요. 에너지를 써서라도 독성을 줄이는 셈이에요.</p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700 mb-1">⚗️ 더 깊이 알고 싶다면?</p><p>암모니아는 왜 독성이 강할까요? pH에 따라 모습이 바뀌는 암모니아의 화학을 살펴보세요.</p><button data-act="deep" class="font-cute bg-violet-500 hover:bg-violet-600 text-white py-1.5 px-4 rounded-full shadow mt-2">⚗️ 암모니아의 독성과 pH (심화)</button></div>`
+            }
+        };
+        function openWaste(mode, level) {
+            const body = openModalAt(level || 1, '⚛️ How? 3D 영양소의 분해와 노폐물', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-3 min-w-0">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button class="view-chip" data-m="carb">🍚 탄수화물 (포도당)</button>
+                        <button class="view-chip" data-m="protein">🥩 단백질 (아미노산)</button>
+                        <button class="view-chip" data-m="urea">🧪 간 : 암모니아 → 요소</button>
+                    </div>
+                    <div class="mol-stage" data-stage style="height:420px"></div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                        <div data-legend class="text-sm text-gray-600 flex flex-wrap gap-x-3 gap-y-1"></div>
+                        <div class="flex flex-wrap gap-2">
+                            <button data-act="play" class="view-chip on text-sm">▶ 반응 시작</button>
+                            <button data-act="again" class="view-chip text-sm">↺ 처음으로</button>
+                            <button data-act="spin" class="view-chip text-sm"><i class="fa-solid fa-rotate"></i> 회전</button>
+                            <button data-act="reset" class="view-chip text-sm"><i class="fa-solid fa-crosshairs"></i> 처음 위치</button>
+                        </div>
+                    </div>
+                    <div data-eq class="mt-2 bg-white border-2 border-orange-200 rounded-xl px-3 overflow-x-auto"></div>
+                    <p data-caption class="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-900"></p>
+                    <p class="mt-2 text-xs text-gray-500">공-막대 모형 : 탄소=검정, 수소=흰색, 산소=빨강, 질소=파랑. 실제 세포 속에서는 여러 단계에 걸쳐 조금씩 분해돼요.</p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed min-w-0" data-side></div>
+            </div>`;
+            const $ = s => body.querySelector(s);
+            const stage = $('[data-stage]'), cap = $('[data-caption]'), side = $('[data-side]');
+            const v = new MolViewer(stage); onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            let cur = mode, gen = 0, R = [], P = [], PL = [], liver = null;
+            const DATA = k => k === 'glucose' ? MOL.glucose : k === 'glycine' ? MOL.glycine : SMALL[k];
+            const SC = { glucose: 0.7, glycine: 0.72, O2: 0.72, CO2: 0.72, H2O: 0.72, NH3: 0.72, UREA: 0.7 };
+            function layout(list, x0) {
+                const out = []; let y = 0;
+                list.forEach(([k, n, name, cls]) => {
+                    const big = k === 'glucose' || k === 'glycine' || k === 'UREA';
+                    const cols = big ? 1 : n > 3 ? 3 : n > 1 ? 2 : 1, gx = 1.75, gy = big ? 2.9 : 1.35;
+                    const rows = Math.ceil(n / cols), items = [];
+                    for (let i = 0; i < n; i++) items.push(V3(x0 + ((i % cols) - (cols - 1) / 2) * gx, y - (Math.floor(i / cols) + 0.5) * gy - 0.5, 0));
+                    out.push({ k, n, name, cls, items, top: y });
+                    y -= rows * gy + 0.9;
+                });
+                out.forEach(o => { o.items.forEach(p => p.y -= y / 2); o.top -= y / 2; });
+                return out;
+            }
+            function setup(m) {
+                cur = m; gen++; v.clear(); R = []; P = []; PL = [];
+                const D = WASTE[m];
+                body.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+                const root = new THREE.Group(); v.root.add(root);
+                liver = null;
+                if (m === 'urea') {
+                    liver = new THREE.Mesh(geo().sphere, new THREE.MeshStandardMaterial({ color: 0x9b3b26, transparent: true, opacity: 0.18, depthWrite: false }));
+                    liver.scale.set(3.4, 2.6, 2.2); root.add(liver);
+                    v.label('간 (간세포)', pinAt(root, V3(0, 2.9, 0)), null, 'r');
+                }
+                layout(D.react, -3.6).forEach(o => {
+                    o.items.forEach(p => { const g = miniMol(DATA(o.k), SC[o.k] || 0.6); g.position.copy(p); g.rotation.set(Math.random() * 6, Math.random() * 6, 0); root.add(g); R.push({ g, p0: p.clone() }); });
+                    PL.push(v.label(o.name, pinAt(root, V3(-3.6, o.top + 0.1, 0)), null, 'e'));
+                });
+                layout(D.prod, 3.6).forEach(o => {
+                    o.items.forEach(p => { const g = miniMol(DATA(o.k), SC[o.k] || 0.6); g.visible = false; g.rotation.set(Math.random() * 6, Math.random() * 6, 0); root.add(g); P.push({ g, p1: p.clone() }); });
+                    const L = v.label(o.name, pinAt(root, V3(3.6, o.top + 0.1, 0)), null, o.cls); L.hidden = true; P.push({ L });
+                });
+                v.label('➜', pinAt(root, V3(0, 0, 0)), null, '');
+                $('[data-legend]').innerHTML = legendHTML(D.react.concat(D.prod).map(([k]) => DATA(k)));
+                $('[data-eq]').innerHTML = D.eq; typeset($('[data-eq]'));
+                side.innerHTML = D.side; typeset(side);
+                const ub = side.querySelector('[data-act="urea"]'); if (ub) ub.onclick = () => { playSound('click'); setup('urea'); };
+                const db = side.querySelector('[data-act="deep"]'); if (db) db.onclick = () => openUrea(null, 2);
+                cap.innerHTML = D.cap;
+                v.persistent.push(t => { R.concat(P).forEach((o, i) => { if (o.g && o.g.visible) o.g.rotation.y += 0.004 + (i % 3) * 0.002; }); });
+                v.fit(new THREE.Mesh(new THREE.BoxGeometry(11, 10, 2)), 0.92);
+            }
+            async function play() {
+                const my = gen; playSound('click');
+                R.forEach(r => { r.g.visible = true; r.g.scale.setScalar(1); r.g.position.copy(r.p0); });
+                P.forEach(p => { if (p.g) p.g.visible = false; if (p.L) p.L.hidden = true; });
+                await v.tween(1.3, e => { if (my === gen) R.forEach(r => { r.g.position.lerpVectors(r.p0, V3(0, 0, 0), e * 0.9); r.g.scale.setScalar(1 - 0.5 * e); }); });
+                if (my !== gen) return;
+                playSound('magic');
+                const fl = new THREE.Mesh(geo().sphere, new THREE.MeshBasicMaterial({ color: 0xfff1a8, transparent: true, opacity: 0.8 })); v.root.add(fl);
+                await v.tween(0.5, e => { fl.scale.setScalar(0.5 + 2.5 * e); fl.material.opacity = 0.8 * (1 - e); });
+                v.root.remove(fl);
+                if (my !== gen) return;
+                R.forEach(r => r.g.visible = false);
+                P.forEach(p => { if (p.g) { p.g.visible = true; p.g.position.set(0, 0, 0); p.g.scale.setScalar(0.4); } });
+                await v.tween(1.3, e => { if (my === gen) P.forEach(p => { if (p.g) { p.g.position.lerpVectors(V3(), p.p1, e); p.g.scale.setScalar(0.4 + 0.6 * e); } }); });
+                if (my !== gen) return;
+                P.forEach(p => { if (p.L) p.L.hidden = false; });
+            }
+            body.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { playSound('click'); setup(b.dataset.m); });
+            $('[data-act="play"]').onclick = play;
+            $('[data-act="again"]').onclick = () => { playSound('click'); setup(cur); };
+            wireCommonButtons(body, v);
+            setup(mode);
+        }
+
+        // =====================================================
+        //  모달: 3D 노폐물이 몸 밖으로 나가는 길
+        // =====================================================
+        const ROUTE_CAP = {
+            all: '온몸의 세포(오른쪽 아래)에서 생긴 노폐물이 몸 밖으로 나가는 길이에요. 위의 버튼으로 노폐물을 하나씩 골라 따라가 보세요.',
+            co2: '<strong>이산화탄소</strong>는 혈액을 따라 <strong>폐</strong>로 가서 <strong>날숨</strong>에 섞여 코와 입으로 나가요.',
+            h2o: '<strong>물</strong>은 주로 <strong>콩팥</strong>으로 가서 <strong>오줌</strong>으로 나가고(파란 길), 일부는 <strong>폐</strong>로 가서 <strong>날숨</strong>으로 나가요(하늘색 길).',
+            nh3: '<strong>암모니아</strong>는 독성이 강해서 먼저 <strong>간</strong>으로 가요. 간에서 독성이 약한 <strong>요소</strong>로 바뀐 뒤 <strong>콩팥</strong>으로 가서 <strong>오줌</strong>으로 나가요.'
+        };
+        function openRoute(mode, level) {
+            const body = openModalAt(level || 1, '🚚 How? 3D 노폐물이 몸 밖으로 나가는 길', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-3 min-w-0">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button class="view-chip" data-m="all">🌈 전체</button>
+                        <button class="view-chip" data-m="co2">⚫ 이산화탄소</button>
+                        <button class="view-chip" data-m="h2o">💧 물</button>
+                        <button class="view-chip" data-m="nh3">🟦 암모니아 → 요소</button>
+                    </div>
+                    <div class="mol-stage" data-stage style="height:480px;background:radial-gradient(circle at 50% 40%, #fffaf6 0%, #fdeadf 70%, #f8d5c4 100%)"></div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                        <div data-legend class="text-sm text-gray-600 flex flex-wrap gap-x-3 gap-y-1"></div>
+                        <div class="flex flex-wrap gap-2">
+                            <button data-act="pause" class="view-chip text-sm">⏸ 멈춤</button>
+                            <button data-act="spin" class="view-chip text-sm"><i class="fa-solid fa-rotate"></i> 회전</button>
+                            <button data-act="reset" class="view-chip text-sm"><i class="fa-solid fa-crosshairs"></i> 처음 위치</button>
+                        </div>
+                    </div>
+                    <p data-caption class="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-900"></p>
+                    <p class="mt-2 text-xs text-gray-500">노폐물은 실제로는 혈액에 녹아 혈관을 따라 이동해요. 모형에서는 길이 잘 보이도록 혈관을 생략하고 분자를 크게 나타냈어요. 화면의 왼쪽이 몸의 오른쪽(간이 있는 쪽)이에요.</p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed min-w-0">
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-center border-collapse bg-white">
+                        <tr class="bg-orange-100 font-cute"><td class="p-1 border border-orange-200">노폐물</td><td class="p-1 border border-orange-200">생기는 영양소</td><td class="p-1 border border-orange-200">나가는 길</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">이산화탄소</td><td class="p-1 border border-orange-200">탄수화물·지방·단백질</td><td class="p-1 border border-orange-200">폐 → 날숨</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">물</td><td class="p-1 border border-orange-200">탄수화물·지방·단백질</td><td class="p-1 border border-orange-200">주로 콩팥 → 오줌<br>일부 폐 → 날숨</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">암모니아</td><td class="p-1 border border-orange-200">단백질</td><td class="p-1 border border-orange-200">간(요소로) → 콩팥 → 오줌</td></tr>
+                    </table></div>
+                    <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🩸 노폐물을 나르는 혈액</p><p>세포에서 생긴 노폐물은 모세혈관으로 들어가 혈액을 따라 운반돼요. 혈액이 폐를 지날 때 이산화탄소를 내놓고, 콩팥을 지날 때 요소와 물이 걸러져요.</p></div>
+                    <div class="analogy"><p class="font-cute text-orange-700 mb-1">💡 땀으로도 나가요</p><p>물과 요소의 일부는 피부의 땀샘에서 <strong>땀</strong>으로도 나가요. 하지만 요소를 내보내는 주된 기관은 <strong>콩팥</strong>이에요.</p></div>
+                </div>
+            </div>`;
+            const $ = s => body.querySelector(s);
+            const stage = $('[data-stage]'), cap = $('[data-caption]');
+            const v = new MolViewer(stage); onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            const root = new THREE.Group(); v.root.add(root);
+            const skin = new THREE.MeshStandardMaterial({ color: 0xf6c9a8, transparent: true, opacity: 0.1, depthWrite: false, side: THREE.DoubleSide });
+            const torso = new THREE.Mesh(geo().sphere, skin); torso.scale.set(2.3, 3.4, 1.3); torso.position.set(0, 0.2, 0); root.add(torso);
+            const head = new THREE.Mesh(geo().sphere, skin); head.scale.set(0.9, 1.05, 0.95); head.position.set(0, 4.75, 0); root.add(head);
+            const lungM = new THREE.MeshStandardMaterial({ color: 0xe9909a, transparent: true, opacity: 0.55, depthWrite: false });
+            [-0.85, 0.85].forEach(x => { const l = new THREE.Mesh(geo().sphere, lungM); l.scale.set(0.7, 1.2, 0.6); l.position.set(x, 2.3, 0); root.add(l); });
+            root.add(cylBetween(V3(0, 4.2, 0), V3(0, 3.0, 0), 0.12, stdMat(0xf0d5c8)));
+            const liver = new THREE.Mesh(geo().sphere, stdMat(0x9b3b26, { transparent: true, opacity: 0.85 })); liver.scale.set(1.05, 0.5, 0.6); liver.position.set(-0.95, 0.75, 0.45); liver.rotation.z = -0.2; root.add(liver);
+            const kM = stdMat(0xb65a4a, { side: THREE.DoubleSide });
+            [-1, 1].forEach(sx => { const k = kidneyMesh(0.28, 0.45, 0.12, kM); k.position.set(sx * 0.95, -0.25, -0.55); k.scale.x = sx; root.add(k); });
+            const urM = stdMat(0xe9c36a);
+            [-1, 1].forEach(sx => root.add(tubeMesh([V3(sx * 0.75, -0.4, -0.5), V3(sx * 0.55, -1.2, -0.3), V3(sx * 0.25, -2.05, 0.2)], 0.05, 0xe9c36a).mesh));
+            const blad = new THREE.Mesh(geo().sphere, stdMat(0xf2c68a, { transparent: true, opacity: 0.85 })); blad.scale.set(0.42, 0.32, 0.38); blad.position.set(0, -2.25, 0.25); root.add(blad);
+            root.add(cylBetween(V3(0, -2.5, 0.25), V3(0, -3.2, 0.3), 0.05, urM));
+            const cellM = stdMat(0xf9d8a7, { transparent: true, opacity: 0.8 });
+            const CELL = V3(2.7, -1.4, 0.7);
+            for (let i = 0; i < 7; i++) { const c = new THREE.Mesh(geo().sphere, cellM); c.scale.set(0.32, 0.24, 0.3); c.position.copy(CELL).add(V3((i % 3) * 0.5 - 0.5, Math.floor(i / 3) * 0.4 - 0.3, (i % 2) * 0.3)); root.add(c); const n = new THREE.Mesh(geo().sphere, stdMat(0x8b5cf6)); n.scale.setScalar(0.08); n.position.copy(c.position).add(V3(0.06, 0, 0.12)); root.add(n); }
+            v.label('온몸의 세포 (세포호흡)', pinAt(root, CELL.clone().add(V3(0, 0.95, 0))), null, '');
+            v.label('폐', pinAt(root, V3(0.95, 3.1, 0.4)), null, 'r'); v.label('간', pinAt(root, V3(-1.5, 1.15, 0.7)), null, 'r');
+            v.label('콩팥', pinAt(root, V3(1.25, 0.05, -0.4)), null, 'r'); v.label('방광', pinAt(root, V3(0.55, -2.25, 0.4)), null, 'e');
+            v.label('날숨으로 ↑', pinAt(root, V3(0, 5.75, 1.1)), null, 'b'); v.label('오줌으로 ↓', pinAt(root, V3(0, -3.6, 0.5)), null, 'e');
+            const MOUTH = V3(0, 4.5, 0.85), OUTU = V3(0, 5.6, 1.6);
+            const PATHS = {
+                co2: [CELL, V3(2.0, 0.4, 0.8), V3(0.9, 2.2, 0.4), V3(0, 3.4, 0), MOUTH, OUTU],
+                h2oL: [CELL, V3(1.9, 0.6, 0.7), V3(-0.8, 2.3, 0.4), V3(0, 3.4, 0), MOUTH, OUTU],
+                h2oK: [CELL, V3(1.8, -0.4, 0.3), V3(0.95, -0.25, -0.4), V3(0.55, -1.2, -0.3), V3(0, -2.2, 0.25), V3(0, -3.1, 0.3), V3(0, -3.9, 0.7)],
+                nh3: [CELL, V3(1.6, 0.0, 0.9), V3(0.2, 0.9, 0.9), V3(-0.95, 0.75, 0.5)],
+                urea: [V3(-0.95, 0.75, 0.5), V3(-1.3, 0.2, 0.1), V3(-0.95, -0.25, -0.4), V3(-0.55, -1.2, -0.3), V3(0, -2.2, 0.25), V3(0, -3.1, 0.3), V3(0, -3.9, 0.7)]
+            };
+            const CURVE = {}, LINE = {};
+            const LCOL = { co2: 0x374151, h2oL: 0x7dd3fc, h2oK: 0x2563eb, nh3: 0x2546f0, urea: 0xd97706 };
+            Object.entries(PATHS).forEach(([k, pts]) => {
+                const cv = new THREE.CatmullRomCurve3(pts); cv.L = cv.getLength(); CURVE[k] = cv;
+                const ln = new THREE.Line(new THREE.BufferGeometry().setFromPoints(cv.getPoints(80)), new THREE.LineDashedMaterial({ color: LCOL[k], dashSize: 0.15, gapSize: 0.1, transparent: true, opacity: 0.8 }));
+                ln.computeLineDistances(); root.add(ln); LINE[k] = ln;
+            });
+            $('[data-legend]').innerHTML = dotLegend([['#374151', '이산화탄소의 길'], ['#7dd3fc', '물 → 날숨'], ['#2563eb', '물 → 오줌'], ['#2546f0', '암모니아 → 간'], ['#d97706', '요소 → 오줌']]);
+            v.fit(root, 0.78);
+            let cur = mode, running = true, toks = [], spT = 0, cnt = 0, last = performance.now();
+            const KIND = { co2: ['CO2', 'co2'], h2o: ['H2O', null], nh3: ['NH3', 'nh3'] };
+            function spawn() {
+                const pool = cur === 'all' ? ['co2', 'h2o', 'nh3'] : [cur];
+                const kind = pool[cnt++ % pool.length];
+                let path = KIND[kind][1];
+                if (kind === 'h2o') path = Math.random() < 0.7 ? 'h2oK' : 'h2oL';
+                const g = miniMol(SMALL[KIND[kind][0]], 0.24); root.add(g);
+                const L = cnt % 4 === 1 ? v.label(kind === 'co2' ? 'CO₂' : kind === 'h2o' ? 'H₂O' : 'NH₃', g, null, kind === 'co2' ? 'v' : kind === 'h2o' ? 'b' : '') : null;
+                toks.push({ g, L, path, u: 0, kind });
+            }
+            v.persistent.push(() => {
+                const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
+                if (!running) return;
+                spT += dt; if (spT > (cur === 'all' ? 0.45 : 0.7) && toks.length < 26) { spT = 0; spawn(); }
+                for (let i = toks.length - 1; i >= 0; i--) {
+                    const t = toks[i], cv = CURVE[t.path];
+                    t.u += 1.1 * dt / cv.L;
+                    if (t.u >= 1) {
+                        if (t.path === 'nh3') {
+                            root.remove(t.g); playSound('pop');
+                            t.g = miniMol(SMALL.UREA, 0.24); root.add(t.g);
+                            if (t.L) { v.unlabel(t.L); t.L = null; }
+                            t.L = v.label('요소', t.g, null, 'r'); t.path = 'urea'; t.u = 0; continue;
+                        }
+                        root.remove(t.g); v.unlabel(t.L); toks.splice(i, 1); continue;
+                    }
+                    t.g.position.copy(cv.getPointAt(t.u)); t.g.rotation.y += dt * 1.5; t.g.rotation.x += dt;
+                }
+            });
+            function setMode(m) {
+                cur = m; body.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+                toks.splice(0).forEach(t => { root.remove(t.g); v.unlabel(t.L); });
+                const show = { all: Object.keys(LINE), co2: ['co2'], h2o: ['h2oL', 'h2oK'], nh3: ['nh3', 'urea'] }[m];
+                Object.entries(LINE).forEach(([k, l]) => l.material.opacity = show.includes(k) ? 0.85 : 0.08);
+                cap.innerHTML = ROUTE_CAP[m];
+            }
+            body.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { playSound('click'); setMode(b.dataset.m); });
+            $('[data-act="pause"]').onclick = e => { playSound('click'); running = !running; last = performance.now(); e.currentTarget.textContent = running ? '⏸ 멈춤' : '▶ 다시 움직이기'; };
+            wireCommonButtons(body, v);
+            setMode(mode);
+        }
+
+        // =====================================================
+        //  모달: 3D 배설계 · 콩팥 단면 · 오줌의 배설 경로
+        // =====================================================
+        const KID_STEPS = ['네프론', '콩팥 깔때기', '오줌관', '방광', '요도', '몸 밖'];
+        const KID_SIDE = {
+            system: `<div class="overflow-x-auto"><table class="w-full text-sm text-center border-collapse bg-white">
+                    <tr class="bg-orange-100 font-cute"><td class="p-1 border border-orange-200">기관</td><td class="p-1 border border-orange-200">하는 일</td></tr>
+                    <tr><td class="p-1 border border-orange-200 font-cute">콩팥</td><td class="p-1 border border-orange-200">혈액을 걸러 오줌을 만드는 곳 (허리 뒤쪽 좌우 1쌍, 주먹만 한 강낭콩 모양)</td></tr>
+                    <tr><td class="p-1 border border-orange-200 font-cute">오줌관</td><td class="p-1 border border-orange-200">콩팥과 방광을 연결하는 긴 관</td></tr>
+                    <tr><td class="p-1 border border-orange-200 font-cute">방광</td><td class="p-1 border border-orange-200">오줌을 모아 두는 주머니</td></tr>
+                    <tr><td class="p-1 border border-orange-200 font-cute">요도</td><td class="p-1 border border-orange-200">방광의 오줌이 몸 밖으로 나가는 통로</td></tr>
+                </table></div>
+                <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🩸 콩팥동맥 · 콩팥정맥</p><p><strong>콩팥동맥</strong>으로 노폐물이 많은 혈액이 들어오고, 콩팥에서 요소 등이 걸러진 깨끗한 혈액은 <strong>콩팥정맥</strong>으로 나가요. 그래서 혈액 속 요소 농도는 콩팥동맥 &gt; 콩팥정맥이에요.</p></div>
+                <div class="analogy"><p class="font-cute text-orange-700 mb-1">💡 엄청난 양의 혈액</p><p>심장이 내보내는 혈액의 약 1/5이 콩팥으로 가요. 콩팥은 하루에 약 180 L의 물질을 걸러 그중 약 1.5 L만 오줌으로 내보내요.</p></div>`,
+            path: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">💧 오줌의 배설 경로</p><p class="font-cute text-rose-700 text-center my-1">네프론 → 콩팥 깔때기 → 오줌관 → 방광 → 요도 → 몸 밖</p><p>오줌은 콩팥의 <strong>네프론</strong>에서 만들어져 <strong>콩팥 깔때기</strong>에 모인 뒤, <strong>오줌관</strong>을 따라 <strong>방광</strong>으로 내려가요. 방광에 모인 오줌은 <strong>요도</strong>를 통해 몸 밖으로 나가요.</p></div>
+                <div class="analogy"><p class="font-cute text-orange-700 mb-1">🎈 늘어나는 방광</p><p>방광은 근육으로 된 주머니라 오줌이 차면 풍선처럼 늘어나요. 어른의 방광은 보통 0.3~0.5 L쯤 차면 오줌이 마려운 느낌이 들어요. 오줌관은 꿈틀 운동으로 오줌을 조금씩 방광으로 밀어 보내요.</p></div>`,
+            kidney: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🔪 콩팥의 단면</p><p>① <strong>겉질</strong> : 가장 바깥 부분<br>② <strong>속질</strong> : 중간 부분 (줄무늬가 있는 삼각형 모양)<br>③ <strong>콩팥 깔때기</strong> : 가장 안쪽의 빈 공간, 오줌이 모이는 곳</p></div>
+                <div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🌀 네프론</p><p>겉질과 속질에는 오줌을 만드는 기본 단위인 <strong>네프론</strong>이 콩팥 하나에 약 <strong>100만 개</strong> 있어요. 노란 고리 모양이 네프론 하나를 크게 나타낸 거예요.</p><button data-act="neph" class="font-cute bg-orange-500 hover:bg-orange-600 text-white py-1.5 px-4 rounded-full shadow mt-2">🌀 네프론 3D로 확대해 보기</button></div>
+                <div class="analogy"><p class="font-cute text-orange-700 mb-1">💡 줄무늬의 정체</p><p>속질의 줄무늬는 네프론의 긴 관(세뇨관)과 오줌을 모으는 관(집합관)이 나란히 모여 있어서 생겨요. 이 관들이 콩팥 깔때기 쪽으로 오줌을 흘려보내요.</p></div>`
+        };
+        const KID_CAP = {
+            system: '배설계 전체예요. 허리 뒤쪽의 <strong>콩팥</strong> 1쌍에서 <strong>오줌관</strong>이 내려와 <strong>방광</strong>에 이어지고, 방광 아래로 <strong>요도</strong>가 있어요. 빨간 콩팥동맥으로 혈액이 들어가고 파란 콩팥정맥으로 나와요.',
+            path: '노란 오줌 방울이 <strong>콩팥 → 오줌관 → 방광</strong>으로 이동해요. 방광이 차면 ‘🚽 오줌 내보내기’를 눌러 <strong>요도 → 몸 밖</strong>으로 내보내 보세요.',
+            kidney: '콩팥을 반으로 자른 단면이에요. 바깥의 <strong>겉질</strong>, 줄무늬가 있는 <strong>속질</strong>, 가장 안쪽의 빈 공간 <strong>콩팥 깔때기</strong>를 찾아보세요. 오줌 방울이 깔때기에 모여 오줌관으로 나가요.'
+        };
+        function openKidney(mode, level) {
+            const body = openModalAt(level || 1, '🫘 How? 3D 배설계와 콩팥', null, 'bg-orange-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-3 min-w-0">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button class="view-chip" data-m="system">🫘 배설계 전체</button>
+                        <button class="view-chip" data-m="kidney">🔪 콩팥 단면</button>
+                        <button class="view-chip" data-m="path">💧 오줌의 배설 경로</button>
+                    </div>
+                    <div class="mol-stage" data-stage style="height:480px;background:radial-gradient(circle at 50% 40%, #fffaf6 0%, #fdeadf 70%, #f8d5c4 100%)"></div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                        <div data-legend class="text-sm text-gray-600 flex flex-wrap gap-x-3 gap-y-1"></div>
+                        <div class="flex flex-wrap gap-2">
+                            <button data-act="pee" class="view-chip text-sm" style="display:none">🚽 오줌 내보내기</button>
+                            <button data-act="spin" class="view-chip text-sm"><i class="fa-solid fa-rotate"></i> 회전</button>
+                            <button data-act="reset" class="view-chip text-sm"><i class="fa-solid fa-crosshairs"></i> 처음 위치</button>
+                        </div>
+                    </div>
+                    <div data-steps class="flex flex-wrap gap-1 mt-2 text-sm"></div>
+                    <div data-fill class="mt-2" style="display:none"><p class="text-sm font-cute text-orange-700">방광에 모인 오줌</p><div class="prob-bar"><i style="background:linear-gradient(90deg,#fde68a,#f59e0b)"></i></div></div>
+                    <p data-caption class="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm text-orange-900"></p>
+                    <p class="mt-2 text-xs text-gray-500">기관의 크기와 위치는 이해하기 쉽게 단순화했어요. 화면의 왼쪽이 몸의 오른쪽이에요.</p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed min-w-0" data-side></div>
+            </div>`;
+            const $ = s => body.querySelector(s);
+            const stage = $('[data-stage]'), cap = $('[data-caption]'), side = $('[data-side]'), stepsEl = $('[data-steps]'), fillEl = $('[data-fill]');
+            const v = new MolViewer(stage); onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            v.renderer.localClippingEnabled = true;
+            let cur = mode;
+            function buildSystem(withPath) {
+                const root = new THREE.Group(); v.root.add(root);
+                const kM = stdMat(0xa9493a, { roughness: 0.45, side: THREE.DoubleSide });
+                const KP = [V3(-1.35, 1.2, -0.3), V3(1.35, 1.2, -0.3)];
+                KP.forEach((p, i) => { const k = kidneyMesh(0.55, 0.9, 0.25, kM); k.position.copy(p); k.scale.x = i === 0 ? -1 : 1; root.add(k); });
+                const cava = tubeMesh([V3(-0.28, 4.0, -0.5), V3(-0.28, -1.6, -0.5), V3(-0.7, -3.4, -0.3)], 0.17, BLUE); root.add(cava.mesh);
+                const aorta = tubeMesh([V3(0.28, 4.0, -0.5), V3(0.28, -1.6, -0.5), V3(0.7, -3.4, -0.3)], 0.15, RED); root.add(aorta.mesh);
+                const HL = [V3(-0.88, 1.2, -0.3), V3(0.88, 1.2, -0.3)];
+                const vein = [], art = [];
+                HL.forEach((h, i) => {
+                    const sx = i === 0 ? -1 : 1;
+                    const vc = new THREE.CatmullRomCurve3([h.clone().add(V3(0, 0.12, 0)), V3(sx * 0.6, 1.35, -0.4), V3(-0.28, 1.4, -0.5)]);
+                    const ac = new THREE.CatmullRomCurve3([V3(0.28, 1.05, -0.5), V3(sx * 0.6, 1.05, -0.35), h.clone().add(V3(0, -0.08, 0.05))]);
+                    root.add(new THREE.Mesh(new THREE.TubeGeometry(vc, 32, 0.08, 10, false), stdMat(BLUE))); root.add(new THREE.Mesh(new THREE.TubeGeometry(ac, 32, 0.07, 10, false), stdMat(RED)));
+                    vc.L = vc.getLength(); ac.L = ac.getLength(); vein.push(vc); art.push(ac);
+                });
+                const urC = HL.map((h, i) => { const sx = i === 0 ? -1 : 1; const c = new THREE.CatmullRomCurve3([h.clone().add(V3(0, -0.25, 0.05)), V3(sx * 0.95, 0.2, -0.15), V3(sx * 0.7, -1.2, 0.05), V3(sx * 0.32, -2.05, 0.3)]); c.L = c.getLength(); return c; });
+                const urM = stdMat(0xe9c36a, { roughness: 0.4 });
+                urC.forEach(c => root.add(new THREE.Mesh(new THREE.TubeGeometry(c, 48, 0.06, 10, false), urM)));
+                const blad = new THREE.Mesh(geo().sphere, new THREE.MeshStandardMaterial({ color: 0xe9a86e, roughness: 0.45, transparent: true, opacity: 0.85 })); blad.position.set(0, -2.35, 0.35); root.add(blad);
+                const urethra = new THREE.CatmullRomCurve3([V3(0, -2.75, 0.35), V3(0, -3.3, 0.4), V3(0, -3.9, 0.5)]); urethra.L = urethra.getLength();
+                root.add(new THREE.Mesh(new THREE.TubeGeometry(urethra, 20, 0.07, 10, false), urM));
+                v.label('콩팥', pinAt(root, V3(1.9, 1.75, 0)), null, 'r'); v.label('오줌관', pinAt(root, V3(1.05, -0.6, 0.1)), null, 'e');
+                v.label('방광', pinAt(root, V3(0.75, -2.35, 0.4)), null, 'e'); v.label('요도', pinAt(root, V3(0.45, -3.6, 0.5)), null, '');
+                v.label('콩팥동맥', pinAt(root, V3(0.75, 0.75, -0.2)), null, 'r'); v.label('콩팥정맥', pinAt(root, V3(-0.75, 1.75, -0.2)), null, 'b');
+                v.label('대동맥', pinAt(root, V3(0.5, 3.6, -0.4)), null, 'r'); v.label('대정맥', pinAt(root, V3(-0.55, 3.6, -0.4)), null, 'b');
+                $('[data-legend]').innerHTML = dotLegend([['#a9493a', '콩팥'], ['#e9c36a', '오줌관 · 요도'], ['#d93636', '동맥 (요소가 많은 혈액)'], ['#3f6fd6', '정맥 (걸러진 혈액)'], ['#fbbf24', '오줌']]);
+                // 혈액 알갱이
+                const rg = rbcGeometry(0.09), blood = [];
+                const aortaC = new THREE.CatmullRomCurve3([V3(0.28, 4.0, -0.5), V3(0.28, 1.05, -0.5)]); aortaC.L = aortaC.getLength();
+                const cavaC = new THREE.CatmullRomCurve3([V3(-0.28, 1.4, -0.5), V3(-0.28, 4.0, -0.5)]); cavaC.L = cavaC.getLength();
+                for (let i = 0; i < 26; i++) { const m = new THREE.Mesh(rg, stdMat(RED, { side: THREE.DoubleSide })); root.add(m); blood.push({ m, seg: i % 4, side: i % 2, u: Math.random() }); }
+                // 오줌 방울
+                const drops = []; let fill = 0.15, peeing = false, spT = 0, last = performance.now(), lastStep = -1;
+                const dropM = stdMat(0xfbbf24, { emissive: 0x7a5200, emissiveIntensity: 0.25 });
+                v.persistent.push(() => {
+                    const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
+                    blood.forEach(b => {
+                        const cv = b.seg === 0 ? aortaC : b.seg === 1 ? art[b.side] : b.seg === 2 ? vein[b.side] : cavaC;
+                        b.u += 1.2 * dt / cv.L; if (b.u >= 1) { b.u -= 1; b.seg = (b.seg + 1) % 4; if (b.seg === 0) b.side = Math.random() < 0.5 ? 0 : 1; }
+                        const cv2 = b.seg === 0 ? aortaC : b.seg === 1 ? art[b.side] : b.seg === 2 ? vein[b.side] : cavaC;
+                        b.m.position.copy(cv2.getPointAt(Math.min(1, b.u))); b.m.rotation.x += dt * 2;
+                        b.m.material.color.setHex(b.seg < 2 ? RED : 0x6b6fd6);
+                    });
+                    blad.scale.set(0.3 + 0.25 * fill, 0.24 + 0.2 * fill, 0.28 + 0.22 * fill);
+                    if (!withPath) return;
+                    spT += dt;
+                    if (!peeing && spT > 0.5 && fill < 1) { spT = 0; const m = new THREE.Mesh(geo().sphere, dropM); m.scale.setScalar(0.08); root.add(m); drops.push({ m, c: urC[drops.length % 2], u: 0, stage: 'ur' }); }
+                    for (let i = drops.length - 1; i >= 0; i--) {
+                        const d = drops[i];
+                        d.u += (d.stage === 'ur' ? 0.9 : 1.6) * dt / d.c.L;
+                        if (d.u >= 1) { root.remove(d.m); drops.splice(i, 1); if (d.stage === 'ur') fill = Math.min(1, fill + 0.04); continue; }
+                        d.m.position.copy(d.c.getPointAt(d.u));
+                    }
+                    if (peeing) {
+                        fill = Math.max(0.05, fill - dt * 0.35);
+                        if (Math.random() < 0.5) { const m = new THREE.Mesh(geo().sphere, dropM); m.scale.setScalar(0.08); root.add(m); drops.push({ m, c: urethra, u: 0, stage: 'out' }); }
+                        if (fill <= 0.05) { peeing = false; cap.innerHTML = '방광이 비었어요. 다시 오줌이 콩팥에서 오줌관을 따라 방광으로 모여요.'; }
+                    }
+                    fillEl.querySelector('i').style.width = `${Math.round(fill * 100)}%`;
+                    const st = peeing ? 4 : drops.some(d => d.stage === 'ur' && d.u < 0.12) ? 1 : 2;
+                    const st2 = fill >= 1 && !peeing ? 3 : st;
+                    if (st2 !== lastStep) { lastStep = st2; stepsEl.querySelectorAll('[data-sp]').forEach(e => e.classList.toggle('on', +e.dataset.sp === st2 || (st2 === 4 && +e.dataset.sp === 5))); }
+                    if (fill >= 1 && !peeing && !cap.dataset.full) { cap.dataset.full = '1'; cap.innerHTML = '🎈 <strong>방광</strong>이 가득 찼어요! ‘🚽 오줌 내보내기’를 눌러 <strong>요도</strong>를 통해 몸 밖으로 내보내 보세요.'; }
+                });
+                $('[data-act="pee"]').onclick = () => { playSound('pop'); peeing = true; delete cap.dataset.full; cap.innerHTML = '방광의 오줌이 <strong>요도</strong>를 통해 <strong>몸 밖</strong>으로 나가고 있어요.'; };
+                v.fit(root, 0.82);
+            }
+            function buildCut() {
+                const root = new THREE.Group(); v.root.add(root);
+                const A = 1.6, Bh = 2.6, hx = -A * 0.6;
+                const clip = new THREE.Plane(V3(0, 0, -1), 0);
+                const back = kidneyMesh(A, Bh, 0.6, new THREE.MeshStandardMaterial({ color: 0x9e3b2c, roughness: 0.5, side: THREE.DoubleSide, clippingPlanes: [clip] }));
+                root.add(back);
+                const face = (shape, col, z) => { const m = new THREE.Mesh(new THREE.ShapeGeometry(shape, 48), new THREE.MeshLambertMaterial({ color: col, side: THREE.DoubleSide })); m.position.z = z; root.add(m); return m; };
+                const outer = beanShape(A + 0.42, Bh + 0.42, 0.3); face(outer, 0xb3532f, 0.005);
+                const inner = beanShape(A * 0.88 + 0.3, Bh * 0.88 + 0.3, 0.36); const im = face(inner, 0xc4683f, 0.008); im.position.x = 0.12;
+                const apex = [];
+                for (let i = 0; i < 7; i++) {
+                    const ang = -1.15 + i * 0.383;
+                    const bx = A * (0.78 * Math.cos(ang) + 0.06), by = Bh * 0.8 * Math.sin(ang);
+                    const nx = -Math.sin(ang) * 0.2 * A, ny = Math.cos(ang) * 0.15 * Bh;
+                    const px = hx + 0.3 * A + 0.25 * A * Math.cos(ang), py = 0.25 * Bh * Math.sin(ang);
+                    const sh = new THREE.Shape(); sh.moveTo(bx + nx, by + ny); sh.lineTo(bx - nx, by - ny); sh.lineTo(px, py); sh.closePath();
+                    face(sh, 0x7f2516, 0.012);
+                    const lp = []; for (let k = -2; k <= 2; k++) lp.push(V3(bx + nx * k * 0.35, by + ny * k * 0.35, 0.016), V3(px, py, 0.016));
+                    root.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(lp), new THREE.LineBasicMaterial({ color: 0xc0583f })));
+                    apex.push(V3(px, py, 0.03));
+                    const cal = new THREE.Shape(); cal.absellipse(px - 0.08 * Math.cos(ang), py - 0.08 * Math.sin(ang), 0.17, 0.13, 0, Math.PI * 2, false, ang); face(cal, 0xe6cf8f, 0.02);
+                }
+                const pel = new THREE.Shape(); pel.moveTo(hx - 0.05, 0.85); pel.bezierCurveTo(hx + 0.55, 0.95, hx + 0.6, -0.95, hx + 0.05, -0.85); pel.bezierCurveTo(hx - 0.25, -1.1, hx - 0.35, -1.5, hx - 0.45, -1.9); pel.lineTo(hx - 0.7, -1.85); pel.bezierCurveTo(hx - 0.55, -1.3, hx - 0.4, -0.6, hx - 0.05, 0.85);
+                face(pel, 0xe6cf8f, 0.022);
+                const urC = new THREE.CatmullRomCurve3([V3(hx - 0.57, -1.85, 0), V3(hx - 0.8, -3.0, 0.05), V3(hx - 1.1, -4.4, 0.1)]); urC.L = urC.getLength();
+                root.add(new THREE.Mesh(new THREE.TubeGeometry(urC, 32, 0.16, 12, false), stdMat(0xe9c36a)));
+                // 혈관
+                const vessel = (pts, r, c) => root.add(tubeMesh(pts, r, c).mesh);
+                vessel([V3(-4.2, 0.55, 0.15), V3(hx - 0.4, 0.5, 0.12), V3(hx + 0.3, 0.75, 0.08), V3(0.3, 1.9, 0.06)], 0.16, BLUE);
+                vessel([V3(hx + 0.2, 0.6, 0.08), V3(0.6, 0.4, 0.06)], 0.08, BLUE);
+                vessel([V3(-4.2, -0.45, 0.2), V3(hx - 0.4, -0.4, 0.16), V3(hx + 0.3, -0.7, 0.1), V3(0.3, -1.9, 0.08)], 0.14, RED);
+                vessel([V3(hx + 0.2, -0.5, 0.1), V3(0.6, -0.3, 0.08)], 0.07, RED);
+                // 네프론 하나 (크게)
+                const nc = new THREE.CatmullRomCurve3([V3(1.45, 1.55, 0.05), V3(1.65, 1.2, 0.05), V3(1.35, 1.0, 0.05), V3(1.45, 0.75, 0.05), V3(0.65, 0.5, 0.05), V3(0.4, 0.45, 0.05), V3(0.6, 0.62, 0.05), V3(1.5, 0.85, 0.05), V3(1.75, 0.6, 0.05)]);
+                const nm = new THREE.Mesh(new THREE.TubeGeometry(nc, 80, 0.045, 8, false), stdMat(0xfde047, { emissive: 0xa16207, emissiveIntensity: 0.4 })); root.add(nm);
+                const glom = new THREE.Mesh(geo().sphere, stdMat(0xef4444, { emissive: 0x7f1d1d, emissiveIntensity: 0.3 })); glom.scale.setScalar(0.1); glom.position.set(1.45, 1.6, 0.05); root.add(glom);
+                v.label('겉질', pinAt(root, V3(1.95, 2.3, 0.1)), null, 'e'); v.label('속질', pinAt(root, V3(0.9, -0.15, 0.1)), null, 'r');
+                v.label('콩팥 깔때기', pinAt(root, V3(hx + 0.2, 0.05, 0.1)), null, ''); v.label('오줌관', pinAt(root, V3(hx - 1.05, -3.3, 0.1)), null, 'e');
+                v.label('콩팥정맥', pinAt(root, V3(-3.5, 0.85, 0.15)), null, 'b'); v.label('콩팥동맥', pinAt(root, V3(-3.5, -0.75, 0.2)), null, 'r');
+                v.label('네프론', glom, null, 'v');
+                $('[data-legend]').innerHTML = dotLegend([['#d47a52', '겉질'], ['#a8432e', '속질'], ['#f3e3b5', '콩팥 깔때기'], ['#fde047', '네프론 (크게 나타냄)'], ['#fbbf24', '오줌']]);
+                // 오줌 방울 : 속질 끝 → 깔때기 → 오줌관
+                const dropM = stdMat(0xfbbf24, { emissive: 0x7a5200, emissiveIntensity: 0.3 }), drops = [];
+                let spT = 0, last = performance.now();
+                v.persistent.push(() => {
+                    const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
+                    spT += dt;
+                    if (spT > 0.35) { spT = 0; const a = apex[Math.floor(Math.random() * apex.length)]; const c = new THREE.CatmullRomCurve3([a, V3(hx + 0.15, a.y * 0.4, 0.06), V3(hx - 0.3, -1.2, 0.06), V3(hx - 0.57, -1.85, 0.05), V3(hx - 0.8, -3.0, 0.08), V3(hx - 1.1, -4.4, 0.12)]); c.L = c.getLength(); const m = new THREE.Mesh(geo().sphere, dropM); m.scale.setScalar(0.07); root.add(m); drops.push({ m, c, u: 0 }); }
+                    for (let i = drops.length - 1; i >= 0; i--) { const d = drops[i]; d.u += 1.0 * dt / d.c.L; if (d.u >= 1) { root.remove(d.m); drops.splice(i, 1); continue; } d.m.position.copy(d.c.getPointAt(d.u)); }
+                });
+                v.fit(root, 0.8); angleView(v, V3(0.18, 0.12, 1));
+            }
+            function load(m) {
+                cur = m; v.clear();
+                body.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+                $('[data-act="pee"]').style.display = m === 'path' ? '' : 'none';
+                fillEl.style.display = m === 'path' ? '' : 'none';
+                stepsEl.innerHTML = m === 'path' ? KID_STEPS.map((n, i) => `<span class="phase-pill" data-sp="${i}">${n}</span>`).join('<span class="text-gray-400">→</span>') : '';
+                side.innerHTML = KID_SIDE[m]; typeset(side); cap.innerHTML = KID_CAP[m]; delete cap.dataset.full;
+                const nb = side.querySelector('[data-act="neph"]'); if (nb) nb.onclick = () => openNephron(null, 2);
+                if (m === 'kidney') buildCut(); else buildSystem(m === 'path');
+            }
+            body.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { playSound('click'); load(b.dataset.m); });
+            wireCommonButtons(body, v);
+            load(mode);
+        }
+
+        // =====================================================
+        //  모달: 3D 네프론
+        // =====================================================
+        const NEPH_SIDE = {
+            structure: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🌀 네프론 = 오줌을 만드는 기본 단위</p><p class="font-cute text-rose-700 text-center my-1">네프론 = 사구체 + 보먼주머니 + 세뇨관</p><p>① <strong>사구체</strong> : 모세혈관이 실뭉치처럼 뭉친 것<br>② <strong>보먼주머니</strong> : 사구체를 컵처럼 감싸는 주머니<br>③ <strong>세뇨관</strong> : 보먼주머니에 이어진 가늘고 긴 관. 둘레를 <strong>모세혈관</strong>이 감싸고 있어요.</p></div>
+                <div class="analogy"><p class="font-cute text-orange-700 mb-1">⚠️ 헷갈리기 쉬워요</p><p>세뇨관을 둘러싼 <strong>모세혈관</strong>과 여러 네프론의 세뇨관이 모이는 <strong>집합관</strong>은 네프론에 포함되지 않아요. 집합관은 콩팥 깔때기로 오줌을 보내요.</p></div>
+                <div class="step-card"><p class="font-cute text-orange-700 mb-1">🔢 얼마나 많을까?</p><p>콩팥 하나에 네프론이 약 100만 개! 세뇨관을 모두 이으면 수십 km나 돼요. 그래서 좁은 콩팥 안에서도 많은 혈액을 걸러 낼 수 있어요.</p></div>`,
+            flow: `<div class="step-card"><p class="font-cute text-lg text-orange-700 mb-1">🔭 미리 보기 : 오줌이 만들어지는 과정</p><p>① <strong>여과</strong> : 사구체의 높은 혈압으로 물·포도당·요소 같은 작은 물질이 보먼주머니로 밀려 나가요. 혈구와 단백질(보라)처럼 큰 것은 나가지 못해요.</p><p class="mt-1">② <strong>재흡수</strong> : 세뇨관을 지나는 동안 포도당(초록)은 모두, 물(파랑)은 대부분 모세혈관으로 되돌아가요.</p><p class="mt-1">③ <strong>분비</strong> : 모세혈관에 남은 일부 노폐물(분홍)이 세뇨관으로 더 보내져요.</p><p class="mt-1">남은 물과 요소(노랑)가 <strong>오줌</strong>이 돼요.</p></div>
+                <div class="analogy"><p class="font-cute text-orange-700 mb-1">💡 다음 시간에 자세히!</p><p>여과·재흡수·분비는 다음 차시에서 자세히 배워요. 여과가 어떤 힘으로 일어나는지 궁금하다면 심화 팝업을 확인해 보세요.</p><button data-act="filt" class="font-cute bg-violet-500 hover:bg-violet-600 text-white py-1.5 px-4 rounded-full shadow mt-2">⚖️ 사구체 여과의 물리 (심화)</button></div>`
+        };
+        function openNephron(mode, level) {
+            const body = openModalAt(level || 1, '🌀 How? 3D 네프론', null, 'bg-rose-500');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5">
+                <div class="lg:col-span-3 min-w-0">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button class="view-chip" data-m="structure">🌀 네프론의 구조</button>
+                        <button class="view-chip" data-m="flow">🔭 오줌이 만들어지는 과정 (미리 보기)</button>
+                    </div>
+                    <div class="mol-stage" data-stage style="height:480px;background:radial-gradient(circle at 50% 40%, #fff9f5 0%, #fde7dc 70%, #f9d3c3 100%)"></div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                        <div data-legend class="text-sm text-gray-600 flex flex-wrap gap-x-3 gap-y-1"></div>
+                        <div class="flex flex-wrap gap-2">
+                            <button data-act="spin" class="view-chip text-sm"><i class="fa-solid fa-rotate"></i> 회전</button>
+                            <button data-act="reset" class="view-chip text-sm"><i class="fa-solid fa-crosshairs"></i> 처음 위치</button>
+                        </div>
+                    </div>
+                    <p data-caption class="mt-3 bg-rose-50 border border-rose-200 rounded-lg p-3 text-sm text-rose-900"></p>
+                    <p class="mt-2 text-xs text-gray-500">네프론 하나의 길이는 수 cm 정도이고 사구체 지름은 약 0.2 mm예요. 모형은 단순화했어요.</p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 text-[15px] leading-relaxed min-w-0" data-side></div>
+            </div>`;
+            const $ = s => body.querySelector(s);
+            const stage = $('[data-stage]'), cap = $('[data-caption]'), side = $('[data-side]');
+            const v = new MolViewer(stage); onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            const root = new THREE.Group(); v.root.add(root);
+            const slab = (y0, y1, col, txt) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(10, y1 - y0), new THREE.MeshStandardMaterial({ color: col, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide })); m.position.set(0, (y0 + y1) / 2, -1.2); root.add(m); v.label(txt, pinAt(root, V3(4.3, y1 - 0.4, -1.2)), null, 'e'); };
+            slab(0.6, 4.4, 0xf2a571, '겉질'); slab(-4.6, 0.6, 0xb8543d, '속질');
+            const G = V3(-2.55, 3.0, 0);
+            // 보먼주머니
+            const cup = new THREE.Mesh(new THREE.SphereGeometry(0.62, 36, 20, 0, Math.PI * 2, 0.32 * Math.PI, 0.68 * Math.PI), new THREE.MeshStandardMaterial({ color: 0xfacc15, transparent: true, opacity: 0.38, side: THREE.DoubleSide, depthWrite: false, roughness: 0.4 }));
+            cup.rotation.z = Math.PI / 2; cup.position.copy(G); root.add(cup);
+            // 사구체
+            const rr = srand(3), gp = [V3(-3.25, 3.15, 0)];
+            for (let i = 0; i < 16; i++) gp.push(G.clone().add(randUnit().multiplyScalar(0.12 + rr() * 0.28)));
+            gp.push(V3(-3.25, 2.85, 0.05));
+            const glomC = new THREE.CatmullRomCurve3(gp); glomC.L = glomC.getLength();
+            root.add(gradTube(glomC, 0.045, RED, RED, 0xff6b6b));
+            // 동맥 · 정맥 줄기
+            root.add(tubeMesh([V3(-4.2, 4.4, 0), V3(-4.2, -1.0, 0)], 0.16, RED).mesh); root.add(tubeMesh([V3(-4.65, -1.0, 0), V3(-4.65, 4.4, 0)], 0.17, BLUE).mesh);
+            const affC = new THREE.CatmullRomCurve3([V3(-4.2, 3.4, 0), V3(-3.7, 3.25, 0), V3(-3.25, 3.15, 0)]); affC.L = affC.getLength();
+            root.add(new THREE.Mesh(new THREE.TubeGeometry(affC, 16, 0.08, 8, false), stdMat(RED)));
+            // 세뇨관
+            const TP = [V3(-1.95, 3.0, 0), V3(-1.4, 3.45, 0.4), V3(-0.9, 2.95, -0.3), V3(-1.3, 2.45, 0.3), V3(-0.75, 2.2, -0.2), V3(-0.45, 2.6, 0.3), V3(-0.35, 1.5, 0), V3(-0.32, -0.6, 0), V3(-0.28, -2.9, 0), V3(0.05, -3.35, 0), V3(0.38, -2.9, 0), V3(0.42, -0.6, 0), V3(0.48, 1.6, 0), V3(0.95, 2.45, 0.3), V3(1.3, 2.0, -0.3), V3(1.65, 2.6, 0.2), V3(2.1, 2.45, -0.05), V3(2.6, 2.6, 0)];
+            const tubC = new THREE.CatmullRomCurve3(TP); tubC.L = tubC.getLength();
+            const tubM = new THREE.MeshStandardMaterial({ color: 0xf3d58a, roughness: 0.4, transparent: true, opacity: 0.75 });
+            root.add(new THREE.Mesh(new THREE.TubeGeometry(tubC, 200, 0.13, 12, false), tubM));
+            const cdC = new THREE.CatmullRomCurve3([V3(2.6, 4.2, 0), V3(2.6, 2.6, 0), V3(2.6, -2.0, 0), V3(2.6, -4.8, 0)]); cdC.L = cdC.getLength();
+            root.add(new THREE.Mesh(new THREE.TubeGeometry(cdC, 40, 0.2, 12, false), new THREE.MeshStandardMaterial({ color: 0xe9c36a, roughness: 0.4, transparent: true, opacity: 0.75 })));
+            // 세뇨관을 둘러싼 모세혈관
+            const effStart = V3(-3.25, 2.85, 0.05), caps = [];
+            [0.32, -0.32].forEach((oz, k) => {
+                const pts = [effStart, V3(-3.0, 2.3, oz)];
+                TP.slice(1, 16).forEach((p, i) => pts.push(p.clone().add(V3(0.22 * Math.sin(i * 1.7 + k), 0.12 * Math.cos(i), oz))));
+                pts.push(V3(1.0, 0.2, oz), V3(-1.5, -0.9, oz), V3(-4.65, -0.6, 0));
+                const c = new THREE.CatmullRomCurve3(pts); c.L = c.getLength(); caps.push(c);
+                root.add(gradTube(c, 0.04, RED, BLUE));
+            });
+            const LB = {
+                g: v.label('사구체', pinAt(root, G.clone().add(V3(-0.1, 0.55, 0.3))), null, 'r'),
+                b: v.label('보먼주머니', pinAt(root, G.clone().add(V3(0.3, -0.75, 0.3))), null, ''),
+                t: v.label('세뇨관', pinAt(root, V3(-0.3, -1.6, 0.25)), null, 'e'),
+                c: v.label('모세혈관', pinAt(root, caps[0].getPointAt(0.55)), null, 'v'),
+                d: v.label('집합관 → 콩팥 깔때기로', pinAt(root, V3(2.6, -4.3, 0.25)), null, 'e'),
+                a: v.label('콩팥동맥에서', pinAt(root, V3(-4.2, 4.2, 0.2)), null, 'r'),
+                n: v.label('네프론 = 사구체 + 보먼주머니 + 세뇨관', pinAt(root, V3(-0.4, 4.0, 0.2)), null, 'v')
+            };
+            v.fit(root, 0.78);
+            // 흐름
+            const P = [], mk = (col, r) => { const m = new THREE.Mesh(geo().sphere, stdMat(col, { emissive: col, emissiveIntensity: 0.2 })); m.scale.setScalar(r); root.add(m); return m; };
+            const COL = { water: 0x3b82f6, glu: 0x22c55e, urea: 0xfbbf24, prot: 0x8b5cf6, sec: 0xec4899 };
+            let cur = mode || 'structure', spT = 0, last = performance.now();
+            function spawn() {
+                const r = Math.random();
+                if (r < 0.15) { P.push({ m: mk(COL.prot, 0.11), kind: 'prot', stage: 'glom', c: glomC, u: 0, next: caps[Math.random() < 0.5 ? 0 : 1] }); return; }
+                const kind = r < 0.55 ? 'water' : r < 0.75 ? 'glu' : 'urea';
+                // 재흡수 위치 (세뇨관에서의 진행률) : 2 = 재흡수되지 않고 오줌으로
+                const back = kind === 'glu' ? 0.1 + Math.random() * 0.15 : kind === 'water' ? (Math.random() < 0.8 ? 0.1 + Math.random() * 0.75 : 2) : (Math.random() < 0.45 ? 0.2 + Math.random() * 0.5 : 2);
+                P.push({ m: mk(COL[kind], 0.095), kind, stage: 'glom', c: glomC, u: 0, back, cut: 0.15 + Math.random() * 0.35 });
+            }
+            const toss = (p, i) => { root.remove(p.m); P.splice(i, 1); };
+            v.persistent.push(() => {
+                const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now;
+                if (cur !== 'flow') return;
+                spT += dt;
+                if (spT > 0.16 && P.length < 70) {
+                    spT = 0; spawn();
+                    if (Math.random() < 0.18) { const sAt = 0.7 + Math.random() * 0.15; P.push({ m: mk(COL.sec, 0.07), kind: 'sec', jump: 'tub', a: caps[0].getPointAt(0.72), b: tubC.getPointAt(sAt), t: 0, after: sAt, back: 2 }); }
+                }
+                for (let i = P.length - 1; i >= 0; i--) {
+                    const p = P[i];
+                    if (p.jump) {
+                        p.t += dt * 1.8; p.m.position.lerpVectors(p.a, p.b, Math.min(1, p.t));
+                        if (p.t >= 1) { const j = p.jump; p.jump = null; if (j === 'blood') { toss(p, i); continue; } p.stage = 'tub'; p.c = tubC; p.u = p.after || 0; }
+                        continue;
+                    }
+                    p.u += (p.stage === 'tub' ? 1.7 : p.stage === 'cd' ? 2.2 : 2.4) * dt / p.c.L;
+                    if (p.kind === 'prot') {
+                        if (p.u >= 1) { if (p.c === glomC) { p.c = p.next; p.u = 0; } else { toss(p, i); continue; } }
+                    } else if (p.stage === 'glom' && p.u >= p.cut) {
+                        p.jump = 'tub'; p.a = p.m.position.clone(); p.b = tubC.getPointAt(0); p.t = 0; p.after = 0; continue;
+                    } else if (p.stage === 'tub' && p.u >= p.back) {
+                        p.jump = 'blood'; p.a = p.m.position.clone(); p.b = caps[Math.random() < 0.5 ? 0 : 1].getPointAt(Math.min(0.9, 0.2 + p.u * 0.7)); p.t = 0; continue;
+                    } else if (p.stage === 'tub' && p.u >= 1) { p.stage = 'cd'; p.c = cdC; p.u = 0.38; }
+                    else if (p.stage === 'cd' && p.u >= 1) { toss(p, i); continue; }
+                    p.m.position.copy(p.c.getPointAt(Math.min(1, p.u)));
+                }
+            });
+            function setMode(m) {
+                cur = m; body.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+                P.splice(0).forEach(p => root.remove(p.m));
+                side.innerHTML = NEPH_SIDE[m]; typeset(side);
+                const fb = side.querySelector('[data-act="filt"]'); if (fb) fb.onclick = () => openFiltration(2);
+                cap.innerHTML = m === 'structure' ? '<strong>사구체</strong>(빨간 실뭉치)를 <strong>보먼주머니</strong>(노란 컵)가 감싸고, 보먼주머니에 긴 <strong>세뇨관</strong>이 이어져 있어요. 세뇨관 둘레를 <strong>모세혈관</strong>이 감싸요. 위쪽은 콩팥의 겉질, 아래쪽은 속질이에요.' : '파랑=물, 초록=포도당, 노랑=요소, 보라=단백질(여과되지 않음), 분홍=분비되는 물질. 물질이 사구체 → 보먼주머니 → 세뇨관 → 집합관으로 이동하며 어떻게 걸러지는지 보세요.';
+                $('[data-legend]').innerHTML = m === 'flow' ? dotLegend([['#3b82f6', '물'], ['#22c55e', '포도당'], ['#fbbf24', '요소'], ['#8b5cf6', '단백질'], ['#ec4899', '분비']]) : dotLegend([['#d93636', '사구체 · 동맥'], ['#facc15', '보먼주머니'], ['#f3d58a', '세뇨관'], ['#e9c36a', '집합관'], ['#3f6fd6', '정맥 쪽 모세혈관']]);
+            }
+            body.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { playSound('click'); setMode(b.dataset.m); });
+            wireCommonButtons(body, v);
+            setMode(cur);
+        }
+        // 색이 바뀌는 혈관
+        function gradTube(curve, r, c0, c1, mid) {
+            const TS = 96, RS = 8;
+            const g = new THREE.TubeGeometry(curve, TS, r, RS, false);
+            const pos = g.attributes.position, cols = new Float32Array(pos.count * 3), tmp = new THREE.Color();
+            const A = new THREE.Color(c0), B = new THREE.Color(c1), M = new THREE.Color(mid !== undefined ? mid : PURPLE);
+            for (let j = 0; j < pos.count; j++) {
+                const t = Math.floor(j / (RS + 1)) / TS;
+                if (t < 0.5) tmp.lerpColors(A, M, t * 2); else tmp.lerpColors(M, B, (t - 0.5) * 2);
+                cols[j * 3] = tmp.r; cols[j * 3 + 1] = tmp.g; cols[j * 3 + 2] = tmp.b;
+            }
+            g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+            return new THREE.Mesh(g, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.45 }));
+        }
+
+        // =====================================================
+        //  심화: 암모니아의 독성과 pH · 동물의 질소 노폐물
+        // =====================================================
+        function openUrea(sub, level) {
+            const body = openModalAt(level || 1, '⚗️ 심화 : 암모니아는 왜 위험할까? — 독성, pH, 그리고 요소', null, 'bg-violet-600');
+            body.innerHTML = `
+            <div class="space-y-5 text-[15px] leading-relaxed">
+                <div class="grid lg:grid-cols-5 gap-4">
+                    <div class="lg:col-span-3 min-w-0">
+                        <div class="mol-stage" data-stage style="height:300px"></div>
+                        <div data-legend class="text-sm text-gray-600 flex flex-wrap gap-x-3 gap-y-1 mt-2"></div>
+                    </div>
+                    <div class="lg:col-span-2 space-y-3">
+                        <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">① 암모니아 · 암모늄 이온 · 요소</p><p><strong>암모니아(NH₃)</strong>는 물에 녹으면 H⁺를 받아 <strong>암모늄 이온(NH₄⁺)</strong>이 되기도 해요.</p><div class="text-center">\\[\\mathrm{NH_3 + H^+ \\rightleftharpoons NH_4^+}\\qquad (\\mathrm{p}K_a \\approx 9.25)\\]</div><p><strong>요소</strong>는 질소 2개를 한 분자에 담은, 전하가 없고 독성이 약한 물질이에요.</p></div>
+                    </div>
+                </div>
+                <div class="bg-white border-2 border-violet-200 rounded-2xl p-4">
+                    <p class="font-cute text-xl text-violet-700 mb-1">② pH에 따라 달라지는 암모니아의 모습</p>
+                    <label for="ur-ph" class="font-cute text-violet-700">pH = <span data-out="ph" class="gibbs-num"></span></label>
+                    <input id="ur-ph" type="range" min="5" max="12" step="0.05" value="7.4" class="nut-range">
+                    <div class="flex flex-wrap gap-2 mt-2"><button class="view-chip text-sm" data-ph="7.4">🩸 혈액 (pH 7.4)</button><button class="view-chip text-sm" data-ph="9.25">⚖️ 반반 (pH 9.25)</button><button class="view-chip text-sm" data-ph="11">🧴 암모니아수 (pH 약 11)</button></div>
+                    <div class="mt-3 space-y-2">
+                        <div><p class="text-sm font-cute">NH₃ (전하 없음 → 세포막을 쉽게 통과) <span data-out="a" class="gibbs-num text-rose-700"></span></p><div class="tox-bar"><i data-bar="a" style="background:linear-gradient(90deg,#fda4af,#e11d48)"></i></div></div>
+                        <div><p class="text-sm font-cute">NH₄⁺ (전하 있음) <span data-out="b" class="gibbs-num text-sky-700"></span></p><div class="tox-bar"><i data-bar="b" style="background:linear-gradient(90deg,#bae6fd,#0284c7)"></i></div></div>
+                    </div>
+                    <div class="text-center mt-2">\\[\\frac{[\\mathrm{NH_3}]}{[\\mathrm{NH_3}]+[\\mathrm{NH_4^+}]} = \\frac{1}{1+10^{\\,\\mathrm{p}K_a-\\mathrm{pH}}}\\]</div>
+                    <p data-info class="text-violet-900 mt-1"></p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">③ 왜 독성이 강할까?</p><p>혈액(pH 7.4)에서도 약 1.4 %는 전하가 없는 NH₃로 있어요. 전하가 없는 작은 분자는 세포막을 쉽게 통과해 <strong>뇌세포</strong> 속까지 들어가고, 세포의 pH와 에너지 대사를 망가뜨려요. 그래서 건강한 사람의 혈액 속 암모니아는 아주 적게(약 0.01~0.04 mmol/L) 유지돼요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">④ 요소가 좋은 점</p><p>• 혈액 속 요소는 약 2.5~7 mmol/L로 암모니아보다 <strong>100배 넘게</strong> 많아도 괜찮아요.<br>• 물에 매우 잘 녹아요 (20 ℃ 물 1 L에 약 1 kg).<br>• 한 분자에 질소 2개를 담아 효율적으로 내보내요.<br>• 대신 간에서 만들 때 ATP 3분자의 에너지가 들어요.</p></div>
+                </div>
+                <div class="bg-white border-2 border-orange-200 rounded-2xl p-4" data-animal>
+                    <p class="font-cute text-xl text-orange-700 mb-1">🐟 동물마다 다른 질소 노폐물</p>
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-center border-collapse min-w-[520px]">
+                        <tr class="bg-orange-100 font-cute"><td class="p-1 border border-orange-200">노폐물</td><td class="p-1 border border-orange-200">동물</td><td class="p-1 border border-orange-200">독성</td><td class="p-1 border border-orange-200">물에 녹는 정도</td><td class="p-1 border border-orange-200">필요한 물</td><td class="p-1 border border-orange-200">드는 에너지</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">암모니아</td><td class="p-1 border border-orange-200">대부분의 물고기, 올챙이</td><td class="p-1 border border-orange-200">매우 강함</td><td class="p-1 border border-orange-200">잘 녹음</td><td class="p-1 border border-orange-200">매우 많음</td><td class="p-1 border border-orange-200">거의 없음</td></tr>
+                        <tr class="bg-violet-50"><td class="p-1 border border-orange-200 font-cute">요소</td><td class="p-1 border border-orange-200">사람 등 포유류, 개구리, 상어</td><td class="p-1 border border-orange-200">약함</td><td class="p-1 border border-orange-200">매우 잘 녹음</td><td class="p-1 border border-orange-200">중간</td><td class="p-1 border border-orange-200">조금</td></tr>
+                        <tr><td class="p-1 border border-orange-200 font-cute">요산</td><td class="p-1 border border-orange-200">새, 파충류, 곤충</td><td class="p-1 border border-orange-200">매우 약함</td><td class="p-1 border border-orange-200">거의 안 녹음</td><td class="p-1 border border-orange-200">매우 적음</td><td class="p-1 border border-orange-200">많음</td></tr>
+                    </table></div>
+                    <p class="mt-2">물속에 사는 물고기는 주변의 많은 물로 암모니아를 바로 묽혀 내보낼 수 있어요. 육지 동물은 물을 아껴야 해서 요소나 요산으로 바꿔요. 새의 하얀 똥에 섞인 하얀 부분이 바로 물에 잘 녹지 않는 <strong>요산</strong>이에요. 알 속에서 자라는 새끼에게도 요산은 독성이 약해 안전해요.</p>
+                </div>
+            </div>`;
+            const $ = s => body.querySelector(s);
+            const v = new MolViewer($('[data-stage]')); onModalClose(() => v.dispose());
+            v.controls.autoRotate = false;
+            const root = new THREE.Group(); v.root.add(root);
+            [[SMALL.NH3, -3.4, '암모니아 NH₃', 'r'], [SMALL.NH4, 0, '암모늄 이온 NH₄⁺', 'b'], [SMALL.UREA, 3.6, '요소 CO(NH₂)₂', 'e']].forEach(([d, x, n, c]) => {
+                const g = miniMol(d, 1); g.position.x = x; root.add(g); v.label(n, pinAt(root, V3(x, 2.0, 0)), null, c);
+            });
+            $('[data-legend]').innerHTML = legendHTML([SMALL.UREA]);
+            v.fit(root, 0.9);
+            v.persistent.push(t => root.children.forEach((g, i) => { if (g.isGroup) g.rotation.y = t * 0.6 + i; }));
+            const sl = $('#ur-ph');
+            function upd() {
+                const ph = +sl.value, f = 1 / (1 + Math.pow(10, 9.25 - ph));
+                $('[data-out="ph"]').textContent = ph.toFixed(2);
+                $('[data-out="a"]').textContent = `${(f * 100).toFixed(f < 0.1 ? 2 : 1)} %`; $('[data-out="b"]').textContent = `${((1 - f) * 100).toFixed(1)} %`;
+                $('[data-bar="a"]').style.width = `${Math.max(1, f * 100)}%`; $('[data-bar="b"]').style.width = `${(1 - f) * 100}%`;
+                body.querySelectorAll('[data-ph]').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.ph - ph) < 0.03));
+                $('[data-info]').innerHTML = ph < 8 ? `pH ${ph.toFixed(1)}에서는 대부분이 NH₄⁺이지만, 약 ${(f * 100).toFixed(1)} %의 NH₃가 세포막을 통과해 퍼져 나가요. 퍼져 나간 만큼 다시 NH₄⁺가 NH₃로 바뀌어 채워지기 때문에, 양이 적어도 계속 해로워요.` : ph < 10 ? 'pH가 pKa(9.25)에 가까우면 NH₃와 NH₄⁺가 비슷하게 섞여 있어요.' : '염기성이 강하면 대부분 NH₃로 있어요. 암모니아수에서 코를 찌르는 냄새가 나는 이유예요.';
+            }
+            sl.oninput = upd;
+            body.querySelectorAll('[data-ph]').forEach(b => b.onclick = () => { playSound('click'); sl.value = b.dataset.ph; upd(); });
+            upd(); typeset(body);
+            if (sub === 'animal') setTimeout(() => $('[data-animal]').scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
+        }
+
+        // =====================================================
+        //  심화: 사구체 여과의 물리 (압력의 균형)
+        // =====================================================
+        function openFiltration(level) {
+            const body = openModalAt(level || 1, '⚖️ 심화 : 압력으로 거르기 — 사구체 여과의 물리', null, 'bg-violet-600');
+            body.innerHTML = `
+            <div class="space-y-5 text-[15px] leading-relaxed">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">① 세 가지 압력</p><p>사구체에서는 세 힘이 겨뤄요.</p><p class="mt-1">🔴 <strong>사구체 혈압</strong> \\(P_G\\) : 혈액을 보먼주머니 쪽으로 <strong>밀어내는</strong> 힘<br>🟡 <strong>보먼주머니 압력</strong> \\(P_B\\) : 보먼주머니 속 액체가 <strong>되미는</strong> 힘<br>🟣 <strong>혈장 단백질의 삼투압</strong> \\(\\pi_G\\) : 혈액 속 단백질이 물을 <strong>붙잡는</strong> 힘</p>
+                        <div class="text-center">\\[P_{\\text{순}} = P_G - P_B - \\pi_G\\]</div></div>
+                    <div class="analogy"><p class="font-cute text-lg text-violet-700 mb-1">💡 왜 사구체 혈압이 높을까?</p><p>사구체로 들어가는 혈관(들세동맥)보다 나가는 혈관(날세동맥)이 더 가늘어요. 출구가 좁은 호스처럼 사구체 안에 압력이 높게 유지되어 여과가 잘 일어나요.</p></div>
+                </div>
+                <div class="bg-white border-2 border-violet-200 rounded-2xl p-4">
+                    <p class="font-cute text-xl text-violet-700 mb-1">🧮 여과 계산기</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="ft-pg" class="font-cute text-rose-700">사구체 혈압 \\(P_G\\) = <span data-out="pg" class="gibbs-num"></span></label><input id="ft-pg" type="range" min="35" max="80" step="1" value="60" class="nut-range">
+                            <label for="ft-pb" class="font-cute text-amber-700 block mt-2">보먼주머니 압력 \\(P_B\\) = <span data-out="pb" class="gibbs-num"></span></label><input id="ft-pb" type="range" min="5" max="40" step="1" value="18" class="nut-range">
+                            <label for="ft-pi" class="font-cute text-violet-700 block mt-2">삼투압 \\(\\pi_G\\) = <span data-out="pi" class="gibbs-num"></span></label><input id="ft-pi" type="range" min="15" max="45" step="1" value="32" class="nut-range">
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <button class="view-chip text-sm" data-pre="ok">💪 건강할 때</button>
+                                <button class="view-chip text-sm" data-pre="low">📉 출혈로 혈압이 낮을 때</button>
+                                <button class="view-chip text-sm" data-pre="stone">🪨 요로 결석으로 막혔을 때</button>
+                            </div>
+                        </div>
+                        <div><div data-svg></div><p data-info class="text-violet-900 mt-1"></p></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">※ 단위는 mmHg, 건강한 성인의 교과서 대략값이에요. 여과량은 \\(K_f = 12.5\\ \\mathrm{mL/(분\\cdot mmHg)}\\)로 계산했어요.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-white border-2 border-orange-200 rounded-2xl p-4">
+                        <p class="font-cute text-lg text-orange-700 mb-1">🕳️ 크기로 거르는 체</p>
+                        <table class="w-full text-sm text-center border-collapse">
+                            <tr class="bg-orange-100 font-cute"><td class="p-1 border border-orange-200">물질</td><td class="p-1 border border-orange-200">크기 (분자량)</td><td class="p-1 border border-orange-200">여과</td></tr>
+                            <tr><td class="p-1 border border-orange-200">물</td><td class="p-1 border border-orange-200">18</td><td class="p-1 border border-orange-200">⭕</td></tr>
+                            <tr><td class="p-1 border border-orange-200">요소</td><td class="p-1 border border-orange-200">60</td><td class="p-1 border border-orange-200">⭕</td></tr>
+                            <tr><td class="p-1 border border-orange-200">포도당</td><td class="p-1 border border-orange-200">180</td><td class="p-1 border border-orange-200">⭕</td></tr>
+                            <tr><td class="p-1 border border-orange-200">혈장 단백질 (알부민)</td><td class="p-1 border border-orange-200">약 66 000</td><td class="p-1 border border-orange-200">❌ (거의 안 됨)</td></tr>
+                            <tr><td class="p-1 border border-orange-200">적혈구</td><td class="p-1 border border-orange-200">지름 약 7 μm</td><td class="p-1 border border-orange-200">❌</td></tr>
+                        </table>
+                        <p class="mt-2 text-sm">그래서 건강한 사람의 오줌에는 단백질과 혈구가 거의 없어요. 오줌에서 단백질이 나오면 콩팥의 거름 장치에 문제가 생겼다는 신호일 수 있어요.</p>
+                    </div>
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">💧 삼투압 계산해 보기</p><p>반트호프 식으로 혈장의 삼투압을 계산하면</p><div class="text-center">\\[\\pi = cRT = 0.30 \\times 0.082 \\times 310 \\approx 7.6\\ \\mathrm{atm}\\]</div><p>엄청 크죠? 하지만 작은 이온·포도당은 사구체를 자유롭게 지나가서 양쪽 농도가 같으므로 여과에 영향을 주지 않아요. 막을 지나지 못하는 <strong>단백질</strong>만의 삼투압(약 32 mmHg)이 여과를 막는 힘이 돼요.</p></div>
+                </div>
+            </div>`;
+            const $ = s => body.querySelector(s);
+            const S = { pg: $('#ft-pg'), pb: $('#ft-pb'), pi: $('#ft-pi') };
+            const PRE = { ok: [60, 18, 32], low: [42, 18, 32], stone: [60, 34, 32] };
+            function upd() {
+                const pg = +S.pg.value, pb = +S.pb.value, pi = +S.pi.value, net = pg - pb - pi, gfr = Math.max(0, 12.5 * net);
+                $('[data-out="pg"]').textContent = `${pg} mmHg`; $('[data-out="pb"]').textContent = `${pb} mmHg`; $('[data-out="pi"]').textContent = `${pi} mmHg`;
+                const W = 320, sc = 3;
+                let s = `<svg viewBox="0 0 ${W} 210" class="w-full h-auto" role="img" aria-label="사구체에서 바깥으로 미는 혈압과 안쪽으로 되미는 압력의 크기 비교"><defs>${[["r","#e11d48"],["a","#d97706"],["v","#7c3aed"]].map(([k,c]) => `<marker id="ftm${k}" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="${c}"/></marker>`).join("")}</defs>`;
+                s += `<line x1="160" y1="10" x2="160" y2="150" stroke="#94a3b8" stroke-dasharray="4 3"/><text x="160" y="166" text-anchor="middle" font-size="11" fill="#64748b">사구체 벽</text>`;
+                s += `<path d="M${160 - pg * sc * 0.5},40 L${160 + pg * sc * 0.5},40" stroke="#e11d48" stroke-width="12" marker-end="url(#ftmr)"/><text x="10" y="30" font-size="12" font-family="Jua" fill="#e11d48">P_G ${pg} → 보먼주머니로</text>`;
+                s += `<path d="M${160 + pb * sc * 0.5},85 L${160 - pb * sc * 0.5},85" stroke="#d97706" stroke-width="12" marker-end="url(#ftma)"/><text x="10" y="75" font-size="12" font-family="Jua" fill="#d97706">P_B ${pb} ← 되밀기</text>`;
+                s += `<path d="M${160 + pi * sc * 0.5},130 L${160 - pi * sc * 0.5},130" stroke="#7c3aed" stroke-width="12" marker-end="url(#ftmv)"/><text x="10" y="120" font-size="12" font-family="Jua" fill="#7c3aed">π_G ${pi} ← 물 붙잡기</text>`;
+                s += `<rect x="10" y="176" width="300" height="28" rx="8" fill="${net > 0 ? '#ecfdf5' : '#fef2f2'}" stroke="${net > 0 ? '#10b981' : '#ef4444'}"/><text x="160" y="195" text-anchor="middle" font-size="14" font-family="Jua" fill="${net > 0 ? '#047857' : '#b91c1c'}">순 여과압 = ${pg} − ${pb} − ${pi} = ${net} mmHg</text>`;
+                $('[data-svg]').innerHTML = s + `</svg>`;
+                $('[data-info]').innerHTML = net > 0 ? `1분에 약 <strong>${Math.round(gfr)} mL</strong>, 하루에 약 <strong>${Math.round(gfr * 1.44)} L</strong>가 걸러져요. ${Math.abs(gfr - 125) < 3 ? '하루 오줌은 약 1.5 L이므로 걸러진 것의 약 99 %가 다시 흡수돼요!' : ''}` : '순 여과압이 0 이하라서 <strong>여과가 일어나지 않아요!</strong> 오줌이 만들어지지 않아 노폐물이 몸에 쌓여요.';
+                const key = Object.keys(PRE).find(k => PRE[k][0] === pg && PRE[k][1] === pb && PRE[k][2] === pi);
+                body.querySelectorAll('[data-pre]').forEach(b => b.classList.toggle('on', b.dataset.pre === key));
+            }
+            Object.values(S).forEach(x => x.oninput = upd);
+            body.querySelectorAll('[data-pre]').forEach(b => b.onclick = () => { playSound('click'); [S.pg.value, S.pb.value, S.pi.value] = PRE[b.dataset.pre]; upd(); });
+            upd(); typeset(body);
+        }
+
+        // =====================================================
+        //  심화: 혈액 투석 (인공 콩팥)
+        // =====================================================
+        function openDialysis(level) {
+            const body = openModalAt(level || 1, '🏥 심화 : 인공 콩팥 — 혈액 투석의 원리', null, 'bg-violet-600');
+            body.innerHTML = `
+            <div class="grid lg:grid-cols-5 gap-5 text-[15px] leading-relaxed">
+                <div class="lg:col-span-3 min-w-0 space-y-3">
+                    <div class="bg-white border-2 border-violet-200 rounded-2xl p-3">
+                        <div data-svg></div>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <button data-act="run" class="font-cute bg-violet-500 hover:bg-violet-600 text-white py-1.5 px-4 rounded-full shadow">▶ 투석 시작</button>
+                            <button data-act="fresh" class="view-chip text-sm on">🔄 투석액 계속 갈아 주기</button>
+                            <button data-act="again" class="view-chip text-sm">↺ 처음으로</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-3 text-sm text-center">
+                            <div class="bg-rose-50 rounded-lg p-2">혈액 속 요소<br><strong data-out="b" class="gibbs-num text-rose-700"></strong></div>
+                            <div class="bg-sky-50 rounded-lg p-2">투석액으로 빠져나간 요소<br><strong data-out="d" class="gibbs-num text-sky-700"></strong></div>
+                        </div>
+                    </div>
+                    <p data-caption class="bg-violet-50 border border-violet-200 rounded-lg p-3 text-sm text-violet-900">위쪽은 혈액, 아래쪽은 투석액이에요. 가운데 반투막에는 작은 구멍이 있어요. ‘▶ 투석 시작’을 눌러 보세요.</p>
+                </div>
+                <div class="lg:col-span-2 space-y-3 min-w-0">
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">🏥 혈액 투석이란?</p><p>콩팥이 제 기능을 못 하면 요소 같은 노폐물이 혈액에 쌓여요. 이때 혈액을 몸 밖의 장치로 빼내 <strong>반투막</strong>을 사이에 두고 투석액과 맞닿게 해서 노폐물을 걸러 낸 뒤 다시 몸에 넣어 주는 것이 <strong>혈액 투석</strong>이에요.</p></div>
+                    <div class="step-card"><p class="font-cute text-lg text-violet-700 mb-1">🔬 원리 : 확산</p><p>요소처럼 <strong>작은 분자</strong>는 반투막의 구멍을 지나 농도가 높은 혈액 → 낮은 투석액으로 <strong>확산</strong>해요. 혈구(빨강)와 단백질(보라)은 너무 커서 지나가지 못해 혈액에 남아요.</p><p class="mt-1">투석액에는 요소가 없고, 포도당과 이온은 혈액과 비슷하게 넣어 두어서 필요한 물질은 빠져나가지 않아요.</p></div>
+                    <div class="analogy"><p class="font-cute text-violet-700 mb-1">💡 투석액을 갈아 주는 이유</p><p>‘투석액 계속 갈아 주기’를 끄면 양쪽 농도가 같아져 요소가 더 빠져나가지 않아요. 실제 장치는 투석액을 혈액과 <strong>반대 방향</strong>으로 계속 흘려 농도 차이를 유지해요. 보통 1회 약 4시간, 일주일에 3번 정도 투석을 해요.</p></div>
+                </div>
+            </div>`;
+            const $ = s => body.querySelector(s);
+            const W = 520, H = 260, MY = 130;
+            let P = [], running = false, fresh = true, removed = 0, stop = null;
+            function init() {
+                P = []; removed = 0;
+                for (let i = 0; i < 46; i++) P.push({ k: 'u', x: Math.random() * W, y: 14 + Math.random() * (MY - 24), vx: 0, vy: 0 });
+                for (let i = 0; i < 4; i++) P.push({ k: 'u', x: Math.random() * W, y: MY + 10 + Math.random() * (H - MY - 24), vx: 0, vy: 0 });
+                for (let i = 0; i < 10; i++) P.push({ k: 'r', x: Math.random() * W, y: 24 + Math.random() * (MY - 46), vx: 0, vy: 0 });
+                for (let i = 0; i < 8; i++) P.push({ k: 'p', x: Math.random() * W, y: 18 + Math.random() * (MY - 34), vx: 0, vy: 0 });
+                draw();
+            }
+            const R = { u: 4, r: 11, p: 7 };
+            function draw() {
+                let s = `<svg viewBox="0 0 ${W} ${H}" class="w-full h-auto" role="img" aria-label="반투막을 사이에 둔 혈액과 투석액. 작은 요소 분자만 막을 지나 투석액으로 이동한다."><rect x="0" y="0" width="${W}" height="${MY}" fill="#fff1f2"/><rect x="0" y="${MY}" width="${W}" height="${H - MY}" fill="#eff6ff"/>`;
+                s += `<text x="8" y="16" font-size="12" font-family="Jua" fill="#be123c">혈액 → 흐름</text><text x="${W - 8}" y="${H - 6}" text-anchor="end" font-size="12" font-family="Jua" fill="#1d4ed8">← 투석액 흐름</text>`;
+                for (let x = 0; x < W; x += 16) s += `<rect x="${x}" y="${MY - 2}" width="10" height="4" fill="#64748b"/>`;
+                s += `<text x="${W / 2}" y="${MY - 6}" text-anchor="middle" font-size="11" font-family="Jua" fill="#475569">반투막 (작은 구멍)</text>`;
+                P.forEach(p => {
+                    if (p.k === 'u') s += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#facc15" stroke="#a16207"/>`;
+                    else if (p.k === 'r') s += `<ellipse cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" rx="11" ry="7" fill="#ef4444" stroke="#991b1b"/>`;
+                    else s += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7" fill="#a78bfa" stroke="#6d28d9"/>`;
+                });
+                s += `<g font-size="11" font-family="Jua"><circle cx="340" cy="12" r="4" fill="#facc15"/><text x="348" y="16">요소</text><ellipse cx="392" cy="12" rx="8" ry="5" fill="#ef4444"/><text x="404" y="16">혈구</text><circle cx="448" cy="12" r="5" fill="#a78bfa"/><text x="456" y="16">단백질</text></g>`;
+                $('[data-svg]').innerHTML = s + `</svg>`;
+                const nb = P.filter(p => p.k === 'u' && p.y < MY).length;
+                $('[data-out="b"]').textContent = `${nb}개`; $('[data-out="d"]').textContent = `${removed + P.filter(p => p.k === 'u' && p.y >= MY).length}개`;
+            }
+            function step() {
+                P.forEach(p => {
+                    const sp = p.k === 'u' ? 2.2 : 0.8;
+                    p.vx = p.vx * 0.8 + (Math.random() - 0.5) * sp; p.vy = p.vy * 0.8 + (Math.random() - 0.5) * sp;
+                    const flow = p.y < MY ? 0.6 : -0.6;
+                    const ny = p.y + p.vy; let nx = p.x + p.vx + flow;
+                    if (nx > W) nx -= W; if (nx < 0) nx += W;
+                    const r = R[p.k];
+                    if ((p.y < MY) !== (ny < MY)) { if (p.k === 'u' && Math.random() < 0.5) p.y = ny; else p.vy *= -1; }
+                    else p.y = ny;
+                    p.y = p.y < MY ? Math.max(r + 2, Math.min(MY - r - 2, p.y)) : Math.max(MY + r + 2, Math.min(H - r - 2, p.y));
+                    p.x = nx;
+                });
+                if (fresh) { P = P.filter(p => { if (p.k === 'u' && p.y >= MY && p.x < 30 && Math.random() < 0.08) { removed++; return false; } return true; }); }
+                draw();
+                const nb = P.filter(p => p.k === 'u' && p.y < MY).length;
+                $('[data-caption]').innerHTML = nb <= 4 ? '혈액 속 요소가 거의 다 빠져나갔어요! 혈구와 단백질은 그대로 혈액에 남아 있어요.' : fresh ? '작은 <strong>요소</strong>만 반투막을 지나 투석액으로 확산하고, 투석액이 계속 새로 바뀌어 농도 차이가 유지돼요.' : '투석액을 갈아 주지 않으면 양쪽 농도가 비슷해져 요소가 더 이상 줄지 않아요.';
+            }
+            $('[data-act="run"]').onclick = e => { playSound('click'); running = !running; e.currentTarget.textContent = running ? '⏸ 멈춤' : '▶ 투석 시작'; if (running) { let acc = 0, lt = null; stop = animLoop(ts => { if (!running) return false; if (lt !== null) acc += ts - lt; lt = ts; while (acc > 33) { acc -= 33; step(); } }); } };
+            $('[data-act="fresh"]').onclick = e => { playSound('click'); fresh = !fresh; e.currentTarget.classList.toggle('on', fresh); };
+            $('[data-act="again"]').onclick = () => { playSound('click'); init(); };
+            init();
+        }
+
+        // =====================================================
+        //  초기화
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fig-waste').innerHTML = figWasteSVG();
+            document.getElementById('fig-kidney').innerHTML = figKidneySVG();
+            document.getElementById('fig-q1').innerHTML = figQ1();
+            document.getElementById('fig-q2').innerHTML = figQ2();
+            document.getElementById('fig-q3').innerHTML = figQ3();
+        });
+    </script>
+</body>
+</html>
